@@ -8,7 +8,9 @@ public enum PlayerTeam {
 public class Player : Unit {
   public PlayerTeam Team = PlayerTeam.One;
   public float Speed = 1f;
+
   CharacterController controller;
+
   private void Start() {
     controller = GetComponent<CharacterController>();
   }
@@ -21,11 +23,13 @@ public class Player : Unit {
       if (Input.GetKey(KeyCode.A)) movement += Vector2.left;
       if (Input.GetKey(KeyCode.S)) movement += Vector2.down;
       if (Input.GetKey(KeyCode.D)) movement += Vector2.right;
+      if (Input.GetKey(KeyCode.Q)) Attack();
     } else {
       if (Input.GetKey(KeyCode.UpArrow)) movement += Vector2.up;
       if (Input.GetKey(KeyCode.LeftArrow)) movement += Vector2.left;
       if (Input.GetKey(KeyCode.DownArrow)) movement += Vector2.down;
       if (Input.GetKey(KeyCode.RightArrow)) movement += Vector2.right;
+      if (Input.GetKey(KeyCode.RightControl)) Attack();
     }
 
     if (movement != Vector2.zero) {
@@ -33,4 +37,5 @@ public class Player : Unit {
       controller.Move(new Vector3(movement.x, 0, movement.y));
     }
   }
+
 }
