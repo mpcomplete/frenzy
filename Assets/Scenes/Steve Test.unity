@@ -1600,6 +1600,14 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 20420605}
+    - target: {fileID: 5764899126236398721, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: fa5b9a89f610052418de4083b28e5d2b, type: 2}
+    - target: {fileID: 5764899126853442050, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
+      propertyPath: m_Name
+      value: Team 2 Base
+      objectReference: {fileID: 0}
     - target: {fileID: 7693705677798291029, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -1655,6 +1663,10 @@ PrefabInstance:
     - target: {fileID: 7693705678622791670, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
       propertyPath: m_Name
       value: BattleField
+      objectReference: {fileID: 0}
+    - target: {fileID: 7693705678691562599, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
+      propertyPath: m_Name
+      value: Team 1 Base
       objectReference: {fileID: 0}
     - target: {fileID: 7693705679404601237, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
       propertyPath: m_Mesh
