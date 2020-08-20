@@ -7,5 +7,5 @@ public class Team {
   public List<Minion> Minions;
   public Stanchion Stanchion;
   public Player Player;
-  public Base Base;
+  public Transform Base;
 }
