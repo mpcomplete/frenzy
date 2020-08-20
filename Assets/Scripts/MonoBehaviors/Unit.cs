@@ -28,7 +28,7 @@ public class Unit : MonoBehaviour {
       StartCoroutine(AttackAnimation());
   }
 
-  Collider[] hitResults = new Collider[32];
+  static Collider[] hitResults = new Collider[32];
   IEnumerator AttackAnimation() {
     Vector3 baseScale = transform.localScale;
     Vector3 targetScale = new Vector3(1.25f, .75f, 1.25f);

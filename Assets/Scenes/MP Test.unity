@@ -1259,7 +1259,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-4228
+  m_Name: pb_Mesh-1332
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1423,7 +1423,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-4244
+  m_Name: pb_Mesh-1360
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1600,6 +1600,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 498875812}
+    - target: {fileID: 2599482674024580137, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
+      propertyPath: SpawnCooldown
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 4590523024604225581, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
       propertyPath: m_Mesh
       value: 
