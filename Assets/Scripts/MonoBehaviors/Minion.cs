@@ -6,4 +6,5 @@ public class Minion : MonoBehaviour {
 
   public Behavior CurrentBehavior;
   public NavMeshAgent NavMeshAgent;
+  public float FightRadius = 3f;
 }
