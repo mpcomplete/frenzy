@@ -140,7 +140,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65452d845219cae48b695837c3c86f9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Speed: 1
+  Health: 100
+  MaxHealth: 100
+  Team: 1
+  Speed: 5
 --- !u!143 &1520350622606644380
 CharacterController:
   m_ObjectHideFlags: 0

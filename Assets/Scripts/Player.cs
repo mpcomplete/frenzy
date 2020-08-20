@@ -5,7 +5,7 @@ public enum PlayerTeam {
   Two = 2,
 }
 
-public class Player : MonoBehaviour {
+public class Player : Unit {
   public PlayerTeam Team = PlayerTeam.One;
   public float Speed = 1f;
   CharacterController controller;
