@@ -1,18 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEngine.AI;
 using UnityEngine;
 
-public class Minion : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+public class Minion : MonoBehaviour {
+  public enum Behavior { Idle, Pursue, Fight }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+  public Behavior CurrentBehavior;
+  public NavMeshAgent NavMeshAgent;
 }
