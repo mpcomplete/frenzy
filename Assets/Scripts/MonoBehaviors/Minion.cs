@@ -8,4 +8,10 @@ public class Minion : Unit {
   public NavMeshAgent NavMeshAgent;
   public Unit Target;
   public float FightRadius = 3f;
+
+  public Team SteveTeam = null;
+
+  void OnDestroy() {
+    SteveTeam.Minions.Remove(this);
+  }
 }

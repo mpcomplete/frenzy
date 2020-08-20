@@ -8,4 +8,5 @@ public class TeamConfiguration : ScriptableObject {
   public LayerMask PlayerLayerMask;
   public LayerMask AttackableMinionLayerMask;
   public LayerMask AttackablePlayerLayerMask;
+  public UnitTeam Team;
 }

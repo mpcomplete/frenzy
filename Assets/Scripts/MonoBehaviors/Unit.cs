@@ -20,6 +20,8 @@ public class Unit : MonoBehaviour {
 
   public bool Alive { get => Health > 0f; }
 
+  public ParticleSystem BloodParticles;
+
   bool isAttacking = false;
   public void Attack() {
     if (!isAttacking)
@@ -58,6 +60,7 @@ public class Unit : MonoBehaviour {
     if (!Alive)
       return;
     Health -= damage;
+    BloodParticles.Play();
     if (!Alive) {
       StartCoroutine(DeathAnimation());
     }
