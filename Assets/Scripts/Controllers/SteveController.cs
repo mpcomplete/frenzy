@@ -10,6 +10,7 @@ public class SteveController : MonoBehaviour {
   public Team Team2;
 
   public MinionSystem MinionSystem = new MinionSystem();
+  public BaseSystem BaseSystem = new BaseSystem();
 
   void Start() {
     Team1.Minions = FindObjectsOfType<Minion>().ToList();
@@ -19,5 +20,7 @@ public class SteveController : MonoBehaviour {
     float dt = Time.deltaTime;
 
     MinionSystem.Execute(Team1.Stanchion, Team1.Minions, dt);
+    BaseSystem.Update(Team1, dt);
+    BaseSystem.Update(Team2, dt);
   }
 }
