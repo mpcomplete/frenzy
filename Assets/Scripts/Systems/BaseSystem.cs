@@ -11,6 +11,8 @@ public class BaseSystem {
       Vector3 position = team.Base.SpawnLocation.position;
       Quaternion rotation = team.Base.SpawnLocation.rotation;
       Minion minion = Minion.Instantiate(team.TeamConfiguration.MinionPrefab, position, rotation);
+      minion.Team = team.TeamConfiguration.Team;
+      minion.SteveTeam = team;
 
       minion.NavMeshAgent.Warp(team.Base.SpawnLocation.position);
       team.Minions.Add(minion);

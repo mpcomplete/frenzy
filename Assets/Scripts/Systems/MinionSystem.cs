@@ -40,6 +40,9 @@ public class MinionSystem {
     case Minion.Behavior.Fighting:
       if (minion.Target) {
         minion.NavMeshAgent.SetDestination(minion.Target.transform.position);
+        if (Vector3.Distance(minion.Target.transform.position, minion.transform.position) < minion.AttackRadius) {
+          minion.Attack();
+        }
       } else {
         minion.CurrentBehavior = Minion.Behavior.Idle;
       }
