@@ -17,19 +17,17 @@ public class Unit : MonoBehaviour {
   }
 
   IEnumerator AttackAnimation() {
-    float scale = 1f;
     Vector3 baseScale = transform.localScale;
+    Vector3 targetScale = new Vector3(1.25f, .75f, 1.25f);
 
     isAttacking = true;
     for (float t = 0f; t < AttackPre; t += Time.deltaTime) {
-      scale = Mathf.Lerp(1f, 1.5f, 1 - Mathf.Pow(1 - t/AttackPre, 5f));
-      transform.localScale = scale * baseScale;
+      transform.localScale = Vector3.Lerp(baseScale, targetScale, 1 - Mathf.Pow(1 - t/AttackPre, 5f));
       yield return null;
     }
     // deal damage
     for (float t = 0f; t < AttackPost; t += Time.deltaTime) {
-      scale = Mathf.Lerp(1.5f, 1f, 1 - Mathf.Pow(1 - t/AttackPost, 5f));
-      transform.localScale = scale * baseScale;
+      transform.localScale = Vector3.Lerp(targetScale, baseScale, 1 - Mathf.Pow(1 - t/AttackPost, 5f));
       yield return null;
     }
 
