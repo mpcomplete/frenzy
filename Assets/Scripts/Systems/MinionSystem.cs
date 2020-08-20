@@ -32,6 +32,8 @@ public class MinionSystem {
       } else if (team.Stanchion != null) {
         minion.CurrentBehavior = Minion.Behavior.Traveling;
         minion.NavMeshAgent.SetDestination(team.Stanchion.transform.position);
+      } else {
+        minion.CurrentBehavior = Minion.Behavior.Idle;
       }
     break;
 
