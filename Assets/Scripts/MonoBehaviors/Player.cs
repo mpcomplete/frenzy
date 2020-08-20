@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.AI;
 
 public enum PlayerTeam {
   One = 1,
@@ -36,7 +37,9 @@ public class Player : Unit {
 
     if (movement != Vector2.zero) {
       movement = movement.normalized * Speed * Time.deltaTime;
-      transform.position += new Vector3(movement.x, 0, movement.y);
+      Vector3 newPos = transform.position + new Vector3(movement.x, 0, movement.y);
+      if (NavMesh.SamplePosition(newPos, out NavMeshHit hit, .3f, NavMesh.AllAreas))
+        transform.position = hit.position;
     }
   }
 }
