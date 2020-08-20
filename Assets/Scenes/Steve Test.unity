@@ -877,8 +877,6 @@ MonoBehaviour:
     Stanchion: {fileID: 1160703855}
     Player: {fileID: 540706742}
     Base: {fileID: 7693705677860801439}
-  BaseSystem:
-    MinionPrefab: {fileID: 1331745555277230741, guid: 9996d0b4225daa8499037e4773ba7454, type: 3}
 --- !u!4 &763632295
 Transform:
   m_ObjectHideFlags: 0
