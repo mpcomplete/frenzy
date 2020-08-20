@@ -14,8 +14,6 @@ public class Player : Unit {
 
   private void Start() {
     controller = GetComponent<CharacterController>();
-    controller.detectCollisions = false;
-    controller.enableOverlapRecovery = false;
   }
 
   // Update is called once per frame
