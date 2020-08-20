@@ -13,6 +13,8 @@ public class Player : Unit {
 
   private void Start() {
     controller = GetComponent<CharacterController>();
+    controller.detectCollisions = false;
+    controller.enableOverlapRecovery = false;
   }
 
   // Update is called once per frame
@@ -34,8 +36,7 @@ public class Player : Unit {
 
     if (movement != Vector2.zero) {
       movement = movement.normalized * Speed * Time.deltaTime;
-      controller.Move(new Vector3(movement.x, 0, movement.y));
+      transform.position += new Vector3(movement.x, 0, movement.y);
     }
   }
-
 }
