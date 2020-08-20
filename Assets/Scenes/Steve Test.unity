@@ -122,14 +122,14 @@ NavMeshSettings:
     preserveTilesOutsideBounds: 0
     debug:
       m_Flags: 0
-  m_NavMeshData: {fileID: 23800000, guid: 207839d109616b84aa2952ec5a6f6a12, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: c76b73d150613c7429a8ff1345d343e0, type: 2}
 --- !u!43 &20420605
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-4154
+  m_Name: pb_Mesh-74100
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1076,7 +1076,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-4152
+  m_Name: pb_Mesh-74098
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1240,7 +1240,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-117728
+  m_Name: pb_Mesh-5490
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1587,7 +1587,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-4228
+  m_Name: pb_Mesh-74078
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1751,7 +1751,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-4244
+  m_Name: pb_Mesh-74106
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -2048,10 +2048,6 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: fa5b9a89f610052418de4083b28e5d2b, type: 2}
-    - target: {fileID: 5764899126853442050, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
-      propertyPath: m_Name
-      value: Team 2 Base
-      objectReference: {fileID: 0}
     - target: {fileID: 6348329045691905468, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
       propertyPath: m_Mesh
       value: 
