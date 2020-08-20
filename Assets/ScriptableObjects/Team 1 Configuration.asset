@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f86d995c635133c4790aa53ff970c888, type: 3}
+  m_Name: Team 1 Configuration
+  m_EditorClassIdentifier: 
+  MinionPrefab: {fileID: 5574007874134090087, guid: b4e977de04a7d5f49ac95c4c5cefc92f, type: 3}
+  Material: {fileID: 2100000, guid: 41737d599e974864394cb50ed1a87190, type: 2}
+  MinionLayerMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  PlayerLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
+  AttackableMinionLayerMask:
+    serializedVersion: 2
+    m_Bits: 2048
+  AttackablePlayerLayerMask:
+    serializedVersion: 2
+    m_Bits: 512

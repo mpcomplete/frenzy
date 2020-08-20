@@ -12,15 +12,11 @@ public class SteveController : MonoBehaviour {
   public MinionSystem MinionSystem = new MinionSystem();
   public BaseSystem BaseSystem = new BaseSystem();
 
-  void Start() {
-    Team1.Minions = FindObjectsOfType<Minion>().ToList();
-  }
-
   void Update() {
     float dt = Time.deltaTime;
 
-    MinionSystem.Execute(Team1.Stanchion, Team1.Minions, dt);
-    MinionSystem.Execute(Team2.Stanchion, Team2.Minions, dt);
+    MinionSystem.Execute(Team1, dt);
+    MinionSystem.Execute(Team2, dt);
     BaseSystem.Update(Team1, dt);
     BaseSystem.Update(Team2, dt);
   }
