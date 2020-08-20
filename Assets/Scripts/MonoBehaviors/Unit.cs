@@ -1,13 +1,22 @@
 ﻿using System.Collections;
 using UnityEngine;
 
+public enum UnitTeam {
+  One = 1,
+  Two = 2,
+}
+
 public class Unit : MonoBehaviour {
+  public UnitTeam Team = UnitTeam.One;
   public float Health = 100f;
   public float MaxHealth = 100f;
 
+  public float AttackRadius = .75f;
+  public float AttackDamage = 5f;
+
+  // Animation
   public float AttackPre = .3f;
   public float AttackPost = .2f;
-  public float AttackRadius = .5f;
 
   public bool Alive { get => Health > 0f; }
 
@@ -28,16 +37,14 @@ public class Unit : MonoBehaviour {
       yield return null;
     }
 
-    int numResults = Physics.OverlapSphereNonAlloc(transform.localPosition, 1f, hitResults);
+    // Deal damage.
+    int numResults = Physics.OverlapSphereNonAlloc(transform.localPosition, AttackRadius, hitResults);
     for (int i = 0; i < numResults; i++) {
       Unit unit = hitResults[i].GetComponent<Unit>();
-      if (unit != this && unit != null) {
-        unit.TakeDamage(12f);
-        Debug.Log($"Hit {unit}");
-      }
+      if (unit && unit.Team != Team)
+        unit.TakeDamage(AttackDamage);
     }
 
-    // deal damage
     for (float t = 0f; t < AttackPost; t += Time.deltaTime) {
       transform.localScale = Vector3.Lerp(targetScale, baseScale, 1 - Mathf.Pow(1 - t/AttackPost, 5f));
       yield return null;

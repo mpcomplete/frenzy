@@ -1,13 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 
-public enum PlayerTeam {
-  One = 1,
-  Two = 2,
-}
-
 public class Player : Unit {
-  public PlayerTeam Team = PlayerTeam.One;
   public float Speed = 1f;
 
   CharacterController controller;
@@ -18,8 +12,11 @@ public class Player : Unit {
 
   // Update is called once per frame
   void Update() {
+    if (!Alive)
+      return;
+
     Vector2 movement = Vector2.zero;
-    if (Team == PlayerTeam.One) {
+    if (Team == UnitTeam.One) {
       if (Input.GetKey(KeyCode.W)) movement += Vector2.up;
       if (Input.GetKey(KeyCode.A)) movement += Vector2.left;
       if (Input.GetKey(KeyCode.S)) movement += Vector2.down;
@@ -39,5 +36,10 @@ public class Player : Unit {
       if (NavMesh.SamplePosition(newPos, out NavMeshHit hit, .3f, NavMesh.AllAreas))
         transform.position = hit.position;
     }
+  }
+
+  void OnGUI() {
+    Vector3 pos = Camera.main.WorldToScreenPoint(this.transform.position);
+    GUI.Label(new Rect(pos.x - 10, Camera.main.pixelHeight - pos.y - 24, 100, 24), $"{Health}");
   }
 }

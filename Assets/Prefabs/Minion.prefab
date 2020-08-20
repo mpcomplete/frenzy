@@ -106,6 +106,7 @@ GameObject:
   - component: {fileID: 1331745555277230740}
   - component: {fileID: 1331745555277230741}
   - component: {fileID: 1331745555277230742}
+  - component: {fileID: 944976891739085835}
   m_Layer: 0
   m_Name: Minion
   m_TagString: Untagged
@@ -140,8 +141,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8420da788c1203c459bbdbe02b46f9a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Team: 1
+  Health: 100
+  MaxHealth: 100
+  AttackRadius: 0.75
+  AttackDamage: 5
+  AttackPre: 0.3
+  AttackPost: 0.2
   CurrentBehavior: 0
   NavMeshAgent: {fileID: 1331745555277230742}
+  FightRadius: 3
 --- !u!195 &1331745555277230742
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -164,3 +173,16 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!135 &944976891739085835
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1331745555277230747}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
