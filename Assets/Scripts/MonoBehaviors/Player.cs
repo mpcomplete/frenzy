@@ -16,7 +16,7 @@ public class Player : Unit {
       return;
 
     Vector2 movement = Vector2.zero;
-    if (Team == UnitTeam.One) {
+    if (Team.TeamConfiguration.ControlScheme == 1) { // FIXME: custom control schemes
       if (Input.GetKey(KeyCode.W)) movement += Vector2.up;
       if (Input.GetKey(KeyCode.A)) movement += Vector2.left;
       if (Input.GetKey(KeyCode.S)) movement += Vector2.down;

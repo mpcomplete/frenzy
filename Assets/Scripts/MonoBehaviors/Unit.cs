@@ -1,13 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-public enum UnitTeam {
-  One = 1,
-  Two = 2,
-}
-
 public class Unit : MonoBehaviour {
-  public UnitTeam Team = UnitTeam.One;
   public float Health = 100f;
   public float MaxHealth = 100f;
 
@@ -18,9 +12,12 @@ public class Unit : MonoBehaviour {
   public float AttackPre = .3f;
   public float AttackPost = .2f;
 
-  public bool Alive { get => Health > 0f; }
+  [HideInInspector]
+  public Team Team = null;
 
   public ParticleSystem BloodParticles;
+
+  public bool Alive { get => Health > 0f; }
 
   bool isAttacking = false;
   public void Attack() {
@@ -40,7 +37,7 @@ public class Unit : MonoBehaviour {
     }
 
     // Deal damage.
-    int numResults = Physics.OverlapSphereNonAlloc(transform.localPosition, AttackRadius, hitResults);
+    int numResults = Physics.OverlapSphereNonAlloc(transform.localPosition, AttackRadius, hitResults, Team.TeamConfiguration.AttackablePlayerLayerMask | Team.TeamConfiguration.AttackableMinionLayerMask);
     for (int i = 0; i < numResults; i++) {
       Unit unit = hitResults[i].GetComponent<Unit>();
       if (unit && unit.Team != Team)

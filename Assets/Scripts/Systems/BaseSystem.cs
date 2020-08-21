@@ -8,13 +8,10 @@ public class BaseSystem {
     team.Base.TimeRemainingTillNextSpawn -= dt;
 
     if (team.Base.TimeRemainingTillNextSpawn <= 0) {
-      Vector3 position = team.Base.SpawnLocation.position;
-      Quaternion rotation = team.Base.SpawnLocation.rotation;
-      Minion minion = Minion.Instantiate(team.TeamConfiguration.MinionPrefab, position, rotation);
-      minion.Team = team.TeamConfiguration.Team;
-      minion.SteveTeam = team;
+      Minion minion = Minion.Instantiate(team.TeamConfiguration.MinionPrefab, team.Base.SpawnLocation.position, team.Base.SpawnLocation.rotation);
+      minion.Team = team;
 
-      minion.NavMeshAgent.Warp(team.Base.SpawnLocation.position);
+      //minion.NavMeshAgent.Warp(team.Base.SpawnLocation.position);
       team.Minions.Add(minion);
       team.Base.TimeRemainingTillNextSpawn = team.Base.SpawnCooldown;
     }

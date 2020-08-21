@@ -24,7 +24,7 @@ public class MinionSystem {
     switch (minion.CurrentBehavior) {
     case Minion.Behavior.Idle:
     case Minion.Behavior.Traveling:
-      Unit target = SearchForTarget(team.TeamConfiguration.AttackablePlayerLayerMask, minion);
+      Unit target = SearchForTarget(team.TeamConfiguration.AttackablePlayerLayerMask|team.TeamConfiguration.AttackableMinionLayerMask, minion);
 
       if (target) {
         minion.Target = target;
@@ -38,12 +38,13 @@ public class MinionSystem {
     break;
 
     case Minion.Behavior.Fighting:
-      if (minion.Target) {
+      if (minion.Target && minion.Target.Alive) {
         minion.NavMeshAgent.SetDestination(minion.Target.transform.position);
         if (Vector3.Distance(minion.Target.transform.position, minion.transform.position) < minion.AttackRadius) {
           minion.Attack();
         }
       } else {
+        minion.Target = null;
         minion.CurrentBehavior = Minion.Behavior.Idle;
       }
     break;

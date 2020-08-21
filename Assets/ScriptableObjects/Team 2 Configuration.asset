@@ -26,4 +26,4 @@ MonoBehaviour:
   AttackablePlayerLayerMask:
     serializedVersion: 2
     m_Bits: 256
-  Team: 2
+  ControlScheme: 2

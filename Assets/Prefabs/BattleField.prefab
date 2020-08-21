@@ -355,7 +355,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8363816239726119634, guid: 27819a7d35a2ed847a63cb7fb95199fc, type: 3}
       propertyPath: SpawnCooldown
-      value: 0.1
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8428605825162772016, guid: 27819a7d35a2ed847a63cb7fb95199fc, type: 3}
       propertyPath: m_StaticEditorFlags
