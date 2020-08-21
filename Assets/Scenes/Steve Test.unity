@@ -377,14 +377,14 @@ MonoBehaviour:
     KeyMap: {fileID: 11400000, guid: 260eaa2254be1f54697a6c2641db29fd, type: 2}
     TeamConfiguration: {fileID: 11400000, guid: 4ae1c0b3183977f4193fe15b192eb1b0, type: 2}
     Minions: []
-    Stanchion: {fileID: 7693705677860801438}
+    Stanchion: {fileID: 0}
     Player: {fileID: 1834575291}
     Base: {fileID: 7693705677860801440}
   Team2:
     KeyMap: {fileID: 11400000, guid: 731b2ea2e8d6e17448b00fb7eddea691, type: 2}
     TeamConfiguration: {fileID: 11400000, guid: b96616921d95f414fa61fc17cc53f943, type: 2}
     Minions: []
-    Stanchion: {fileID: 1160703855}
+    Stanchion: {fileID: 0}
     Player: {fileID: 540706742}
     Base: {fileID: 7693705677860801439}
 --- !u!4 &763632295
@@ -401,17 +401,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1160703855 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7548533536818721175, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
-  m_PrefabInstance: {fileID: 7693705677860801437}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98d42a8837319334ba7053997a3468d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!43 &1189157989
 Mesh:
   m_ObjectHideFlags: 0
@@ -1340,17 +1329,6 @@ PrefabInstance:
       objectReference: {fileID: 1189157989}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
---- !u!114 &7693705677860801438 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7167206430186281412, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
-  m_PrefabInstance: {fileID: 7693705677860801437}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98d42a8837319334ba7053997a3468d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &7693705677860801439 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2222445065800477260, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
