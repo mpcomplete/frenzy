@@ -76,7 +76,7 @@ public class InputSystem {
     Cooldown.Tick(ref player.Ability3Cooldown, dt);
     Cooldown.Tick(ref player.Ability4Cooldown, dt);
 
-    if (player.AbilityRoutine == null) {
+    if (player.AbilityRoutine == null && player.StatusEffects.StunTimeRemaining <= 0f) {
       if (Input.GetKeyDown(team.KeyMap.Ability1)) {
         if (player.Ability1Cooldown.TimeRemaining <= 0) {
           player.AbilityRoutine = player.StartCoroutine(Stun(team));
