@@ -60,6 +60,7 @@ MonoBehaviour:
     Stanchion: {fileID: 0}
     Player: {fileID: 0}
     Base: {fileID: 0}
+  UI: {fileID: 0}
   InputSystem:
     AbilityConfig: {fileID: 0}
     StunSound: {fileID: 6909462471388507216}
@@ -69,6 +70,10 @@ MonoBehaviour:
     MAX_MINIONS_PER_TEAM: 200
     MeleeMinionPrefab: {fileID: 1331745555277230741, guid: 9996d0b4225daa8499037e4773ba7454, type: 3}
     RangedMinionPrefab: {fileID: 1331745555277230741, guid: 2c4c5cdecac5e21478d29550ab7f46b7, type: 3}
+  UISystem:
+    meterLerpEpsilon: 0.000001
+    emptyColor: {r: 0, g: 0, b: 0, a: 1}
+    fullColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &4022145835820118541
 GameObject:
   m_ObjectHideFlags: 0
