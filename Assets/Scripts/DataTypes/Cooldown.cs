@@ -4,11 +4,12 @@
 public struct Cooldown {
   public float Duration;
   public float TimeRemaining;
-  public static void Tick(ref Cooldown cd, float dt) {
-    cd.TimeRemaining = Mathf.Max(0, cd.TimeRemaining - dt);
+
+  public void Tick(float dt) {
+    TimeRemaining = Mathf.Max(0, TimeRemaining - dt);
   }
 
-  public static void Begin(ref Cooldown cd) {
-    cd.TimeRemaining = cd.Duration;
+  public void Begin() {
+    TimeRemaining = Duration;
   }
 }

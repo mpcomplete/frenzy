@@ -15,7 +15,7 @@ public class InputSystem {
     Player player = team.Player;
     LayerMask layerMask = team.TeamConfiguration.AttackableMinionLayerMask | team.TeamConfiguration.AttackablePlayerLayerMask;
 
-    Cooldown.Begin(ref player.Ability1Cooldown);
+    player.Ability1Cooldown.Begin();
     yield return new WaitForSeconds(AbilityConfig.StunUpswingDuration);
     StunSound.Play();
     int count = Physics.OverlapSphereNonAlloc(player.transform.position, AbilityConfig.StunRadius, Colliders, layerMask);
@@ -30,7 +30,7 @@ public class InputSystem {
 
   IEnumerator Fire(Player player) {
     Debug.Log("Fire Start");
-    Cooldown.Begin(ref player.Ability2Cooldown);
+    player.Ability2Cooldown.Begin();
     yield return null;
     player.AbilityRoutine = null;
     Debug.Log("Fire End");
@@ -49,14 +49,14 @@ public class InputSystem {
       TryMove(Vector3.Lerp(startPosition, endPosition, i), player.transform);
     }
 
-    Cooldown.Begin(ref player.Ability3Cooldown);
+    player.Ability3Cooldown.Begin();
     yield return EveryFrameForNSeconds(AbilityConfig.DashDuration, Move);
     player.AbilityRoutine = null;
   }
 
   IEnumerator Ultimate(Player player) {
     Debug.Log("Ultimate Start");
-    Cooldown.Begin(ref player.Ability4Cooldown);
+    player.Ability4Cooldown.Begin();
     yield return null;
     player.AbilityRoutine = null;
     Debug.Log("Ultimate End");
@@ -74,10 +74,10 @@ public class InputSystem {
     if (!player.Alive)
       return;
 
-    Cooldown.Tick(ref player.Ability1Cooldown, dt);
-    Cooldown.Tick(ref player.Ability2Cooldown, dt);
-    Cooldown.Tick(ref player.Ability3Cooldown, dt);
-    Cooldown.Tick(ref player.Ability4Cooldown, dt);
+    player.Ability1Cooldown.Tick(dt);
+    player.Ability2Cooldown.Tick(dt);
+    player.Ability3Cooldown.Tick(dt);
+    player.Ability4Cooldown.Tick(dt);
 
     if (player.AbilityRoutine == null && player.StatusEffects.StunTimeRemaining <= 0f) {
       if (Input.GetKeyDown(team.KeyMap.Ability1)) {
