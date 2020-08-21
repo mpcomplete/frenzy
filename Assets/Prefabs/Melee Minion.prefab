@@ -4852,7 +4852,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1331745554598739360}
-  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &1331745554598739363
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -4920,7 +4920,7 @@ GameObject:
   - component: {fileID: 1331745555277230742}
   - component: {fileID: 944976891739085835}
   m_Layer: 0
-  m_Name: Minion
+  m_Name: Melee Minion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4956,10 +4956,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Health: 100
   MaxHealth: 100
-  AttackRadius: 0.75
-  AttackDamage: 1
-  AttackPre: 0.3
-  AttackPost: 0.2
+  Weapon: {fileID: 11400000, guid: 62ef836123387ec44af2583055ca7840, type: 2}
+  Target: {fileID: 0}
+  BloodParticles: {fileID: 1207602604}
   Team:
     KeyMap: {fileID: 0}
     TeamConfiguration: {fileID: 0}
@@ -4967,10 +4966,8 @@ MonoBehaviour:
     Stanchion: {fileID: 0}
     Player: {fileID: 0}
     Base: {fileID: 0}
-  BloodParticles: {fileID: 1207602604}
   CurrentBehavior: 0
   NavMeshAgent: {fileID: 1331745555277230742}
-  Target: {fileID: 0}
   FightRadius: 3
 --- !u!195 &1331745555277230742
 NavMeshAgent:

@@ -1,12 +1,18 @@
-﻿[System.Serializable]
+﻿using UnityEngine;
+
+[System.Serializable]
 public class BaseSystem {
+  public Minion MeleeMinionPrefab = null;
+  public Minion RangedMinionPrefab = null;
+
   public void Update(Team team, float dt) {
     // TODO: This is a BAD spawning algorithm that will miss spawns at low
     // spawncooldowns... fix later?
     team.Base.TimeRemainingTillNextSpawn -= dt;
 
     if (team.Base.TimeRemainingTillNextSpawn <= 0) {
-      Minion minion = Minion.Instantiate(team.TeamConfiguration.MinionPrefab, team.Base.SpawnLocation.position, team.Base.SpawnLocation.rotation);
+      Minion prefab = Random.value < .7f ? MeleeMinionPrefab : RangedMinionPrefab;
+      Minion minion = Minion.Instantiate(prefab, team.Base.SpawnLocation.position, team.Base.SpawnLocation.rotation);
       minion.AssignTeam(team);
 
       team.Minions.Add(minion);
