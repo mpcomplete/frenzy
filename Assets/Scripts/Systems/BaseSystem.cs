@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-
-[System.Serializable]
-public class BaseSystem {
+﻿public class BaseSystem {
   public void Update(Team team, float dt) {
     // TODO: This is a BAD spawning algorithm that will miss spawns at low
     // spawncooldowns... fix later?
