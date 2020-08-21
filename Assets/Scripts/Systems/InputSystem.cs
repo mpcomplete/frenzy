@@ -40,6 +40,9 @@ public class InputSystem {
     Vector3 startPosition = player.transform.position;
     Vector3 endPosition = player.transform.forward * AbilityConfig.DashDistance + startPosition;
 
+    // Necessary to ensure a path is calculated assuming you're "on the ground"
+    startPosition.y = 0;
+    endPosition.y = 0;
     DashSound.Play();
     void Move(float t, float duration) {
       float i = AbilityConfig.DashCurve.Evaluate(t / duration);
@@ -60,7 +63,7 @@ public class InputSystem {
   }
 
   void TryMove(Vector3 targetPosition, Transform t) {
-    if (NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, .3f, NavMesh.AllAreas)) {
+    if (NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, AbilityConfig.MaxNavmeshSearchHeight, NavMesh.AllAreas)) {
       t.position = hit.position;
     }
   }
