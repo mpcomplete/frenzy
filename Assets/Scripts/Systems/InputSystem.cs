@@ -6,6 +6,10 @@ public class InputSystem {
     if (!team.Player.Alive)
       return;
 
+    if (Input.GetKeyDown(team.KeyMap.ToggleStanchion)) {
+      team.Stanchion.transform.position = team.Player.transform.position;
+    }
+
     Vector2 movement = Vector2.zero;
 
     if (Input.GetKey(team.KeyMap.MoveUp))     movement += Vector2.up;

@@ -4961,13 +4961,14 @@ MonoBehaviour:
   AttackPre: 0.3
   AttackPost: 0.2
   Team:
+    KeyMap: {fileID: 0}
     TeamConfiguration: {fileID: 0}
     Minions: []
     Stanchion: {fileID: 0}
     Player: {fileID: 0}
     Base: {fileID: 0}
   BloodParticles: {fileID: 299637904}
-  Speed: 5
+  Speed: 12
   controller: {fileID: 1520350622606644380}
 --- !u!143 &1520350622606644380
 CharacterController:
