@@ -17,7 +17,6 @@ public class WeaponEffectLaser : WeaponEffect {
     lineRenderer.gameObject.SetActive(true);
   }
 
-
   protected override void DoStop() {
     lineRenderer.gameObject.SetActive(false);
   }
