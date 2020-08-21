@@ -7,6 +7,7 @@ public class Unit : MonoBehaviour {
   public float MaxHealth = 100f;
 
   public StatusEffects StatusEffects;
+  public WeaponEffect WeaponEffect;
   public WeaponInfo Weapon;
   public Unit Target;
 
@@ -31,25 +32,31 @@ public class Unit : MonoBehaviour {
       StartCoroutine(AttackAnimation());
   }
 
+  // TODO: Surely there's a better way to do this. AnimationCurve with a callback for a given key?
   IEnumerator AttackAnimation() {
     Vector3 baseScale = transform.localScale;
     Vector3 targetScale = new Vector3(1.25f, .75f, 1.25f);
 
+    // Wind up.
     isAttacking = true;
     for (float t = 0f; t < Weapon.AnimationPre; t += Time.deltaTime) {
       transform.localScale = Vector3.Lerp(baseScale, targetScale, 1 - Mathf.Pow(1 - t/Weapon.AnimationPre, 5f));
       yield return null;
     }
 
+    if (WeaponEffect) WeaponEffect.Play(Target);
+
     // Deal damage.
     foreach (var target in FindTargets()) {
       target.TakeDamage(Weapon.Damage);
     }
 
+    // Wind down.
     for (float t = 0f; t < Weapon.AnimationPost; t += Time.deltaTime) {
       transform.localScale = Vector3.Lerp(targetScale, baseScale, 1 - Mathf.Pow(1 - t/Weapon.AnimationPost, 5f));
       yield return null;
     }
+    if (WeaponEffect) WeaponEffect.Stop();
 
     isAttacking = false;
     transform.localScale = baseScale;

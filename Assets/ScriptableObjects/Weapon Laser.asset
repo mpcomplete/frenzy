@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Targeted: 0
   Range: 7
-  Damage: 0.05
+  Damage: 0.1
   AnimationPre: 0
   AnimationPost: 0.1
