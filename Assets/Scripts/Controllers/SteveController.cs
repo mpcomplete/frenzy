@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using UnityEngine;
 
 public class SteveController : MonoBehaviour {
@@ -18,6 +19,7 @@ public class SteveController : MonoBehaviour {
     // Make Steve the happiest.
     Team1.Player.AssignTeam(Team1);
     Team2.Player.AssignTeam(Team2);
+    AudioListener.volume = .2f;
   }
 
   void Update() {
@@ -44,5 +46,9 @@ public class SteveController : MonoBehaviour {
     if (Team1.Player && Team2.Player) {
       UISystem.Update(UI, Team1.Player, Team2.Player, dt);
     }
+  }
+
+  void OnMinionKilled(Minion minion) {
+
   }
 }
