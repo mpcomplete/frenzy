@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using static CoroutineHelpers;
 
 [System.Serializable]
 public class InputSystem {
@@ -23,20 +24,16 @@ public class InputSystem {
   }
 
   IEnumerator Dash(Player player) {
-    float duration = AbilityConfig.DashDuration;
-    float dashTimer = AbilityConfig.DashDuration;
     Vector3 startPosition = player.transform.position;
     Vector3 endPosition = player.transform.forward * AbilityConfig.DashDistance + startPosition;
 
-    Debug.Log("Dash Start");
-    Cooldown.Begin(ref player.Ability3Cooldown);
-    while (dashTimer > 0) {
-      yield return null;
-      dashTimer = Mathf.Max(0, dashTimer - Time.deltaTime);
-      float i = AbilityConfig.DashCurve.Evaluate((duration - dashTimer) / duration);
+    void Move(float t, float duration) {
+      float i = AbilityConfig.DashCurve.Evaluate(t / duration);
       TryMove(Vector3.Lerp(startPosition, endPosition, i), player.transform);
     }
-    Debug.Log("Dash End");
+
+    Cooldown.Begin(ref player.Ability3Cooldown);
+    yield return EveryFrameForNSeconds(AbilityConfig.DashDuration, Move);
     player.AbilityRoutine = null;
   }
 
@@ -65,10 +62,6 @@ public class InputSystem {
     Cooldown.Tick(ref player.Ability3Cooldown, dt);
     Cooldown.Tick(ref player.Ability4Cooldown, dt);
 
-    if (Input.GetKeyDown(team.KeyMap.ToggleStanchion)) {
-      team.Stanchion.transform.position = player.transform.position;
-    }
-
     if (player.AbilityRoutine == null) {
       if (Input.GetKeyDown(team.KeyMap.Ability1)) {
         if (player.Ability1Cooldown.TimeRemaining <= 0) {
@@ -93,23 +86,25 @@ public class InputSystem {
           player.AbilityRoutine = player.StartCoroutine(Ultimate(player));
         } else {
           Debug.Log($"Still {player.Ability4Cooldown.TimeRemaining} seconds remaining");
-        }
+        } 
+      } else if (Input.GetKeyDown(team.KeyMap.ToggleStanchion)) {
+        team.Stanchion.transform.position = player.transform.position;
       }
+    }
 
-      Vector2 axes = Vector2.zero;
+    Vector2 axes = Vector2.zero;
 
-      if (Input.GetKey(team.KeyMap.MoveUp))     axes += Vector2.up;
-      if (Input.GetKey(team.KeyMap.MoveRight))  axes += Vector2.right;
-      if (Input.GetKey(team.KeyMap.MoveDown))   axes += Vector2.down;
-      if (Input.GetKey(team.KeyMap.MoveLeft))   axes += Vector2.left;
+    if (Input.GetKey(team.KeyMap.MoveUp))     axes += Vector2.up;
+    if (Input.GetKey(team.KeyMap.MoveRight))  axes += Vector2.right;
+    if (Input.GetKey(team.KeyMap.MoveDown))   axes += Vector2.down;
+    if (Input.GetKey(team.KeyMap.MoveLeft))   axes += Vector2.left;
 
-      if (axes != Vector2.zero) {
-        Vector3 heading = new Vector3(axes.x, 0, axes.y).normalized;
-        Vector3 delta = heading * player.Speed * dt;
+    if (axes != Vector2.zero) {
+      Vector3 heading = new Vector3(axes.x, 0, axes.y).normalized;
+      Vector3 delta = heading * player.Speed * dt;
 
-        player.transform.rotation = Quaternion.LookRotation(heading, Vector3.up);
-        TryMove(player.transform.position + delta, player.transform);
-      }
+      player.transform.rotation = Quaternion.LookRotation(heading, Vector3.up);
+      TryMove(player.transform.position + delta, player.transform);
     }
   }
 }
