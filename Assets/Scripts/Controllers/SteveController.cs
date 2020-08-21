@@ -16,6 +16,7 @@ public class SteveController : MonoBehaviour {
     // Make Steve the happiest.
     Team1.Player.AssignTeam(Team1);
     Team2.Player.AssignTeam(Team2);
+    AudioListener.volume = .2f;
   }
 
   void Update() {
