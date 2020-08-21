@@ -10,4 +10,5 @@ public class Team {
   public Stanchion Stanchion;
   public Player Player;
   public Base Base;
+  public float Money;
 }

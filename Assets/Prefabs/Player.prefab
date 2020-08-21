@@ -145,8 +145,10 @@ MonoBehaviour:
   Health: 100
   MaxHealth: 100
   StatusEffects: {fileID: 2152786771441720834}
+  WeaponEffect: {fileID: 0}
   Weapon: {fileID: 11400000, guid: 8b0a106082378654d83aa7510d5e3ffa, type: 2}
   Target: {fileID: 0}
+  MoneyOnKill: 100
   Team:
     KeyMap: {fileID: 0}
     TeamConfiguration: {fileID: 0}
@@ -154,6 +156,7 @@ MonoBehaviour:
     Stanchion: {fileID: 0}
     Player: {fileID: 0}
     Base: {fileID: 0}
+    Money: 0
   Speed: 12
   Ability1Cooldown:
     Duration: 6

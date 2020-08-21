@@ -148,6 +148,7 @@ MonoBehaviour:
   WeaponEffect: {fileID: 0}
   Weapon: {fileID: 11400000, guid: 62ef836123387ec44af2583055ca7840, type: 2}
   Target: {fileID: 0}
+  MoneyOnKill: 1
   Team:
     KeyMap: {fileID: 0}
     TeamConfiguration: {fileID: 0}
@@ -155,6 +156,7 @@ MonoBehaviour:
     Stanchion: {fileID: 0}
     Player: {fileID: 0}
     Base: {fileID: 0}
+    Money: 0
   CurrentBehavior: 0
   NavMeshAgent: {fileID: 1331745555277230742}
   FightRadius: 3

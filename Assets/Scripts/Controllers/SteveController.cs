@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using UnityEngine;
 
 public class SteveController : MonoBehaviour {
@@ -37,5 +38,9 @@ public class SteveController : MonoBehaviour {
     MinionSystem.Execute(Team2, dt);
     BaseSystem.Update(Team1, dt);
     BaseSystem.Update(Team2, dt);
+  }
+
+  void OnMinionKilled(Minion minion) {
+
   }
 }

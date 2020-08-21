@@ -10,6 +10,7 @@ public class Unit : MonoBehaviour {
   public WeaponEffect WeaponEffect;
   public WeaponInfo Weapon;
   public Unit Target;
+  public float MoneyOnKill = 0f;
 
   [HideInInspector]
   public Team Team = null;
@@ -48,7 +49,7 @@ public class Unit : MonoBehaviour {
 
     // Deal damage.
     foreach (var target in FindTargets()) {
-      target.TakeDamage(Weapon.Damage);
+      target.TakeDamage(this, Weapon.Damage);
     }
 
     // Wind down.
@@ -77,11 +78,12 @@ public class Unit : MonoBehaviour {
     }
   }
 
-  void TakeDamage(float damage) {
+  void TakeDamage(Unit attacker, float damage) {
     if (!Alive)
       return;
     Health -= damage;
     if (!Alive) {
+      attacker.OnUnitKill(this);
       StartCoroutine(DeathAnimation());
     }
   }
@@ -94,5 +96,9 @@ public class Unit : MonoBehaviour {
       yield return null;
     }
     Destroy(gameObject);
+  }
+
+  void OnUnitKill(Unit victim) {
+    Team.Money += victim.MoneyOnKill;
   }
 }
