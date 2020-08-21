@@ -1,14 +1,16 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class WeaponEffectLaser : WeaponEffect {
-  LineRenderer lineRenderer;
-  void Start() {
-    lineRenderer = GetComponent<LineRenderer>();
-  }
+  [SerializeField] LineRenderer lineRenderer;
+  [SerializeField] AudioSource audioSource;
+  public float minPitch = .9f;
+  public float maxPitch = 1f;
 
   protected override void DoPlay(Unit target) {
+    if (!audioSource.isPlaying) {
+      audioSource.pitch = Random.Range(minPitch, maxPitch);
+      audioSource.Play();
+    }
     lineRenderer.positionCount = 2;
     lineRenderer.SetPosition(0, transform.position);
     lineRenderer.SetPosition(1, target.transform.position);
