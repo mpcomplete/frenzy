@@ -19,6 +19,12 @@ public class Unit : MonoBehaviour {
 
   public bool Alive { get => Health > 0f; }
 
+  public virtual void AssignTeam(Team team) {
+    this.Team = team;
+    MeshRenderer renderer = GetComponentInChildren<MeshRenderer>();
+    renderer.sharedMaterial = team.TeamConfiguration.Material;
+  }
+
   bool isAttacking = false;
   public void Attack() {
     if (!isAttacking)

@@ -12,14 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f86d995c635133c4790aa53ff970c888, type: 3}
   m_Name: Team 2 Configuration
   m_EditorClassIdentifier: 
-  MinionPrefab: {fileID: 2918492595780649143, guid: 8954be25fd1b0fb41848632bd4c0e6b1, type: 3}
+  MinionPrefab: {fileID: 1331745555277230741, guid: 9996d0b4225daa8499037e4773ba7454, type: 3}
   Material: {fileID: 2100000, guid: fa5b9a89f610052418de4083b28e5d2b, type: 2}
-  MinionLayerMask:
-    serializedVersion: 2
-    m_Bits: 2048
-  PlayerLayerMask:
-    serializedVersion: 2
-    m_Bits: 512
+  MinionLayer: 11
+  PlayerLayer: 9
   AttackableMinionLayerMask:
     serializedVersion: 2
     m_Bits: 1024

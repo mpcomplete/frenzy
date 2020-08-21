@@ -10,6 +10,12 @@ public class SteveController : MonoBehaviour {
   public MinionSystem MinionSystem = new MinionSystem();
   public BaseSystem BaseSystem = new BaseSystem();
 
+  void Start() {
+    // Make Steve the happiest.
+    Team1.Player.AssignTeam(Team1);
+    Team2.Player.AssignTeam(Team2);
+  }
+
   void Update() {
     float dt = Time.deltaTime;
 
