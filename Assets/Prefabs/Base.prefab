@@ -144,8 +144,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f494534dad4cad84aacd46dd9a387f29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SpawnCooldown: 1
-  TimeRemainingTillNextSpawn: 1
+  SpawnCooldown: 0.1
+  TimeRemainingTillNextSpawn: 0.1
   SpawnLocation: {fileID: 5378091933484892559}
 --- !u!1 &4234652191355500706
 GameObject:

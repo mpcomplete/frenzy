@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class MinionSystem {
   public void Execute(Team team, float dt) {
@@ -24,7 +23,8 @@ public class MinionSystem {
     switch (minion.CurrentBehavior) {
     case Minion.Behavior.Idle:
     case Minion.Behavior.Traveling:
-      Unit target = SearchForTarget(team.TeamConfiguration.AttackablePlayerLayerMask|team.TeamConfiguration.AttackableMinionLayerMask, minion);
+      LayerMask layerMask = team.TeamConfiguration.AttackableMinionLayerMask | team.TeamConfiguration.AttackablePlayerLayerMask;
+      Unit target = SearchForTarget(layerMask, minion);
 
       if (target) {
         minion.Target = target;

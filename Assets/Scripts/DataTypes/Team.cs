@@ -4,6 +4,7 @@ using UnityEngine;
 
 [System.Serializable]
 public class Team {
+  public KeyMap KeyMap;
   public TeamConfiguration TeamConfiguration;
   public List<Minion> Minions;
   public Stanchion Stanchion;

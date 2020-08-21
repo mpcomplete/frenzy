@@ -374,12 +374,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Team1:
+    KeyMap: {fileID: 11400000, guid: 260eaa2254be1f54697a6c2641db29fd, type: 2}
     TeamConfiguration: {fileID: 11400000, guid: 4ae1c0b3183977f4193fe15b192eb1b0, type: 2}
     Minions: []
     Stanchion: {fileID: 7693705677860801438}
     Player: {fileID: 1834575291}
     Base: {fileID: 7693705677860801440}
   Team2:
+    KeyMap: {fileID: 11400000, guid: 731b2ea2e8d6e17448b00fb7eddea691, type: 2}
     TeamConfiguration: {fileID: 11400000, guid: b96616921d95f414fa61fc17cc53f943, type: 2}
     Minions: []
     Stanchion: {fileID: 1160703855}
@@ -927,7 +929,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-63312
+  m_Name: pb_Mesh-15860
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1091,7 +1093,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-63314
+  m_Name: pb_Mesh-15862
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
