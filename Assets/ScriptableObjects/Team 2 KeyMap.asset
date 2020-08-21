@@ -17,6 +17,7 @@ MonoBehaviour:
   MoveDown: 274
   MoveLeft: 276
   ToggleStanchion: 271
+  Attack: 256
   Ability1: 260
   Ability2: 261
   Ability3: 262

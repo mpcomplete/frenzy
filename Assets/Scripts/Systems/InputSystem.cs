@@ -105,6 +105,10 @@ public class InputSystem {
         StanchionSound.Play();
         team.Stanchion.transform.position = player.transform.position;
       } else  {
+        if (Input.GetKey(team.KeyMap.Attack)) {
+          player.Attack();
+        }
+
         Vector2 axes = Vector2.zero;
 
         if (Input.GetKey(team.KeyMap.MoveUp))     axes += Vector2.up;

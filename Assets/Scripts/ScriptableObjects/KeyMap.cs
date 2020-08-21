@@ -8,6 +8,7 @@ public class KeyMap : ScriptableObject {
   public KeyCode MoveLeft;
 
   public KeyCode ToggleStanchion;
+  public KeyCode Attack;
   public KeyCode Ability1;
   public KeyCode Ability2;
   public KeyCode Ability3;
