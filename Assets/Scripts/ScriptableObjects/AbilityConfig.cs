@@ -2,6 +2,8 @@
 
 [CreateAssetMenu]
 public class AbilityConfig : ScriptableObject {
+  public float MaxNavmeshSearchHeight = 2f;
+
   public AnimationCurve DashCurve;
   public float DashDuration;
   public float DashDistance;
