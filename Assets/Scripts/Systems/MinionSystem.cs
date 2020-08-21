@@ -40,9 +40,12 @@ public class MinionSystem {
 
     case Minion.Behavior.Fighting:
       if (minion.Target && minion.Target.Alive) {
-        minion.NavMeshAgent.SetDestination(minion.Target.transform.position);
-        if (Vector3.Distance(minion.Target.transform.position, minion.transform.position) < minion.AttackRadius) {
+        if (minion.CanAttack(minion.Target)) {
+          //minion.NavMeshAgent.isStopped = true;
+          minion.NavMeshAgent.SetDestination(minion.transform.position);
           minion.Attack();
+        } else {
+          minion.NavMeshAgent.SetDestination(minion.Target.transform.position);
         }
       } else {
         minion.Target = null;

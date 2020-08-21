@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1319531093658151114
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1319531093658151112}
+  - component: {fileID: 1319531093658151113}
+  m_Layer: 0
+  m_Name: Controller
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1319531093658151112
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1319531093658151114}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1319531093658151113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1319531093658151114}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 937231d048dced94e8932487d4ab4caf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Team1:
+    KeyMap: {fileID: 11400000, guid: 260eaa2254be1f54697a6c2641db29fd, type: 2}
+    TeamConfiguration: {fileID: 11400000, guid: 4ae1c0b3183977f4193fe15b192eb1b0, type: 2}
+    Minions: []
+    Stanchion: {fileID: 0}
+    Player: {fileID: 0}
+    Base: {fileID: 0}
+  Team2:
+    KeyMap: {fileID: 11400000, guid: 731b2ea2e8d6e17448b00fb7eddea691, type: 2}
+    TeamConfiguration: {fileID: 11400000, guid: b96616921d95f414fa61fc17cc53f943, type: 2}
+    Minions: []
+    Stanchion: {fileID: 0}
+    Player: {fileID: 0}
+    Base: {fileID: 0}
+  BaseSystem:
+    MeleeMinionPrefab: {fileID: 1331745555277230741, guid: 9996d0b4225daa8499037e4773ba7454, type: 3}
+    RangedMinionPrefab: {fileID: 1331745555277230741, guid: 2c4c5cdecac5e21478d29550ab7f46b7, type: 3}

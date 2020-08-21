@@ -6,7 +6,6 @@ public class Minion : Unit {
 
   public Behavior CurrentBehavior;
   public NavMeshAgent NavMeshAgent;
-  public Unit Target;
   public float FightRadius = 3f;
 
   public override void AssignTeam(Team team) {
