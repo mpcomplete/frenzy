@@ -57,6 +57,9 @@ MonoBehaviour:
     Stanchion: {fileID: 0}
     Player: {fileID: 0}
     Base: {fileID: 0}
+  InputSystem:
+    AbilityConfig: {fileID: 0}
   BaseSystem:
+    MAX_MINIONS_PER_TEAM: 200
     MeleeMinionPrefab: {fileID: 1331745555277230741, guid: 9996d0b4225daa8499037e4773ba7454, type: 3}
     RangedMinionPrefab: {fileID: 1331745555277230741, guid: 2c4c5cdecac5e21478d29550ab7f46b7, type: 3}

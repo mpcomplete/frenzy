@@ -75,7 +75,7 @@ public class Unit : MonoBehaviour {
     if (!Alive)
       return;
     Health -= damage;
-    BloodParticles.Play();
+    // BloodParticles.Play();
     if (!Alive) {
       StartCoroutine(DeathAnimation());
     }
