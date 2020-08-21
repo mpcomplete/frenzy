@@ -2,5 +2,5 @@
 using UnityEngine.AI;
 
 public class Stanchion : MonoBehaviour {
-  public NavMeshObstacle NavMeshObstacle;
+  public float Radius = 5f;
 }

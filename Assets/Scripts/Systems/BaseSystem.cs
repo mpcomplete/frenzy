@@ -11,7 +11,6 @@ public class BaseSystem {
       Minion minion = Minion.Instantiate(team.TeamConfiguration.MinionPrefab, team.Base.SpawnLocation.position, team.Base.SpawnLocation.rotation);
       minion.Team = team;
 
-      //minion.NavMeshAgent.Warp(team.Base.SpawnLocation.position);
       team.Minions.Add(minion);
       team.Base.TimeRemainingTillNextSpawn = team.Base.SpawnCooldown;
     }
