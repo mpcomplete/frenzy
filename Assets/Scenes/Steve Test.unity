@@ -178,10 +178,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player Team 2
       objectReference: {fileID: 0}
-    - target: {fileID: 8681892324643468484, guid: acccfb742e652e4408795aee92530a84, type: 3}
-      propertyPath: Team
-      value: 2
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: acccfb742e652e4408795aee92530a84, type: 3}
 --- !u!114 &540706742 stripped
@@ -420,7 +416,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-63286
+  m_Name: pb_Mesh-15834
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -699,7 +695,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-63320
+  m_Name: pb_Mesh-15868
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2

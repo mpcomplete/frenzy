@@ -4918,6 +4918,7 @@ GameObject:
   - component: {fileID: 591896911640618473}
   - component: {fileID: 5202349719693170399}
   - component: {fileID: 1520350622606644380}
+  - component: {fileID: 2400416126169285425}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -4953,15 +4954,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65452d845219cae48b695837c3c86f9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Team: 1
   Health: 100
   MaxHealth: 100
   AttackRadius: 0.75
   AttackDamage: 15
   AttackPre: 0.3
   AttackPost: 0.2
+  Team:
+    TeamConfiguration: {fileID: 0}
+    Minions: []
+    Stanchion: {fileID: 0}
+    Player: {fileID: 0}
+    Base: {fileID: 0}
   BloodParticles: {fileID: 299637904}
   Speed: 5
+  controller: {fileID: 1520350622606644380}
 --- !u!143 &1520350622606644380
 CharacterController:
   m_ObjectHideFlags: 0
@@ -4980,3 +4987,19 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!208 &2400416126169285425
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6508474401407567505}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 0
+  m_Extents: {x: 0.5, y: 0.5, z: 0.5}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0.5, z: 0}
+  m_TimeToStationary: 0.5

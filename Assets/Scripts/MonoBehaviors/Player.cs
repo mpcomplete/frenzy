@@ -4,13 +4,8 @@ using UnityEngine.AI;
 public class Player : Unit {
   public float Speed = 1f;
 
-  CharacterController controller;
+  [SerializeField] CharacterController controller;
 
-  private void Start() {
-    controller = GetComponent<CharacterController>();
-  }
-
-  // Update is called once per frame
   void Update() {
     if (!Alive)
       return;
