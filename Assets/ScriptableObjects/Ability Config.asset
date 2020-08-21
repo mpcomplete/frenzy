@@ -38,3 +38,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   DashDuration: 0.3
   DashDistance: 5
+  StunUpswingDuration: 0
+  StunDownswingDuration: 0.05
+  StunDuration: 2
+  StunRadius: 10

@@ -21,6 +21,9 @@ public class MinionSystem {
   }
 
   public void Update(Team team, Minion minion, float dt) {
+    bool isStunned = minion.StatusEffects.StunTimeRemaining > 0f;
+
+    minion.NavMeshAgent.isStopped = isStunned;
     switch (minion.CurrentBehavior) {
     case Minion.Behavior.Idle:
     case Minion.Behavior.Traveling:
@@ -41,9 +44,11 @@ public class MinionSystem {
     case Minion.Behavior.Fighting:
       if (minion.Target && minion.Target.Alive) {
         if (minion.CanAttack(minion.Target)) {
-          //minion.NavMeshAgent.isStopped = true;
           minion.NavMeshAgent.SetDestination(minion.transform.position);
-          minion.Attack();
+
+          if (!isStunned) {
+            minion.Attack();
+          }
         } else {
           minion.NavMeshAgent.SetDestination(minion.Target.transform.position);
         }

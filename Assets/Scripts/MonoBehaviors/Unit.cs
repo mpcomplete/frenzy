@@ -6,10 +6,9 @@ public class Unit : MonoBehaviour {
   public float Health = 100f;
   public float MaxHealth = 100f;
 
+  public StatusEffects StatusEffects;
   public WeaponInfo Weapon;
   public Unit Target;
-
-  public ParticleSystem BloodParticles;
 
   [HideInInspector]
   public Team Team = null;
@@ -75,7 +74,6 @@ public class Unit : MonoBehaviour {
     if (!Alive)
       return;
     Health -= damage;
-    // BloodParticles.Play();
     if (!Alive) {
       StartCoroutine(DeathAnimation());
     }
@@ -88,7 +86,6 @@ public class Unit : MonoBehaviour {
       transform.localScale = Vector3.Lerp(baseScale, targetScale, 1 - Mathf.Pow(1 - t, 3f));
       yield return null;
     }
-
     Destroy(gameObject);
   }
 }

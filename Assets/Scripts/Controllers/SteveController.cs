@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class SteveController : MonoBehaviour {
   public const int MAX_MINIONS = 2048;
@@ -7,6 +8,7 @@ public class SteveController : MonoBehaviour {
   public Team Team2;
 
   public InputSystem InputSystem;
+  public StatusEffectsSystem StatusEffectsSystem;
   public MinionSystem MinionSystem;
   public BaseSystem BaseSystem;
 
@@ -21,6 +23,15 @@ public class SteveController : MonoBehaviour {
 
     InputSystem.Update(Team1, dt);
     InputSystem.Update(Team2, dt);
+    StatusEffectsSystem.Execute(Team1.Minions, dt);
+    StatusEffectsSystem.Execute(Team2.Minions, dt);
+
+    if (Team1.Player)
+      StatusEffectsSystem.Update(Team1.Player, dt);
+
+    if (Team2.Player)
+      StatusEffectsSystem.Update(Team2.Player, dt);
+
     MinionSystem.Execute(Team1, dt);
     MinionSystem.Execute(Team2, dt);
     BaseSystem.Update(Team1, dt);

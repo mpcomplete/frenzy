@@ -7,7 +7,7 @@ public class Player : Unit {
   public Cooldown Ability2Cooldown;
   public Cooldown Ability3Cooldown;
   public Cooldown Ability4Cooldown;
-  public Coroutine AbilityRoutine;
+  public Coroutine AbilityRoutine = null;
 
   [SerializeField] CharacterController controller;
 
