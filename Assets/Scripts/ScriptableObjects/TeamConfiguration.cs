@@ -4,8 +4,8 @@
 public class TeamConfiguration : ScriptableObject {
   public Minion MinionPrefab;
   public Material Material;
-  public LayerMask MinionLayerMask;
-  public LayerMask PlayerLayerMask;
+  public int MinionLayer;
+  public int PlayerLayer;
   public LayerMask AttackableMinionLayerMask;
   public LayerMask AttackablePlayerLayerMask;
 }

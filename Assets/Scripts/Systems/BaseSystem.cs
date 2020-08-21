@@ -9,7 +9,7 @@ public class BaseSystem {
 
     if (team.Base.TimeRemainingTillNextSpawn <= 0) {
       Minion minion = Minion.Instantiate(team.TeamConfiguration.MinionPrefab, team.Base.SpawnLocation.position, team.Base.SpawnLocation.rotation);
-      minion.Team = team;
+      minion.AssignTeam(team);
 
       //minion.NavMeshAgent.Warp(team.Base.SpawnLocation.position);
       team.Minions.Add(minion);

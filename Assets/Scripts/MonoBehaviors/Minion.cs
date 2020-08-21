@@ -9,6 +9,11 @@ public class Minion : Unit {
   public Unit Target;
   public float FightRadius = 3f;
 
+  public override void AssignTeam(Team team) {
+    base.AssignTeam(team);
+    gameObject.layer = team.TeamConfiguration.MinionLayer;
+  }
+
   void OnDestroy() {
     Team.Minions.Remove(this);
   }

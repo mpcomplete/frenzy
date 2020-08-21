@@ -342,6 +342,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player Team 2
       objectReference: {fileID: 0}
+    - target: {fileID: 7646140678936028298, guid: acccfb742e652e4408795aee92530a84, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 8681892324643468484, guid: acccfb742e652e4408795aee92530a84, type: 3}
       propertyPath: Team
       value: 2
@@ -1335,6 +1339,14 @@ PrefabInstance:
     - target: {fileID: 7693705678622791670, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
       propertyPath: m_Name
       value: BattleField
+      objectReference: {fileID: 0}
+    - target: {fileID: 8392717271802682233, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 6.62
+      objectReference: {fileID: 0}
+    - target: {fileID: 8392717271802682233, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -5.05
       objectReference: {fileID: 0}
     - target: {fileID: 9222005538494024915, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
       propertyPath: m_Mesh

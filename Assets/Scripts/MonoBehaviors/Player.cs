@@ -6,6 +6,11 @@ public class Player : Unit {
 
   [SerializeField] CharacterController controller;
 
+  public override void AssignTeam(Team team) {
+    base.AssignTeam(team);
+    gameObject.layer = team.TeamConfiguration.PlayerLayer;
+  }
+
   void OnGUI() {
     Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
 
