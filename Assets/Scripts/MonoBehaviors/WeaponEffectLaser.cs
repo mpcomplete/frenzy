@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
 public class WeaponEffectLaser : WeaponEffect {
-  [SerializeField] LineRenderer lineRenderer;
-  [SerializeField] AudioSource audioSource;
+  [SerializeField] LineRenderer lineRenderer = null;
+  [SerializeField] AudioSource audioSource = null;
   public float minPitch = .9f;
   public float maxPitch = 1f;
 
