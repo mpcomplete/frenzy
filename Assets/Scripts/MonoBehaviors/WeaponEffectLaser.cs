@@ -6,6 +6,7 @@ public class WeaponEffectLaser : WeaponEffect {
   LineRenderer lineRenderer;
   void Start() {
     lineRenderer = GetComponent<LineRenderer>();
+    lineRenderer.gameObject.SetActive(false);
   }
 
   protected override void DoPlay(Unit target) {
@@ -14,7 +15,6 @@ public class WeaponEffectLaser : WeaponEffect {
     lineRenderer.SetPosition(1, target.transform.position);
     lineRenderer.gameObject.SetActive(true);
   }
-
 
   protected override void DoStop() {
     lineRenderer.gameObject.SetActive(false);
