@@ -551,6 +551,8 @@ MonoBehaviour:
     Stanchion: {fileID: 441923487}
     Player: {fileID: 540706742}
     Base: {fileID: 7693705677860801439}
+  InputSystem:
+    AbilityConfig: {fileID: 11400000, guid: 3fe7beb8ecb67dd4ba0e8463c5f5ad52, type: 2}
 --- !u!4 &763632295
 Transform:
   m_ObjectHideFlags: 0

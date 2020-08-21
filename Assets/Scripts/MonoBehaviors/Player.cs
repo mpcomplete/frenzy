@@ -1,8 +1,13 @@
 ﻿using UnityEngine;
-using UnityEngine.AI;
 
 public class Player : Unit {
   public float Speed = 1f;
+
+  public Cooldown Ability1Cooldown;
+  public Cooldown Ability2Cooldown;
+  public Cooldown Ability3Cooldown;
+  public Cooldown Ability4Cooldown;
+  public Coroutine AbilityRoutine;
 
   [SerializeField] CharacterController controller;
 

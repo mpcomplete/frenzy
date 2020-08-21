@@ -4969,6 +4969,18 @@ MonoBehaviour:
     Base: {fileID: 0}
   BloodParticles: {fileID: 299637904}
   Speed: 12
+  Ability1Cooldown:
+    Duration: 6
+    TimeRemaining: 0
+  Ability2Cooldown:
+    Duration: 3
+    TimeRemaining: 0
+  Ability3Cooldown:
+    Duration: 6
+    TimeRemaining: 0
+  Ability4Cooldown:
+    Duration: 30
+    TimeRemaining: 0
   controller: {fileID: 1520350622606644380}
 --- !u!143 &1520350622606644380
 CharacterController:

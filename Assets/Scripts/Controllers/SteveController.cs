@@ -6,9 +6,9 @@ public class SteveController : MonoBehaviour {
   public Team Team1;
   public Team Team2;
 
-  public InputSystem InputSystem = new InputSystem();
-  public MinionSystem MinionSystem = new MinionSystem();
-  public BaseSystem BaseSystem = new BaseSystem();
+  public InputSystem InputSystem;
+  public MinionSystem MinionSystem;
+  public BaseSystem BaseSystem;
 
   void Start() {
     // Make Steve the happiest.

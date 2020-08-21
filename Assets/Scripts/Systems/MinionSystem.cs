@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+[System.Serializable]
 public class MinionSystem {
   public void Execute(Team team, float dt) {
     for (int i = 0; i < team.Minions.Count; i++) {
