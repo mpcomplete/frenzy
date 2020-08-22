@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using static CoroutineHelpers;
@@ -91,7 +92,7 @@ public class InputSystem {
     }
   }
 
-  public void Update(Team team, Team enemyTeam, float dt) {
+  public void Update(Team team, Team enemyTeam, List<Projectile> projectiles, float dt) {
     Player player = team.Player;
 
     player.Ability1Cooldown.Tick(dt);

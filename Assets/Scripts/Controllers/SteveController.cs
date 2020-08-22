@@ -15,6 +15,8 @@ public class SteveController : MonoBehaviour {
   public BaseSystem BaseSystem;
   public UISystem UISystem;
 
+  public List<Projectile> Projectiles;
+
   void Start() {
     // Make Steve the happiest.
     Team1.Player.AssignTeam(Team1);
@@ -25,8 +27,8 @@ public class SteveController : MonoBehaviour {
   void Update() {
     float dt = Time.deltaTime;
 
-    InputSystem.Update(Team1, Team2, dt);
-    InputSystem.Update(Team2, Team1, dt);
+    InputSystem.Update(Team1, Team2, Projectiles, dt);
+    InputSystem.Update(Team2, Team1, Projectiles, dt);
     StatusEffectsSystem.Execute(Team1.Minions, dt);
     StatusEffectsSystem.Execute(Team2.Minions, dt);
 
