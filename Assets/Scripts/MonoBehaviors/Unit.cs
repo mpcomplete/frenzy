@@ -12,8 +12,7 @@ public class Unit : MonoBehaviour {
   public Unit Target;
   public float MoneyOnKill = 0f;
 
-  [HideInInspector]
-  public Team Team = null;
+  public Team Team;
 
   public bool Alive { get => Health > 0f; }
   public bool IsMobile = true;

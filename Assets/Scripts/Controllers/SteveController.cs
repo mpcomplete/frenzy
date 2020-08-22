@@ -18,10 +18,7 @@ public class SteveController : MonoBehaviour {
   public List<Projectile> Projectiles;
 
   void Start() {
-    // Make Steve the happiest.
-    Team1.Player.AssignTeam(Team1);
-    Team2.Player.AssignTeam(Team2);
-    AudioListener.volume = .2f;
+    AudioListener.volume = .02f;
   }
 
   void Update() {
@@ -48,9 +45,5 @@ public class SteveController : MonoBehaviour {
     if (Team1.Player && Team2.Player) {
       UISystem.Update(UI, Team1.Player, Team2.Player, dt);
     }
-  }
-
-  void OnMinionKilled(Minion minion) {
-
   }
 }
