@@ -14,10 +14,6 @@ public class Player : Unit {
     gameObject.layer = team.TeamConfiguration.PlayerLayer;
   }
 
-  void Start() {
-    AssignTeam(Team);
-  }
-
   void OnGUI() {
     Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
     GUI.Label(new Rect(pos.x - 10, Camera.main.pixelHeight - pos.y - 24, 100, 24), $"{Health}");

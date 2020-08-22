@@ -19,4 +19,10 @@ public class Team : MonoBehaviour {
   public List<Projectile> Projectiles;
   [HideInInspector]
   public float Money;
+
+  void Start() {
+    foreach (var skinnable in GetComponentsInChildren<TeamSkinnable>(true))
+      skinnable.AssignTeam(this);
+    Player.AssignTeam(this);
+  }
 }
