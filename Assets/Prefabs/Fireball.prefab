@@ -235,8 +235,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Acceleration: {x: 10, y: 0, z: 0}
   Velocity: {x: 30, y: 0, z: 0}
-  DeathTimer: 7
+  Damage: 1
   Radius: 0.5
+  DeathTimer: 7
+  Unit: {fileID: 0}
   TargetLayerMask:
     serializedVersion: 2
     m_Bits: 1
+  DeathSplosion: {fileID: 4211826265708947103, guid: 3519988df3cb0c24d85115c0b51090c2, type: 3}

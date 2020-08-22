@@ -13,7 +13,9 @@ public class ProjectileSystem {
       float distance = delta.magnitude;
 
       if (Physics.SphereCast(previousPosition, projectile.Radius, direction, out RaycastHit hit, distance, projectile.TargetLayerMask)) {
+        projectile.transform.position = hit.point;
         projectile.DeathTimer = 0;
+        Projectile.Instantiate(projectile.DeathSplosion, projectile.transform.position, Quaternion.identity);
         if (hit.transform.TryGetComponent(out Unit unit)) {
           unit.TakeDamage(team, projectile.Damage);
         }

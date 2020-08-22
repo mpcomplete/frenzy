@@ -8,6 +8,7 @@ public class Projectile : MonoBehaviour {
   public float DeathTimer;
   public Unit Unit;
   public LayerMask TargetLayerMask;
+  public GameObject DeathSplosion;
 
   void OnDrawGizmos() {
     Gizmos.DrawWireSphere(transform.position, Radius);
