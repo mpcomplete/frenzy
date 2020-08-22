@@ -2798,6 +2798,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1319531093658151113, guid: facc7aded7a0815409fd634a4592d9c8, type: 3}
+      propertyPath: GetDatInt.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1319531093658151113, guid: facc7aded7a0815409fd634a4592d9c8, type: 3}
       propertyPath: Team1.Stanchion
       value: 
       objectReference: {fileID: 0}
@@ -2837,6 +2841,14 @@ PrefabInstance:
       propertyPath: Team2
       value: 
       objectReference: {fileID: 895518619}
+    - target: {fileID: 1319531093658151113, guid: facc7aded7a0815409fd634a4592d9c8, type: 3}
+      propertyPath: GetDatInt.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1319531093658151113, guid: facc7aded7a0815409fd634a4592d9c8, type: 3}
+      propertyPath: GetDatInt.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 1319531093658151114, guid: facc7aded7a0815409fd634a4592d9c8, type: 3}
       propertyPath: m_Name
       value: Controller
@@ -3341,7 +3353,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-885476
+  m_Name: pb_Mesh-143068
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -4130,7 +4142,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-885502
+  m_Name: pb_Mesh-143070
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
