@@ -16,6 +16,8 @@ public class Unit : MonoBehaviour {
   public Team Team = null;
 
   public bool Alive { get => Health > 0f; }
+  public bool IsMobile = true;
+  public bool IsStunned { get => StatusEffects.StunTimeRemaining > 0; }
 
   public virtual void AssignTeam(Team team) {
     this.Team = team;

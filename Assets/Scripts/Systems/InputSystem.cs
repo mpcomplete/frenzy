@@ -54,7 +54,6 @@ public class InputSystem {
 
     player.Ability2Cooldown.Begin();
     yield return EveryFrameWhile(KeyStillDown, Aim);
-    Debug.Log("Pew");
     player.AbilityRoutine = null;
   }
 

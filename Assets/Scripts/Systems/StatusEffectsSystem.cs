@@ -11,6 +11,7 @@ public class StatusEffectsSystem {
 
   public void Update(Unit unit, float dt) {
     unit.StatusEffects.StunTimeRemaining = Mathf.Max(0, unit.StatusEffects.StunTimeRemaining - dt);
+    unit.IsMobile = unit.Alive && unit.StatusEffects.StunTimeRemaining <= 0;
 
     unit.StatusEffects.StunBox.SetActive(unit.StatusEffects.StunTimeRemaining > 0);
   }
