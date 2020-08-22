@@ -3,6 +3,9 @@
 public class Player : Unit {
   public float Speed = 1f;
 
+  public bool IsMobile = true;
+  public bool IsStunned { get => StatusEffects.StunTimeRemaining > 0; }
+
   public Cooldown Ability1Cooldown;
   public Cooldown Ability2Cooldown;
   public Cooldown Ability3Cooldown;

@@ -16,6 +16,7 @@ public class InputSystem {
     LayerMask layerMask = team.TeamConfiguration.AttackableMinionLayerMask | team.TeamConfiguration.AttackablePlayerLayerMask;
 
     player.Ability1Cooldown.Begin();
+    player.IsMobile = false;
     yield return new WaitForSeconds(AbilityConfig.StunUpswingDuration);
     StunSound.Play();
     int count = Physics.OverlapSphereNonAlloc(player.transform.position, AbilityConfig.StunRadius, Colliders, layerMask);
@@ -25,15 +26,36 @@ public class InputSystem {
         unit.StatusEffects.StunTimeRemaining = Mathf.Max(unit.StatusEffects.StunTimeRemaining, AbilityConfig.StunDuration);
       }
     }
+    player.IsMobile = true;
     player.AbilityRoutine = null;
   }
 
-  IEnumerator Fire(Player player) {
-    Debug.Log("Fire Start");
+  IEnumerator Fire(KeyCode holdKeyCode, Team team, Team enemyTeam) {
+    Player player = team.Player;
+    Player enemyPlayer = enemyTeam.Player;
+    LayerMask layerMask = team.TeamConfiguration.AttackablePlayerLayerMask;
+    Vector3 targetDirection = player.transform.forward;
+
+    bool KeyStillDown() { 
+      return Input.GetKey(holdKeyCode); 
+    }
+    void Aim(float duration) {
+      float distance = Vector3.Distance(team.Player.transform.position, enemyPlayer.transform.position);
+      bool inAutoAimRadius = distance < AbilityConfig.FireAutoAimRadius;
+
+      if (inAutoAimRadius) {
+        Debug.DrawLine(player.transform.position, enemyPlayer.transform.position, Color.red);
+        targetDirection = (enemyPlayer.transform.position - player.transform.position).normalized;
+      } else {
+        targetDirection = player.transform.forward;
+        Debug.DrawLine(player.transform.position, player.transform.forward, Color.green);
+      }
+    }
+
     player.Ability2Cooldown.Begin();
-    yield return null;
+    yield return EveryFrameWhile(KeyStillDown, Aim);
+    Debug.Log("Pew");
     player.AbilityRoutine = null;
-    Debug.Log("Fire End");
   }
 
   IEnumerator Dash(Player player) {
@@ -50,7 +72,9 @@ public class InputSystem {
     }
 
     player.Ability3Cooldown.Begin();
+    player.IsMobile = false;
     yield return EveryFrameForNSeconds(AbilityConfig.DashDuration, Move);
+    player.IsMobile = true;
     player.AbilityRoutine = null;
   }
 
@@ -68,64 +92,51 @@ public class InputSystem {
     }
   }
 
-  public void Update(Team team, float dt) {
+  public void Update(Team team, Team enemyTeam, float dt) {
     Player player = team.Player;
-
-    if (!player.Alive)
-      return;
 
     player.Ability1Cooldown.Tick(dt);
     player.Ability2Cooldown.Tick(dt);
     player.Ability3Cooldown.Tick(dt);
     player.Ability4Cooldown.Tick(dt);
 
-    if (player.AbilityRoutine == null && player.StatusEffects.StunTimeRemaining <= 0f) {
-      if (Input.GetKeyDown(team.KeyMap.Ability1)) {
-        if (player.Ability1Cooldown.TimeRemaining <= 0) {
-          player.AbilityRoutine = player.StartCoroutine(Stun(team));
-        } else {
-          Debug.Log($"Still {player.Ability1Cooldown.TimeRemaining} seconds remaining");
-        }
-      } else if (Input.GetKeyDown(team.KeyMap.Ability2)) {
-        if (player.Ability2Cooldown.TimeRemaining <= 0) {
-          player.AbilityRoutine = player.StartCoroutine(Fire(player));
-        } else {
-          Debug.Log($"Still {player.Ability2Cooldown.TimeRemaining} seconds remaining");
-        }
-      } else if (Input.GetKeyDown(team.KeyMap.Ability3)) {
-        if (player.Ability3Cooldown.TimeRemaining <= 0) {
-          player.AbilityRoutine = player.StartCoroutine(Dash(player));
-        } else {
-          Debug.Log($"Still {player.Ability3Cooldown.TimeRemaining} seconds remaining");
-        }
-      } else if (Input.GetKeyDown(team.KeyMap.Ability4)) {
-        if (player.Ability4Cooldown.TimeRemaining <= 0) {
-          player.AbilityRoutine = player.StartCoroutine(Ultimate(player));
-        } else {
-          Debug.Log($"Still {player.Ability4Cooldown.TimeRemaining} seconds remaining");
-        } 
+    if (!player.Alive)
+      return;
+    
+    if (player.IsStunned)
+      return;
+    
+    if (player.AbilityRoutine == null) {
+      if (Input.GetKeyDown(team.KeyMap.Ability1) && player.Ability1Cooldown.TimeRemaining <= 0) {
+        player.AbilityRoutine = player.StartCoroutine(Stun(team));
+      } else if (Input.GetKeyDown(team.KeyMap.Ability2) && player.Ability2Cooldown.TimeRemaining <= 0) {
+        player.AbilityRoutine = player.StartCoroutine(Fire(team.KeyMap.Ability2, team, enemyTeam));
+      } else if (Input.GetKeyDown(team.KeyMap.Ability3) && player.Ability3Cooldown.TimeRemaining <= 0) {
+        player.AbilityRoutine = player.StartCoroutine(Dash(player));
+      } else if (Input.GetKeyDown(team.KeyMap.Ability4) && player.Ability4Cooldown.TimeRemaining <= 0) {
+        player.AbilityRoutine = player.StartCoroutine(Ultimate(player));
       } else if (Input.GetKeyDown(team.KeyMap.ToggleStanchion)) {
         StanchionSound.Play();
         team.Stanchion.transform.position = player.transform.position;
-      } else  {
-        if (Input.GetKey(team.KeyMap.Attack)) {
-          player.Attack();
-        }
+      } else if (Input.GetKey(team.KeyMap.Attack)) {
+        player.Attack();
+      }
+    }
 
-        Vector2 axes = Vector2.zero;
+    if (player.IsMobile) {
+      Vector2 axes = Vector2.zero;
 
-        if (Input.GetKey(team.KeyMap.MoveUp))     axes += Vector2.up;
-        if (Input.GetKey(team.KeyMap.MoveRight))  axes += Vector2.right;
-        if (Input.GetKey(team.KeyMap.MoveDown))   axes += Vector2.down;
-        if (Input.GetKey(team.KeyMap.MoveLeft))   axes += Vector2.left;
+      if (Input.GetKey(team.KeyMap.MoveUp))     axes += Vector2.up;
+      if (Input.GetKey(team.KeyMap.MoveRight))  axes += Vector2.right;
+      if (Input.GetKey(team.KeyMap.MoveDown))   axes += Vector2.down;
+      if (Input.GetKey(team.KeyMap.MoveLeft))   axes += Vector2.left;
 
-        if (axes != Vector2.zero) {
-          Vector3 heading = new Vector3(axes.x, 0, axes.y).normalized;
-          Vector3 delta = heading * player.Speed * dt;
+      if (axes != Vector2.zero) {
+        Vector3 heading = new Vector3(axes.x, 0, axes.y).normalized;
+        Vector3 delta = heading * player.Speed * dt;
 
-          player.transform.rotation = Quaternion.LookRotation(heading, Vector3.up);
-          TryMove(player.transform.position + delta, player.transform);
-        }
+        player.transform.rotation = Quaternion.LookRotation(heading, Vector3.up);
+        TryMove(player.transform.position + delta, player.transform);
       }
     }
   }

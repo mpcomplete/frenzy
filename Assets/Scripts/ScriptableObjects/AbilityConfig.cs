@@ -12,4 +12,6 @@ public class AbilityConfig : ScriptableObject {
   public float StunDownswingDuration = .05f;
   public float StunDuration = 2f;
   public float StunRadius = 1f;
+
+  public float FireAutoAimRadius = 8f;
 }

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40ecd1549aa4b3043b40a80060d0f733, type: 3}
   m_Name: Ability Config
   m_EditorClassIdentifier: 
+  MaxNavmeshSearchHeight: 2
   DashCurve:
     serializedVersion: 2
     m_Curve:
@@ -36,9 +37,10 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  DashDuration: 0.3
+  DashDuration: 0.25
   DashDistance: 5
-  StunUpswingDuration: 0
+  StunUpswingDuration: 0.1
   StunDownswingDuration: 0.05
   StunDuration: 2
   StunRadius: 10
+  FireAutoAimRadius: 8

@@ -25,8 +25,8 @@ public class SteveController : MonoBehaviour {
   void Update() {
     float dt = Time.deltaTime;
 
-    InputSystem.Update(Team1, dt);
-    InputSystem.Update(Team2, dt);
+    InputSystem.Update(Team1, Team2, dt);
+    InputSystem.Update(Team2, Team1, dt);
     StatusEffectsSystem.Execute(Team1.Minions, dt);
     StatusEffectsSystem.Execute(Team2.Minions, dt);
 

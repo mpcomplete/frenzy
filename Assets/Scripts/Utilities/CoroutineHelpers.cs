@@ -11,4 +11,14 @@ public static class CoroutineHelpers {
       action.Invoke(timer, duration);
     }
   }
+
+  public static IEnumerator EveryFrameWhile(System.Func<bool> predicate, System.Action<float> action) {
+    float timer = 0;
+
+    while (predicate()) {
+      yield return null;
+      timer += Time.deltaTime;
+      action.Invoke(timer);
+    }
+  }
 }
