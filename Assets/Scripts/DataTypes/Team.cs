@@ -2,13 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class Team {
-  public KeyMap KeyMap;
+public class Team : MonoBehaviour {
+  // Config
   public TeamConfiguration TeamConfiguration;
-  public List<Minion> Minions;
+  public KeyMap KeyMap;
   public Stanchion Stanchion;
   public Player Player;
   public Base Base;
+  public Base SpawnerTop;
+  public Base SpawnerBot;
+
+  // State
+  [HideInInspector]
+  public List<Minion> Minions;
+  [HideInInspector]
   public float Money;
 }
