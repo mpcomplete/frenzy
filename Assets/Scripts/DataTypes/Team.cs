@@ -17,4 +17,10 @@ public class Team : MonoBehaviour {
   public List<Minion> Minions;
   [HideInInspector]
   public float Money;
+
+  void Start() {
+    foreach (var skinnable in GetComponentsInChildren<TeamSkinnable>(true))
+      skinnable.AssignTeam(this);
+    Player.AssignTeam(this);
+  }
 }
