@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 7938200795429814853}
   - component: {fileID: 337493352662835616}
   - component: {fileID: 4084624569430818397}
-  - component: {fileID: 7615996932557427564}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -82,19 +81,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &7615996932557427564
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2100893262323654464}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6508474401407567505
 GameObject:
   m_ObjectHideFlags: 0
@@ -107,6 +93,7 @@ GameObject:
   - component: {fileID: 5202349719693170399}
   - component: {fileID: 1520350622606644380}
   - component: {fileID: 2400416126169285425}
+  - component: {fileID: 3718464417247830557}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -149,14 +136,8 @@ MonoBehaviour:
   Weapon: {fileID: 11400000, guid: 8b0a106082378654d83aa7510d5e3ffa, type: 2}
   Target: {fileID: 0}
   MoneyOnKill: 100
-  Team:
-    KeyMap: {fileID: 0}
-    TeamConfiguration: {fileID: 0}
-    Minions: []
-    Stanchion: {fileID: 0}
-    Player: {fileID: 0}
-    Base: {fileID: 0}
-    Money: 0
+  Team: {fileID: 0}
+  IsMobile: 1
   Speed: 12
   Ability1Cooldown:
     Duration: 6
@@ -170,7 +151,6 @@ MonoBehaviour:
   Ability4Cooldown:
     Duration: 30
     TimeRemaining: 0
-  controller: {fileID: 1520350622606644380}
 --- !u!143 &1520350622606644380
 CharacterController:
   m_ObjectHideFlags: 0
@@ -205,6 +185,19 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 0.5, z: 0}
   m_TimeToStationary: 0.5
+--- !u!135 &3718464417247830557
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6508474401407567505}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!1001 &4664731535148808289
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -215,6 +208,10 @@ PrefabInstance:
     - target: {fileID: 731707277325257017, guid: f22499f65ddcde2409af37d905314825, type: 3}
       propertyPath: m_Name
       value: StatusEffects
+      objectReference: {fileID: 0}
+    - target: {fileID: 3084008265321320165, guid: f22499f65ddcde2409af37d905314825, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4767433965660417644, guid: f22499f65ddcde2409af37d905314825, type: 3}
       propertyPath: m_LocalPosition.y
@@ -267,6 +264,22 @@ PrefabInstance:
     - target: {fileID: 7420565499002396863, guid: f22499f65ddcde2409af37d905314825, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8499942196225945618, guid: f22499f65ddcde2409af37d905314825, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8499942196225945618, guid: f22499f65ddcde2409af37d905314825, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8499942196225945618, guid: f22499f65ddcde2409af37d905314825, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8499942196225945618, guid: f22499f65ddcde2409af37d905314825, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f22499f65ddcde2409af37d905314825, type: 3}

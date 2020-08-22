@@ -34,6 +34,16 @@ public class Unit : MonoBehaviour {
       StartCoroutine(AttackAnimation());
   }
 
+  public void TakeDamage(Team team, float damage) {
+    if (!Alive)
+      return;
+    Health -= damage;
+    if (!Alive) {
+      team.Money += MoneyOnKill;
+      StartCoroutine(DeathAnimation());
+    }
+  }
+
   // TODO: Surely there's a better way to do this. AnimationCurve with a callback for a given key?
   IEnumerator AttackAnimation() {
     Vector3 baseScale = transform.localScale;
@@ -50,7 +60,7 @@ public class Unit : MonoBehaviour {
 
     // Deal damage.
     foreach (var target in FindTargets()) {
-      target.TakeDamage(this, Weapon.Damage);
+      target.TakeDamage(Team, Weapon.Damage);
     }
 
     // Wind down.
@@ -79,16 +89,6 @@ public class Unit : MonoBehaviour {
     }
   }
 
-  void TakeDamage(Unit attacker, float damage) {
-    if (!Alive)
-      return;
-    Health -= damage;
-    if (!Alive) {
-      attacker.OnUnitKill(this);
-      StartCoroutine(DeathAnimation());
-    }
-  }
-
   IEnumerator DeathAnimation() {
     Vector3 baseScale = transform.localScale;
     Vector3 targetScale = new Vector3(.01f, 1f, .01f);
@@ -97,9 +97,5 @@ public class Unit : MonoBehaviour {
       yield return null;
     }
     Destroy(gameObject);
-  }
-
-  void OnUnitKill(Unit victim) {
-    Team.Money += victim.MoneyOnKill;
   }
 }

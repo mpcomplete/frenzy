@@ -8,8 +8,10 @@ using static CoroutineHelpers;
 public class InputSystem {
   public AbilityConfig AbilityConfig;
   public AudioSource StunSound;
+  public AudioSource FireSound;
   public AudioSource DashSound;
   public AudioSource StanchionSound;
+  public LayerMask LevelLayerMask;
 
   Collider[] Colliders = new Collider[256];
   IEnumerator Stun(Team team) {
@@ -18,7 +20,6 @@ public class InputSystem {
 
     player.Ability1Cooldown.Begin();
     player.IsMobile = false;
-    yield return new WaitForSeconds(AbilityConfig.StunUpswingDuration);
     StunSound.Play();
     int count = Physics.OverlapSphereNonAlloc(player.transform.position, AbilityConfig.StunRadius, Colliders, layerMask);
 
@@ -28,33 +29,29 @@ public class InputSystem {
       }
     }
     player.IsMobile = true;
+    yield return null;
     player.AbilityRoutine = null;
   }
 
-  IEnumerator Fire(KeyCode holdKeyCode, Team team, Team enemyTeam) {
+  IEnumerator Fire(Team team, Team enemyTeam) {
     Player player = team.Player;
-    Player enemyPlayer = enemyTeam.Player;
-    LayerMask layerMask = team.TeamConfiguration.AttackablePlayerLayerMask;
-    Vector3 targetDirection = player.transform.forward;
+    Vector3 playerStart = player.transform.position + Vector3.up;
+    Projectile fireball = Projectile.Instantiate(AbilityConfig.FireBallPrefab, playerStart, player.transform.rotation);
 
-    bool KeyStillDown() { 
-      return Input.GetKey(holdKeyCode); 
-    }
-    void Aim(float duration) {
-      float distance = Vector3.Distance(team.Player.transform.position, enemyPlayer.transform.position);
-      bool inAutoAimRadius = distance < AbilityConfig.FireAutoAimRadius;
-
-      if (inAutoAimRadius) {
-        Debug.DrawLine(player.transform.position, enemyPlayer.transform.position, Color.red);
-        targetDirection = (enemyPlayer.transform.position - player.transform.position).normalized;
-      } else {
-        targetDirection = player.transform.forward;
-        Debug.DrawLine(player.transform.position, player.transform.forward, Color.green);
-      }
+    if (enemyTeam.Player) {
+      fireball.Velocity = (enemyTeam.Player.transform.position + Vector3.up - playerStart).normalized * AbilityConfig.FireballSpeed;
+      fireball.TargetLayerMask = team.TeamConfiguration.AttackablePlayerLayerMask | LevelLayerMask;
+    } else {
+      fireball.Velocity = player.transform.forward * AbilityConfig.FireballSpeed;
+      fireball.TargetLayerMask = LevelLayerMask;
     }
 
+    fireball.Damage = AbilityConfig.FireBallDamage;
+    fireball.DeathTimer = AbilityConfig.FireBallLifespan;
+    team.Projectiles.Add(fireball);
+    FireSound.Play();
     player.Ability2Cooldown.Begin();
-    yield return EveryFrameWhile(KeyStillDown, Aim);
+    yield return null;
     player.AbilityRoutine = null;
   }
 
@@ -92,7 +89,7 @@ public class InputSystem {
     }
   }
 
-  public void Update(Team team, Team enemyTeam, List<Projectile> projectiles, float dt) {
+  public void Update(Team team, Team enemyTeam, float dt) {
     Player player = team.Player;
 
     player.Ability1Cooldown.Tick(dt);
@@ -110,7 +107,7 @@ public class InputSystem {
       if (Input.GetKeyDown(team.KeyMap.Ability1) && player.Ability1Cooldown.TimeRemaining <= 0) {
         player.AbilityRoutine = player.StartCoroutine(Stun(team));
       } else if (Input.GetKeyDown(team.KeyMap.Ability2) && player.Ability2Cooldown.TimeRemaining <= 0) {
-        player.AbilityRoutine = player.StartCoroutine(Fire(team.KeyMap.Ability2, team, enemyTeam));
+        player.AbilityRoutine = player.StartCoroutine(Fire(team, enemyTeam));
       } else if (Input.GetKeyDown(team.KeyMap.Ability3) && player.Ability3Cooldown.TimeRemaining <= 0) {
         player.AbilityRoutine = player.StartCoroutine(Dash(player));
       } else if (Input.GetKeyDown(team.KeyMap.Ability4) && player.Ability4Cooldown.TimeRemaining <= 0) {

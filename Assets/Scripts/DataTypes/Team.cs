@@ -16,5 +16,7 @@ public class Team : MonoBehaviour {
   [HideInInspector]
   public List<Minion> Minions;
   [HideInInspector]
+  public List<Projectile> Projectiles;
+  [HideInInspector]
   public float Money;
 }

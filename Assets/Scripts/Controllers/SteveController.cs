@@ -7,15 +7,15 @@ public class SteveController : MonoBehaviour {
 
   public Team Team1;
   public Team Team2;
+
   public UI UI;
 
   public InputSystem InputSystem;
   public StatusEffectsSystem StatusEffectsSystem;
   public MinionSystem MinionSystem;
   public BaseSystem BaseSystem;
+  public ProjectileSystem ProjectileSystem;
   public UISystem UISystem;
-
-  public List<Projectile> Projectiles;
 
   void Start() {
     AudioListener.volume = .02f;
@@ -24,8 +24,8 @@ public class SteveController : MonoBehaviour {
   void Update() {
     float dt = Time.deltaTime;
 
-    InputSystem.Update(Team1, Team2, Projectiles, dt);
-    InputSystem.Update(Team2, Team1, Projectiles, dt);
+    InputSystem.Update(Team1, Team2, dt);
+    InputSystem.Update(Team2, Team1, dt);
     StatusEffectsSystem.Execute(Team1.Minions, dt);
     StatusEffectsSystem.Execute(Team2.Minions, dt);
 
@@ -45,5 +45,12 @@ public class SteveController : MonoBehaviour {
     if (Team1.Player && Team2.Player) {
       UISystem.Update(UI, Team1.Player, Team2.Player, dt);
     }
+  }
+
+  void FixedUpdate() {
+    float fdt = Time.fixedDeltaTime;
+
+    ProjectileSystem.Execute(Team1, fdt);
+    ProjectileSystem.Execute(Team2, fdt);
   }
 }

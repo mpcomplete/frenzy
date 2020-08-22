@@ -39,8 +39,9 @@ MonoBehaviour:
     m_RotationOrder: 4
   DashDuration: 0.25
   DashDistance: 5
-  StunUpswingDuration: 0.1
-  StunDownswingDuration: 0.05
   StunDuration: 2
   StunRadius: 10
-  FireAutoAimRadius: 8
+  FireBallPrefab: {fileID: 2401182519243193307, guid: cb4065207e18e544dbb98a0ef9000380, type: 3}
+  FireballSpeed: 50
+  FireBallLifespan: 8
+  FireBallDamage: 20
