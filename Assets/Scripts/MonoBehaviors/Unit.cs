@@ -9,6 +9,7 @@ public class Unit : MonoBehaviour {
   public StatusEffects StatusEffects;
   public WeaponEffect WeaponEffect;
   public WeaponInfo Weapon;
+  public float Damage;
   public Unit Target;
   public float MoneyOnKill = 0f;
 
@@ -17,6 +18,13 @@ public class Unit : MonoBehaviour {
   public bool Alive { get => Health > 0f; }
   public bool IsMobile = true;
   public bool IsStunned { get => StatusEffects.StunTimeRemaining > 0; }
+
+  void Start() {
+    // TODO: lame
+    Health *= Team.MinionHealthMultiplier;
+    MaxHealth *= Team.MinionHealthMultiplier;
+    Damage = Weapon.Damage * Team.MinionDamageMultiplier;
+  }
 
   public virtual void AssignTeam(Team team) {
     this.Team = team;
@@ -60,7 +68,7 @@ public class Unit : MonoBehaviour {
 
     // Deal damage.
     foreach (var target in FindTargets()) {
-      target.TakeDamage(Team, Weapon.Damage);
+      target.TakeDamage(Team, Damage);
     }
 
     // Wind down.

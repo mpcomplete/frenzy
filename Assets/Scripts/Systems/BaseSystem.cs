@@ -15,9 +15,9 @@ public class BaseSystem {
       return;
     while (Time.time >= spawner.NextSpawnTime && team.Minions.Count < MAX_MINIONS_PER_TEAM) {
       Minion minion = Minion.Instantiate(spawner.MinionPrefab, spawner.SpawnLocation.position, spawner.SpawnLocation.rotation);
-      minion.AssignTeam(team);
       team.Minions.Add(minion);
-      spawner.NextSpawnTime += spawner.SpawnCooldown;
+      minion.AssignTeam(team);
+      spawner.NextSpawnTime += spawner.SpawnCooldown / team.MinionSpawnRateMultiplier;
     }
   }
 }
