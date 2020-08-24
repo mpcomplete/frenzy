@@ -13,11 +13,11 @@ public class BaseSystem {
   void MaybeSpawnMinions(Team team, Base spawner) {
     if (!spawner.gameObject.activeSelf)
       return;
-    while (Time.time >= spawner.NextSpawnTime && team.Minions.Count < MAX_MINIONS_PER_TEAM) {
+    if (Time.time >= spawner.NextSpawnTime && team.Minions.Count < MAX_MINIONS_PER_TEAM) {
       Minion minion = Minion.Instantiate(spawner.MinionPrefab, spawner.SpawnLocation.position, spawner.SpawnLocation.rotation);
       team.Minions.Add(minion);
       minion.AssignTeam(team);
-      spawner.NextSpawnTime += spawner.SpawnCooldown / team.MinionSpawnRateMultiplier;
+      spawner.NextSpawnTime = Time.time + spawner.SpawnCooldown / team.MinionSpawnRateMultiplier;
     }
   }
 }

@@ -42,12 +42,12 @@ public class Unit : MonoBehaviour {
       StartCoroutine(AttackAnimation());
   }
 
-  public void TakeDamage(Team team, float damage) {
+  public void TakeDamage(Team attacker, float damage) {
     if (!Alive)
       return;
     Health -= damage;
     if (!Alive) {
-      team.Money += MoneyOnKill;
+      attacker.OnKilledEnemyUnit(MoneyOnKill);
       StartCoroutine(DeathAnimation());
     }
   }

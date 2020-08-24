@@ -16,27 +16,46 @@ public class Team : MonoBehaviour {
   // State
   [HideInInspector]
   public List<Minion> Minions;
-  public List<Projectile> Projectiles;
   [HideInInspector]
+  public List<Projectile> Projectiles;
   public float Money;
-  public Dictionary<UpgradeType, int> CurrentUpgradeLevels = new Dictionary<UpgradeType, int>();
+  public Dictionary<UpgradeType, int> CurrentUpgradeLevels;
+  public float IncomeMultiplier = 1f;
   public float MinionHealthMultiplier = 1f;
   public float MinionDamageMultiplier = 1f;
   public float MinionSpawnRateMultiplier = 1f;
 
-  void Start() {
+  void Awake() {
     foreach (var skinnable in GetComponentsInChildren<TeamSkinnable>(true))
       skinnable.AssignTeam(this);
     Player.AssignTeam(this);
 
-    foreach (UpgradeType type in Enum.GetValues(typeof(UpgradeType))) {
+    CurrentUpgradeLevels = new Dictionary<UpgradeType, int>(); 
+    foreach (UpgradeType type in Enum.GetValues(typeof(UpgradeType)))
       SetUpgradeLevel(type, 0);
+  }
+
+  public float GetCostForNextUpgrade(UpgradeType type) {
+    // TODO: data driven
+    int level = CurrentUpgradeLevels[type]+1;
+    if (level >= 6) return Mathf.Infinity;
+    return level*100;
+  }
+
+  public void PurchaseNextUpgrade(UpgradeType type) {
+    float cost = GetCostForNextUpgrade(type);
+    if (Money < cost) {
+      Debug.LogError($"Attempt to purchase upgrade {type} for {cost} with only {Money}");
+      return;
     }
+    Money -= cost;
+    SetUpgradeLevel(type, CurrentUpgradeLevels[type]+1);
+    Debug.Log($"Purchased upgrade {type} for {cost}. Level is {CurrentUpgradeLevels[type]}");
   }
 
   public void SetUpgradeLevel(UpgradeType type, int level) {
     CurrentUpgradeLevels[type] = level;
-    float value = 1.25f; // constant 25% increase for now.
+    float value = level == 0 ? 1f : 1.25f; // constant 25% increase for now.
     switch (type) {
     case UpgradeType.PlayerHealth:
       Player.Health *= value;
@@ -46,6 +65,7 @@ public class Team : MonoBehaviour {
       Player.Damage *= value;
       break;
     case UpgradeType.PlayerIncomeMultiplier:
+      IncomeMultiplier *= value;
       break;
     case UpgradeType.MinionHealth: // TODO: Should we upgrade current minions?
       MinionHealthMultiplier *= value;
@@ -57,5 +77,9 @@ public class Team : MonoBehaviour {
       MinionSpawnRateMultiplier *= value;
       break;
     }
+  }
+
+  public void OnKilledEnemyUnit(float money) {
+    Money += money * IncomeMultiplier;
   }
 }
