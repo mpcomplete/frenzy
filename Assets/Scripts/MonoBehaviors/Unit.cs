@@ -48,6 +48,7 @@ public class Unit : MonoBehaviour {
     Health -= damage;
     if (!Alive) {
       attacker.OnKilledEnemyUnit(MoneyOnKill);
+      OnDie();
       StartCoroutine(DeathAnimation());
     }
   }
@@ -104,6 +105,7 @@ public class Unit : MonoBehaviour {
       transform.localScale = Vector3.Lerp(baseScale, targetScale, 1 - Mathf.Pow(1 - t, 3f));
       yield return null;
     }
-    Destroy(gameObject);
   }
+
+  protected virtual void OnDie() { }
 }

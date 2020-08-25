@@ -13,8 +13,8 @@ public class MinionSystem {
     int potentialTargetCount = Physics.OverlapSphereNonAlloc(minion.transform.position, minion.FightRadius, colliders, lm);
 
     for (int i = 0; i < potentialTargetCount; i++) {
-      if (colliders[i].TryGetComponent(out Unit targetMinion)) {
-        return targetMinion;
+      if (colliders[i].TryGetComponent(out Unit target) && target.Alive) {
+        return target;
       }
     }
     return null;

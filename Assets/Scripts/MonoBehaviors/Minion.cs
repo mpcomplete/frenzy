@@ -13,7 +13,8 @@ public class Minion : Unit {
     gameObject.layer = team.TeamConfiguration.MinionLayer;
   }
 
-  void OnDestroy() {
+  protected override void OnDie() {
     Team.Minions.Remove(this);
+    Destroy(gameObject);
   }
 }

@@ -134,6 +134,7 @@ MonoBehaviour:
   StatusEffects: {fileID: 2152786771441720834}
   WeaponEffect: {fileID: 0}
   Weapon: {fileID: 11400000, guid: 8b0a106082378654d83aa7510d5e3ffa, type: 2}
+  Damage: 0
   Target: {fileID: 0}
   MoneyOnKill: 100
   Team: {fileID: 0}
@@ -150,6 +151,9 @@ MonoBehaviour:
     TimeRemaining: 0
   Ability4Cooldown:
     Duration: 30
+    TimeRemaining: 0
+  DeathCooldown:
+    Duration: 5
     TimeRemaining: 0
 --- !u!143 &1520350622606644380
 CharacterController:
