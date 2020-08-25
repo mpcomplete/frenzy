@@ -95,10 +95,15 @@ public class InputSystem {
     player.Ability1Cooldown.Tick(dt);
     player.Ability2Cooldown.Tick(dt);
     player.Ability3Cooldown.Tick(dt);
-    player.Ability4Cooldown.Tick(dt);
 
-    if (!player.Alive)
-      return;
+    if (!player.Alive) {
+      player.DeathCooldown.Tick(dt);
+      if (player.DeathCooldown.Ready) {
+        player.Respawn();
+      } else {
+        return;
+      }
+    }
     
     if (player.IsStunned)
       return;
