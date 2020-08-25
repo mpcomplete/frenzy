@@ -12,13 +12,11 @@ public class TriggerPlate : MonoBehaviour {
 
   Player playerOnTrigger = null;
   float triggerEndTime = -1f;
-  bool oldCanPurhcase = false;
+
+  float fractionComplete => 1f - Mathf.Max(0, triggerEndTime - Time.time) / TriggerDelay;
 
   void Update() {
-    if (oldCanPurhcase != CanPurchase()) {
-      UpdateMaterial();
-      oldCanPurhcase = CanPurchase();
-    }
+    UpdateMaterial();
 
     if (playerOnTrigger && CanPurchase()) {
       if (triggerEndTime < 0) {
@@ -56,6 +54,16 @@ public class TriggerPlate : MonoBehaviour {
   }
 
   void UpdateMaterial() {
-    Renderer.sharedMaterial = CanPurchase() ? MaterialEnabled : MaterialDisabled;
+    if (CanPurchase()) {
+      Renderer.sharedMaterial = MaterialEnabled;
+      if (playerOnTrigger) {
+        Debug.Log($"Fraction: {fractionComplete}");
+        Renderer.material.SetFloat("Fraction", fractionComplete);
+      } else {
+        Renderer.material.SetFloat("Fraction", 0);
+      }
+    } else {
+      Renderer.sharedMaterial = MaterialDisabled;
+    }
   }
 }

@@ -155,9 +155,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Team: {fileID: 0}
   Renderer: {fileID: 4733598212929748883}
-  MaterialEnabled: {fileID: 2100000, guid: b2b20a39c1a36a64ba793f55380d9206, type: 2}
+  MaterialEnabled: {fileID: 2100000, guid: cea7a3e7ebec687498a584adb947a846, type: 2}
   MaterialDisabled: {fileID: 2100000, guid: 631d3f8a07273eb40981eec9754e92c8, type: 2}
-  Yup: 0
   Action:
     m_PersistentCalls:
       m_Calls: []
