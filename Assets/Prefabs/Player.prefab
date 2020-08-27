@@ -94,7 +94,6 @@ GameObject:
   - component: {fileID: 1520350622606644380}
   - component: {fileID: 2400416126169285425}
   - component: {fileID: 3718464417247830557}
-  - component: {fileID: 8222495402633941683}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -203,88 +202,6 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.5
   m_Center: {x: 0, y: 0.5, z: 0}
---- !u!114 &8222495402633941683
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6508474401407567505}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Actions: {fileID: -944628639613478452, guid: 855f2feb2c69ddd4983c0863a140d541, type: 3}
-  m_NotificationBehavior: 2
-  m_UIInputModule: {fileID: 0}
-  m_DeviceLostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_DeviceRegainedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_ControlsChangedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_ActionEvents:
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 5202349719693170399}
-        m_TargetAssemblyTypeName: Player, Assembly-CSharp
-        m_MethodName: OnButton
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-    m_ActionId: 51b2ad5e-52f0-40e0-87a8-317fe8fc27f7
-    m_ActionName: Player/Move[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d]
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 5202349719693170399}
-        m_TargetAssemblyTypeName: Player, Assembly-CSharp
-        m_MethodName: OnButton
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-    m_ActionId: 6282c6d7-5fce-4fc3-a37e-95a89e572bbe
-    m_ActionName: Player/Stanchion[/Keyboard/g]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: a8f13c48-0cfa-45e4-8d13-323bcc451385
-    m_ActionName: Player/Ability1[/Keyboard/h]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: cc8e57f3-01d4-4536-abba-180ff58ad86e
-    m_ActionName: Player/Ability2[/Keyboard/j]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 2d29597a-840f-4d36-9422-5a4a3b38e176
-    m_ActionName: Player/Ability3[/Keyboard/k]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 9310a790-9e54-4041-a60f-47a088fa28d8
-    m_ActionName: Player/Ability4[/Keyboard/l]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: a7c0c5c3-217a-45b6-af9a-88ca2d71ed4e
-    m_ActionName: Player/Attack[/Keyboard/space]
-  m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: 
-  m_DefaultActionMap: Player
-  m_SplitScreenIndex: -1
-  m_Camera: {fileID: 0}
 --- !u!1001 &4664731535148808289
 PrefabInstance:
   m_ObjectHideFlags: 0
