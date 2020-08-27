@@ -14,4 +14,10 @@ public class TriggerUnlockSpawner : MonoBehaviour {
     Spawner.gameObject.SetActive(true);
     Destroy(transform.parent.gameObject); // TODO: hacky
   }
+
+  void OnGUI() {
+    Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
+    GUI.color = Color.black;
+    GUI.Label(new Rect(pos.x - 10, Camera.main.pixelHeight - pos.y - 24, 100, 24), $"{MinionPrefab.name.Substring(0,2)}");
+  }
 }

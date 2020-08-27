@@ -87,7 +87,7 @@ Material:
     m_Colors:
     - Active_Color: {r: 6.964404, g: 6.5207615, b: 0, a: 1}
     - Desired_Normal_Vector: {r: 0, g: 1, b: 0, a: 0}
-    - Inactive_Color: {r: 1, g: 1, b: 0.0627451, a: 0}
+    - Inactive_Color: {r: 0.04705883, g: 0.7490196, b: 0.15748344, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

@@ -678,6 +678,10 @@ PrefabInstance:
       propertyPath: ControlScheme
       value: Player 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1122110121661493770, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: Money
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 1122110121661493771, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
       propertyPath: m_Name
       value: Team 1
@@ -1933,7 +1937,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-1530
+  m_Name: pb_Mesh-5190812
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -3550,7 +3554,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-1510
+  m_Name: pb_Mesh-5190792
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
