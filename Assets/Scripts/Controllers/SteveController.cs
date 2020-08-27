@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
+using UnityEngine.InputSystem.LowLevel;
+using UnityEngine.InputSystem.Users;
 
 public class SteveController : MonoBehaviour {
   public const int MAX_MINIONS = 2048;
@@ -19,6 +23,10 @@ public class SteveController : MonoBehaviour {
 
   void Start() {
     AudioListener.volume = .02f;
+
+    InputSystem.InputActions.Enable();
+    InputSystem.InitControls(Team1, Keyboard.current);
+    InputSystem.InitControls(Team2, (InputDevice)Gamepad.current ?? Keyboard.current);
   }
 
   void Update() {
@@ -49,7 +57,6 @@ public class SteveController : MonoBehaviour {
 
   void FixedUpdate() {
     float fdt = Time.fixedDeltaTime;
-
     ProjectileSystem.Execute(Team1, fdt);
     ProjectileSystem.Execute(Team2, fdt);
   }

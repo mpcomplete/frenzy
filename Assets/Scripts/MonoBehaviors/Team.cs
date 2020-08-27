@@ -1,17 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Team : MonoBehaviour {
   // Config
   public TeamConfiguration TeamConfiguration;
   //public UpgradeConfig UpgradeConfig;  // TODO: Add real data here.
-  public KeyMap KeyMap;
   public Stanchion Stanchion;
   public Player Player;
   public Base Base;
   public Base SpawnerTop;
   public Base SpawnerBot;
+
+  public struct ControlsMap {
+    public InputAction Move;
+    public InputAction PlaceStanchion;
+    public InputAction Attack;
+    public InputAction Ability1;
+    public InputAction Ability2;
+    public InputAction Ability3;
+    public InputAction Ability4;
+  }
+  public ControlsMap Controls;
+  public string ControlScheme;
 
   // State
   [HideInInspector]

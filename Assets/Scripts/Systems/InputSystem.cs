@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Users;
 using static CoroutineHelpers;
 
 [System.Serializable]
 public class InputSystem {
+  public InputActionAsset InputActions;
   public AbilityConfig AbilityConfig;
   public AudioSource StunSound;
   public AudioSource FireSound;
@@ -89,6 +92,23 @@ public class InputSystem {
     }
   }
 
+  public void InitControls(Team team, InputDevice dev) {
+    var actions = Object.Instantiate(InputActions);
+    actions.Enable();
+
+    InputUser user = InputUser.PerformPairingWithDevice(dev);
+    user.AssociateActionsWithUser(actions);
+    user.ActivateControlScheme(team.ControlScheme);
+
+    team.Controls.Move = actions.FindAction("Move");
+    team.Controls.PlaceStanchion = actions.FindAction("Stanchion");
+    team.Controls.Attack = actions.FindAction("Attack");
+    team.Controls.Ability1 = actions.FindAction("Ability1");
+    team.Controls.Ability2 = actions.FindAction("Ability2");
+    team.Controls.Ability3 = actions.FindAction("Ability3");
+    team.Controls.Ability4 = actions.FindAction("Ability4");
+  }
+
   public void Update(Team team, Team enemyTeam, float dt) {
     Player player = team.Player;
 
@@ -105,34 +125,28 @@ public class InputSystem {
       }
     }
     
-    if (player.IsStunned)
+    if (player.IsStunned || team.Controls.Move == null)
       return;
-    
+
     if (player.AbilityRoutine == null) {
-      if (Input.GetKeyDown(team.KeyMap.Ability1) && player.Ability1Cooldown.TimeRemaining <= 0) {
+      if (team.Controls.Ability1.triggered && player.Ability1Cooldown.TimeRemaining <= 0) {
         player.AbilityRoutine = player.StartCoroutine(Stun(team));
-      } else if (Input.GetKeyDown(team.KeyMap.Ability2) && player.Ability2Cooldown.TimeRemaining <= 0) {
+      } else if (team.Controls.Ability2.triggered && player.Ability2Cooldown.TimeRemaining <= 0) {
         player.AbilityRoutine = player.StartCoroutine(Fire(team, enemyTeam));
-      } else if (Input.GetKeyDown(team.KeyMap.Ability3) && player.Ability3Cooldown.TimeRemaining <= 0) {
+      } else if (team.Controls.Ability3.triggered && player.Ability3Cooldown.TimeRemaining <= 0) {
         player.AbilityRoutine = player.StartCoroutine(Dash(player));
-      } else if (Input.GetKeyDown(team.KeyMap.Ability4) && player.Ability4Cooldown.TimeRemaining <= 0) {
+      } else if (team.Controls.Ability4.triggered && player.Ability4Cooldown.TimeRemaining <= 0) {
         player.AbilityRoutine = player.StartCoroutine(Ultimate(player));
-      } else if (Input.GetKeyDown(team.KeyMap.ToggleStanchion)) {
+      } else if (team.Controls.PlaceStanchion.triggered) {
         StanchionSound.Play();
         team.Stanchion.transform.position = player.transform.position;
-      } else if (Input.GetKey(team.KeyMap.Attack)) {
+      } else if (team.Controls.Attack.triggered) {
         player.Attack();
       }
     }
 
     if (player.IsMobile) {
-      Vector2 axes = Vector2.zero;
-
-      if (Input.GetKey(team.KeyMap.MoveUp))     axes += Vector2.up;
-      if (Input.GetKey(team.KeyMap.MoveRight))  axes += Vector2.right;
-      if (Input.GetKey(team.KeyMap.MoveDown))   axes += Vector2.down;
-      if (Input.GetKey(team.KeyMap.MoveLeft))   axes += Vector2.left;
-
+      Vector2 axes = team.Controls.Move.ReadValue<Vector2>();
       if (axes != Vector2.zero) {
         Vector3 heading = new Vector3(axes.x, 0, axes.y).normalized;
         Vector3 delta = heading * player.Speed * dt;

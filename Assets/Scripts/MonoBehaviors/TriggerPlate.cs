@@ -56,12 +56,7 @@ public class TriggerPlate : MonoBehaviour {
   void UpdateMaterial() {
     if (CanPurchase()) {
       Renderer.sharedMaterial = MaterialEnabled;
-      if (playerOnTrigger) {
-        Debug.Log($"Fraction: {fractionComplete}");
-        Renderer.material.SetFloat("Fraction", fractionComplete);
-      } else {
-        Renderer.material.SetFloat("Fraction", 0);
-      }
+      Renderer.material.SetFloat("Fraction", playerOnTrigger ? fractionComplete : 0);
     } else {
       Renderer.sharedMaterial = MaterialDisabled;
     }
