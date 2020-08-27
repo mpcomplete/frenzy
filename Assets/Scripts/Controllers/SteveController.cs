@@ -60,4 +60,11 @@ public class SteveController : MonoBehaviour {
     ProjectileSystem.Execute(Team1, fdt);
     ProjectileSystem.Execute(Team2, fdt);
   }
+
+  private void OnGUI() {
+    Vector3 pos = UI.Player1HUD.transform.position;
+    GUI.Label(new Rect(pos.x, Camera.main.pixelHeight - pos.y - 20, 100, 24), $"Money: {Team1.Money}");
+    pos = UI.Player2HUD.transform.position;
+    GUI.Label(new Rect(pos.x - 60, Camera.main.pixelHeight - pos.y - 20, 100, 24), $"Money: {Team2.Money}");
+  }
 }
