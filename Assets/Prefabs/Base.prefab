@@ -148,6 +148,7 @@ MonoBehaviour:
   SpawnCooldown: 0.1
   NextSpawnTime: 0
   SpawnLocation: {fileID: 5378091933484892559}
+  MinionPrefab: {fileID: 5635783175123075597, guid: 2eb9f0f2d30c7674aa4b55e17c5d4fad, type: 3}
 --- !u!114 &3191760116360890086
 MonoBehaviour:
   m_ObjectHideFlags: 0

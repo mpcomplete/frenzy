@@ -65,15 +65,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   TeamConfiguration: {fileID: 11400000, guid: 4ae1c0b3183977f4193fe15b192eb1b0, type: 2}
-  KeyMap: {fileID: 11400000, guid: 260eaa2254be1f54697a6c2641db29fd, type: 2}
   Stanchion: {fileID: 5037778867201722891}
   Player: {fileID: 5161403023324111827}
   Base: {fileID: 8415339461718262790}
   SpawnerTop: {fileID: 5125770869972555052}
   SpawnerBot: {fileID: 2609555926350861910}
+  ControlScheme: 
   Minions: []
   Projectiles: []
   Money: 0
+  IncomeMultiplier: 1
   MinionHealthMultiplier: 1
   MinionDamageMultiplier: 1
   MinionSpawnRateMultiplier: 1
@@ -395,7 +396,7 @@ PrefabInstance:
     - target: {fileID: 8363816239726119634, guid: 27819a7d35a2ed847a63cb7fb95199fc, type: 3}
       propertyPath: MinionPrefab
       value: 
-      objectReference: {fileID: 1331745555277230741, guid: 9996d0b4225daa8499037e4773ba7454, type: 3}
+      objectReference: {fileID: 5635783175123075597, guid: 2eb9f0f2d30c7674aa4b55e17c5d4fad, type: 3}
     - target: {fileID: 8428605825162772016, guid: 27819a7d35a2ed847a63cb7fb95199fc, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 8
@@ -643,14 +644,26 @@ PrefabInstance:
       propertyPath: Spawner
       value: 
       objectReference: {fileID: 2609555926350861910}
+    - target: {fileID: 8417087431466693600, guid: b56f673bb1d038747a0d2795276d0ad9, type: 3}
+      propertyPath: MinionPrefab
+      value: 
+      objectReference: {fileID: 5635783175123075597, guid: 2eb9f0f2d30c7674aa4b55e17c5d4fad, type: 3}
     - target: {fileID: 8957502704158032888, guid: b56f673bb1d038747a0d2795276d0ad9, type: 3}
       propertyPath: Spawner
       value: 
       objectReference: {fileID: 2609555926350861910}
+    - target: {fileID: 8957502704158032888, guid: b56f673bb1d038747a0d2795276d0ad9, type: 3}
+      propertyPath: MinionPrefab
+      value: 
+      objectReference: {fileID: 5635783175123075597, guid: bf6e96200846188448c4ad2f8070aa9a, type: 3}
     - target: {fileID: 9028979890248272787, guid: b56f673bb1d038747a0d2795276d0ad9, type: 3}
       propertyPath: Spawner
       value: 
       objectReference: {fileID: 2609555926350861910}
+    - target: {fileID: 9028979890248272787, guid: b56f673bb1d038747a0d2795276d0ad9, type: 3}
+      propertyPath: MinionPrefab
+      value: 
+      objectReference: {fileID: 5635783175123075597, guid: bf6e96200846188448c4ad2f8070aa9a, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b56f673bb1d038747a0d2795276d0ad9, type: 3}
 --- !u!4 &5926869009911671607 stripped
@@ -1380,14 +1393,26 @@ PrefabInstance:
       propertyPath: Spawner
       value: 
       objectReference: {fileID: 5125770869972555052}
+    - target: {fileID: 8417087431466693600, guid: b56f673bb1d038747a0d2795276d0ad9, type: 3}
+      propertyPath: MinionPrefab
+      value: 
+      objectReference: {fileID: 5635783175123075597, guid: 2eb9f0f2d30c7674aa4b55e17c5d4fad, type: 3}
     - target: {fileID: 8957502704158032888, guid: b56f673bb1d038747a0d2795276d0ad9, type: 3}
       propertyPath: Spawner
       value: 
       objectReference: {fileID: 5125770869972555052}
+    - target: {fileID: 8957502704158032888, guid: b56f673bb1d038747a0d2795276d0ad9, type: 3}
+      propertyPath: MinionPrefab
+      value: 
+      objectReference: {fileID: 5635783175123075597, guid: bf6e96200846188448c4ad2f8070aa9a, type: 3}
     - target: {fileID: 9028979890248272787, guid: b56f673bb1d038747a0d2795276d0ad9, type: 3}
       propertyPath: Spawner
       value: 
       objectReference: {fileID: 5125770869972555052}
+    - target: {fileID: 9028979890248272787, guid: b56f673bb1d038747a0d2795276d0ad9, type: 3}
+      propertyPath: MinionPrefab
+      value: 
+      objectReference: {fileID: 5635783175123075597, guid: bf6e96200846188448c4ad2f8070aa9a, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b56f673bb1d038747a0d2795276d0ad9, type: 3}
 --- !u!4 &2150506692830538491 stripped
