@@ -1,6 +1,7 @@
 {
-    "name": "ECSFrenzy",
+    "name": "ECSFrenzy.Generated",
     "references": [
+        "GUID:5955bbed41838dd479f7c07401edb66c",
         "GUID:49f8af64274d04f318e9547deb9c498b",
         "GUID:7f7d1af65c2641843945d409d28f2e20",
         "GUID:2665a8d13d1b3f18800f46e256720795",
@@ -10,17 +11,23 @@
         "GUID:8a2eafa29b15f444eb6d74f94a930e1d",
         "GUID:d8b63aba1907145bea998dd612889d6b",
         "GUID:953adc2a6b8b4e3c8df5b728bcd546e9",
-        "GUID:f2d49d9fa7e7eb3418e39723a7d3b92f",
         "GUID:63afb046c8423dd448ae7aba042ea63d",
-        "GUID:a5baed0c9693541a5bd947d336ec7659"
+        "GUID:a5baed0c9693541a5bd947d336ec7659",
+        "Unity.Networking.Transport"
     ],
-    "includePlatforms": [],
-    "excludePlatforms": [],
+    "includePlatforms": [
+        
+    ],
+    "excludePlatforms": [
+        
+    ],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }
