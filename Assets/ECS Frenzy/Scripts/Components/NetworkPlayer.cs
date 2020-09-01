@@ -1,6 +1,9 @@
 ﻿using System;
 using Unity.Entities;
+using Unity.NetCode;
 
 [Serializable]
 [GenerateAuthoringComponent]
-public struct NetworkPlayer : IComponentData {}
+public struct NetworkPlayer : IComponentData {
+  [GhostField] public float speed;
+}

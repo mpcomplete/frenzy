@@ -145,7 +145,7 @@ MonoBehaviour:
   SupportedGhostModes: 3
   OptimizationMode: 0
   Importance: 1
-  prefabId: 
+  prefabId: d0e554df0c8893f41938f80cf008e972
   Name: Network Player
   doNotStrip: 0
 --- !u!114 &3679481439780764391
@@ -160,6 +160,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb1b70404a5b6c6429c6753c6e450051, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  speed: 1
 --- !u!114 &3679481439780764388
 MonoBehaviour:
   m_ObjectHideFlags: 0

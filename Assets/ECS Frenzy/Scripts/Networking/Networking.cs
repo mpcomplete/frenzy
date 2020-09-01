@@ -4,6 +4,7 @@ using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
 using UnityEngine;
+using Unity.Mathematics;
 
 public static class NetworkConfiguration {
   public const ushort NETWORK_PORT = 7979;
@@ -16,13 +17,18 @@ public struct JoinGameRequest : IRpcCommand {}
 public struct PlayerInput : ICommandData<PlayerInput> {
   public uint Tick => tick;
   public uint tick;
+  public int horizontal;
+  public int vertical;
 
   public void Deserialize(uint tick, ref DataStreamReader reader) {
     this.tick = tick;
+    horizontal = reader.ReadInt();
+    vertical = reader.ReadInt();
   }
 
   public void Serialize(ref DataStreamWriter writer) {
-
+    writer.WriteInt(horizontal);
+    writer.WriteInt(vertical);
   }
 
   public void Deserialize(uint tick, ref DataStreamReader reader, PlayerInput baseline, NetworkCompressionModel compressionModel) {
@@ -147,7 +153,7 @@ public class JoinGameServer : ComponentSystem {
 
 public class SendPlayerInputCommandSystem : CommandSendSystem<PlayerInput> {}
 
-public class ReceivePlayerInputCommandSystem : CommandSendSystem<PlayerInput> {}
+public class ReceivePlayerInputCommandSystem : CommandReceiveSystem<PlayerInput> {}
 
 [UpdateInGroup(typeof(ClientSimulationSystemGroup))]
 public class SamplePlayerInput : ComponentSystem {
@@ -158,12 +164,29 @@ public class SamplePlayerInput : ComponentSystem {
   protected override void OnUpdate() {
     Entity localInputEntity = GetSingleton<CommandTargetComponent>().targetEntity;
 
-    if (localInputEntity == Entity.Null)
+    if (localInputEntity == Entity.Null) {
+      var localPlayerId = GetSingleton<NetworkIdComponent>().Value;
+
+      Entities
+      //.WithAll<Player>()
+      .WithNone<PlayerInput>()
+      .ForEach((Entity ent, ref GhostOwnerComponent ghostOwner) => {
+        if (ghostOwner.NetworkId == localPlayerId) {
+          var e = GetSingletonEntity<CommandTargetComponent>();
+          var ctc = new CommandTargetComponent { targetEntity = ent };
+
+          PostUpdateCommands.AddBuffer<PlayerInput>(ent);
+          PostUpdateCommands.SetComponent(e, ctc);
+        }
+      });
       return;
-    
+    }
+
     DynamicBuffer<PlayerInput> playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
     PlayerInput input = new PlayerInput {
       tick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick,
+      horizontal = (Input.GetKey("a") ? -1 : 0) + (Input.GetKey("d") ? 1 : 0),
+      vertical = (Input.GetKey("s") ? -1 : 0) + (Input.GetKey("w") ? 1 : 0),
     };
 
     playerInputs.AddCommandData(input);
@@ -183,6 +206,16 @@ public class MovePlayer : ComponentSystem {
         return;
 
       inputBuffer.GetDataAtTick(tick, out PlayerInput input);
+
+      if (input.horizontal == 0 && input.vertical == 0)
+        return;
+
+      float3 direction = math.normalize(math.float3(input.horizontal, 0, input.vertical));
+      float3 velocity = direction * dt * player.speed;
+
+      translation.Value += velocity;
+      rotation.Value = Quaternion.LookRotation(direction, math.float3(0, 1, 0));
+
       Debug.Log($"PlayerInput predicted at tick {tick}");
     });
   }
