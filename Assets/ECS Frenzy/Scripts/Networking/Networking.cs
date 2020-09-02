@@ -109,12 +109,6 @@ public class HandleRPCClient : ComponentSystem {
   }
 
   protected override void OnUpdate() {
-    NativeArray<Entity> entities = Entities.WithAll<NetworkPlayer>().ToEntityQuery().ToEntityArray(Allocator.TempJob);
-
-    Debug.Log(entities);
-
-    entities.Dispose();
-
     Entities
     .WithNone<NetworkStreamInGame>()
     .ForEach((Entity entity, ref NetworkIdComponent id) => {
@@ -206,11 +200,6 @@ public class MovePlayer : ComponentSystem {
     var group = World.GetExistingSystem<GhostPredictionSystemGroup>();
     var tick = group.PredictingTick;
     var dt = group.Time.DeltaTime;
-
-    {
-      var m = World.GetExistingSystem<ClientSimulationSystemGroup>();
-      Debug.Log($"Player predicted at tick {tick} client={m != null}");
-    }
 
     Entities
     .ForEach((DynamicBuffer<PlayerInput> inputBuffer, ref NetworkPlayer player, ref Translation translation, ref Rotation rotation, ref PredictedGhostComponent predictedGhost) => {
