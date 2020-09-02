@@ -108,6 +108,7 @@ GameObject:
   - component: {fileID: 1331745555277230742}
   - component: {fileID: 944976891739085835}
   - component: {fileID: -7385701854441410809}
+  - component: {fileID: -6437630318006755304}
   m_Layer: 0
   m_Name: Minion
   m_TagString: Untagged
@@ -210,6 +211,18 @@ MonoBehaviour:
   prefabId: fdfdf0a0b7c09854f9be3eeccd17d404
   Name: Minion
   doNotStrip: 0
+--- !u!114 &-6437630318006755304
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1331745555277230747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 610a64451a7cd93438f4712a58f6f155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &191808279918704001
 PrefabInstance:
   m_ObjectHideFlags: 0

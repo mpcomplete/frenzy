@@ -1,5 +1,6 @@
 ﻿using System;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace ECSFrenzy {
     public Entity MinionPrefab;
   }
 
-[UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+  [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
   public class BaseSystem : ComponentSystem {
     protected override void OnUpdate() {
       Entities.ForEach((ref Base spawner) => {
