@@ -90,7 +90,7 @@ public class EstablishConnection : ComponentSystem {
       }
       #endif
       else {
-        UnityEngine.Debug.Log($"World does not contain either client or server simululation system group");
+        // UnityEngine.Debug.Log($"World does not contain either client or server simululation system group");
       }
     }
   }
