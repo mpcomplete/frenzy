@@ -206,7 +206,7 @@ public class MovePlayer : ComponentSystem {
     var group = World.GetExistingSystem<GhostPredictionSystemGroup>();
     var tick = group.PredictingTick;
     var dt = group.Time.DeltaTime;
-
+    bool printed = false;
     Entities
     .ForEach((DynamicBuffer<PlayerInput> inputBuffer, ref NetworkPlayer player, ref Translation translation, ref Rotation rotation, ref PredictedGhostComponent predictedGhost) => {
       if (!GhostPredictionSystemGroup.ShouldPredict(tick, predictedGhost))
@@ -223,7 +223,11 @@ public class MovePlayer : ComponentSystem {
       translation.Value += velocity;
       rotation.Value = Quaternion.LookRotation(direction, float3(0, 1, 0));
 
-      Debug.Log($"PlayerInput predicted at tick {tick}");
+      if (!printed) {
+        printed = true;
+        var m = World.GetExistingSystem<ClientSimulationSystemGroup>();
+        Debug.Log($"Player predicted at tick {tick} client={m != null}");
+      }
     });
   }
 }
