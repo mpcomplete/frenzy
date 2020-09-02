@@ -1,10 +1,12 @@
 ﻿using System;
+using Unity.Collections;
 using Unity.Transforms;
 using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
 using UnityEngine;
 using Unity.Mathematics;
+using static Unity.Mathematics.math;
 
 public static class NetworkConfiguration {
   public const ushort NETWORK_PORT = 7979;
@@ -96,18 +98,23 @@ public class EstablishConnection : ComponentSystem {
 
 
 [UpdateInGroup(typeof(ClientSimulationSystemGroup))]
-public class JoinGameClient : ComponentSystem {
+public class HandleRPCClient : ComponentSystem {
   EntityArchetype joinGameArchetype;
 
   protected override void OnCreate() {
     joinGameArchetype = EntityManager.CreateArchetype(new ComponentType[] { 
-      typeof(NetworkStreamInGame),
       typeof(JoinGameRequest),
       typeof(SendRpcCommandRequestComponent)
     });
   }
 
   protected override void OnUpdate() {
+    NativeArray<Entity> entities = Entities.WithAll<NetworkPlayer>().ToEntityQuery().ToEntityArray(Allocator.TempJob);
+
+    Debug.Log(entities);
+
+    entities.Dispose();
+
     Entities
     .WithNone<NetworkStreamInGame>()
     .ForEach((Entity entity, ref NetworkIdComponent id) => {
@@ -120,7 +127,7 @@ public class JoinGameClient : ComponentSystem {
 }
 
 [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-public class JoinGameServer : ComponentSystem {
+public class HandleRPCServer : ComponentSystem {
   Entity FindGhost<T>() {
     var prefab = Entity.Null; 
     var ghostCollection = GetSingleton<GhostPrefabCollectionComponent>();
@@ -144,7 +151,7 @@ public class JoinGameServer : ComponentSystem {
       UnityEngine.Debug.Log($"Server setting connection {networkId} to in game");
       PostUpdateCommands.AddBuffer<PlayerInput>(player);
       PostUpdateCommands.SetComponent(player, new GhostOwnerComponent { NetworkId = networkId });
-      PostUpdateCommands.SetComponent(reqSrc.SourceConnection, new CommandTargetComponent { targetEntity = player});
+      PostUpdateCommands.SetComponent(reqSrc.SourceConnection, new CommandTargetComponent { targetEntity = player });
       PostUpdateCommands.DestroyEntity(requestEntity);
       PostUpdateCommands.AddComponent<NetworkStreamInGame>(reqSrc.SourceConnection);
     });
@@ -168,7 +175,7 @@ public class SamplePlayerInput : ComponentSystem {
       var localPlayerId = GetSingleton<NetworkIdComponent>().Value;
 
       Entities
-      //.WithAll<Player>()
+      .WithAll<NetworkPlayer>()
       .WithNone<PlayerInput>()
       .ForEach((Entity ent, ref GhostOwnerComponent ghostOwner) => {
         if (ghostOwner.NetworkId == localPlayerId) {
@@ -210,11 +217,11 @@ public class MovePlayer : ComponentSystem {
       if (input.horizontal == 0 && input.vertical == 0)
         return;
 
-      float3 direction = math.normalize(math.float3(input.horizontal, 0, input.vertical));
+      float3 direction = normalize(float3(input.horizontal, 0, input.vertical));
       float3 velocity = direction * dt * player.speed;
 
       translation.Value += velocity;
-      rotation.Value = Quaternion.LookRotation(direction, math.float3(0, 1, 0));
+      rotation.Value = Quaternion.LookRotation(direction, float3(0, 1, 0));
 
       Debug.Log($"PlayerInput predicted at tick {tick}");
     });
