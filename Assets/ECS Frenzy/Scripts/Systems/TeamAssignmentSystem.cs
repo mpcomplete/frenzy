@@ -19,10 +19,9 @@ public class TeamAssignmentSystem : ComponentSystem {
   }
 
   protected override void OnUpdate() {
-    EntityQuery spawnQuery = Entities.WithAll<SpawnLocation, Translation, Rotation>().ToEntityQuery();
+    EntityQuery spawnQuery = Entities.WithAll<SpawnLocation, LocalToWorld>().ToEntityQuery();
     NativeArray<SpawnLocation> spawnLocations = spawnQuery.ToComponentDataArray<SpawnLocation>(Allocator.Temp);
-    NativeArray<Translation> spawnTranslations = spawnQuery.ToComponentDataArray<Translation>(Allocator.Temp);
-    NativeArray<Rotation> spawnRotations = spawnQuery.ToComponentDataArray<Rotation>(Allocator.Temp);
+    NativeArray<LocalToWorld> spawnTransforms = spawnQuery.ToComponentDataArray<LocalToWorld>(Allocator.Temp);
 
     Entities
     .WithNone<SharedTeam>()
@@ -31,8 +30,8 @@ public class TeamAssignmentSystem : ComponentSystem {
       int? validSpawnIndex = IndexOfValidSpawnLocationForTeam(currentTeamNumber, spawnLocations);
 
       if (validSpawnIndex.HasValue) {
-        EntityManager.SetComponentData(e, spawnTranslations[validSpawnIndex.Value]);
-        EntityManager.SetComponentData(e, spawnRotations[validSpawnIndex.Value]);
+        EntityManager.SetComponentData(e, new Translation { Value = spawnTransforms[validSpawnIndex.Value].Position });
+        EntityManager.SetComponentData(e, new Rotation { Value = spawnTransforms[validSpawnIndex.Value].Rotation });
         EntityManager.AddSharedComponentData(e, new SharedTeam { Value = currentTeamNumber });
         currentTeamNumber = (currentTeamNumber == 0) ? (ushort)1 : (ushort)0;
       } else {
@@ -41,7 +40,6 @@ public class TeamAssignmentSystem : ComponentSystem {
     });
 
     spawnLocations.Dispose();
-    spawnTranslations.Dispose();
-    spawnRotations.Dispose();
+    spawnTransforms.Dispose();
   }
 }

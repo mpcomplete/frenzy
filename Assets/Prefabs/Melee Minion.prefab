@@ -7,6 +7,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -7385701854441410809, guid: fdfdf0a0b7c09854f9be3eeccd17d404, type: 3}
+      propertyPath: prefabId
+      value: 2eb9f0f2d30c7674aa4b55e17c5d4fad
+      objectReference: {fileID: 0}
     - target: {fileID: 1331745555277230740, guid: fdfdf0a0b7c09854f9be3eeccd17d404, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -53,7 +57,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1331745555277230747, guid: fdfdf0a0b7c09854f9be3eeccd17d404, type: 3}
       propertyPath: m_Name
-      value: Minion
+      value: Melee Minion
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fdfdf0a0b7c09854f9be3eeccd17d404, type: 3}
