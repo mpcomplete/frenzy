@@ -8,9 +8,7 @@ using Unity.NetCode;
 using UnityEngine;
 using static Unity.Mathematics.math;
 
-// TODO: These should/would eventually run on the server?
-// [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-[UpdateInGroup(typeof(ClientSimulationSystemGroup))]
+[UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
 public class BoidSystem : SystemBase {
   public struct Neighbor {
     public Entity entity;
@@ -149,8 +147,6 @@ public class BoidSystem : SystemBase {
       float3 attraction = -translation.Value * ATTRACTION_FACTOR;
       float3 correction = alignment + cohesion + separation + attraction;
       float3 newHeading = normalizesafe(heading.Value + correction);
-
-      // RenderNeighbors(neighborCount, neighbors, translation.Value);
 
       heading.Value = newHeading;
       neighbors.Dispose();

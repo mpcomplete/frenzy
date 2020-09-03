@@ -9,7 +9,7 @@ using Unity.Mathematics;
 using static Unity.Mathematics.math;
 
 public static class NetworkConfiguration {
-  public const ushort NETWORK_PORT = 7979;
+  public const ushort NETWORK_PORT = 8787;
 }
 
 public struct Disconnected : IComponentData {}
