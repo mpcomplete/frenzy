@@ -2,17 +2,17 @@
 using Unity.NetCode;
 using UnityEngine;
 
+public static class SystemConfig {
+  public static RenderedPlayer RenderedPlayerPrefab;
+  public static float PlayerMoveSpeed;
+}
+
 public class SystemsConfiguration : MonoBehaviour {
-  public DroneAssistant DroneAssistant;
+  public RenderedPlayer RenderedPlayerPrefab;
+  public float PlayerMoveSpeed = 5; 
 
-  void Start() {
-    // Weird way to get access to the world containing the targeted systems...
-    foreach (var world in World.All) {
-      var dr = world.GetExistingSystem<DroneAssistantRenderingSystem>();
-
-      if (dr != null) {
-        dr.DroneAssistant = DroneAssistant;
-      }
-    }
+  void Awake() {
+    SystemConfig.RenderedPlayerPrefab = RenderedPlayerPrefab;
+    SystemConfig.PlayerMoveSpeed = PlayerMoveSpeed;
   }
 }

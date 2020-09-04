@@ -11,7 +11,6 @@ namespace ECSFrenzy.Generated
         protected override void OnCreate()
         {
             var ghostCollectionSystem = World.GetOrCreateSystem<GhostCollectionSystem>();
-            ghostCollectionSystem.AddSerializer(NetworkPlayerGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(ECSFrenzyBaseGhostComponentSerializer.State);
         }
 

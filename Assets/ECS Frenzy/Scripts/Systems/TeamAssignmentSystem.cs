@@ -5,29 +5,35 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
 using Unity.NetCode;
+using ECSFrenzy.Components;
+using ECSFrenzy.SharedComponents;
 
 [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 public class TeamAssignmentSystem : ComponentSystem {
   public ushort currentTeamNumber = 0;
 
-  static int? IndexOfValidSpawnLocationForTeam(in ushort currentTeam, in NativeArray<SpawnLocation> spawnLocations) {
+  static int? IndexOfValidSpawnLocationForTeam(
+  in ushort currentTeam, 
+  in NativeArray<SpawnLocation> spawnLocations, 
+  in NativeArray<Team> teams) {
     for (int i = 0; i < spawnLocations.Length; i++) {
-      if (spawnLocations[i].TeamNumber == currentTeam) 
+      if (teams[i].Value == currentTeam) 
         return i;
     }
     return null;
   }
 
   protected override void OnUpdate() {
-    EntityQuery spawnQuery = Entities.WithAll<SpawnLocation, LocalToWorld>().ToEntityQuery();
+    EntityQuery spawnQuery = Entities.WithAll<SpawnLocation, Team, LocalToWorld>().ToEntityQuery();
     NativeArray<SpawnLocation> spawnLocations = spawnQuery.ToComponentDataArray<SpawnLocation>(Allocator.Temp);
+    NativeArray<Team> teams = spawnQuery.ToComponentDataArray<Team>(Allocator.Temp);
     NativeArray<LocalToWorld> spawnTransforms = spawnQuery.ToComponentDataArray<LocalToWorld>(Allocator.Temp);
 
     Entities
     .WithNone<SharedTeam>()
     .WithAll<NetworkPlayer>()
     .ForEach((Entity e, ref Translation translation, ref Rotation rotation) => {
-      int? validSpawnIndex = IndexOfValidSpawnLocationForTeam(currentTeamNumber, spawnLocations);
+      int? validSpawnIndex = IndexOfValidSpawnLocationForTeam(currentTeamNumber, spawnLocations, teams);
 
       if (validSpawnIndex.HasValue) {
         EntityManager.SetComponentData(e, new Translation { Value = spawnTransforms[validSpawnIndex.Value].Position });
@@ -40,6 +46,7 @@ public class TeamAssignmentSystem : ComponentSystem {
     });
 
     spawnLocations.Dispose();
+    teams.Dispose();
     spawnTransforms.Dispose();
   }
 }

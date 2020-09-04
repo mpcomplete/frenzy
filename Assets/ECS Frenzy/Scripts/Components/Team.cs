@@ -4,5 +4,7 @@ using Unity.Entities;
 namespace ECSFrenzy.Components {
   [Serializable]
   [GenerateAuthoringComponent]
-  public struct SpawnLocation : IComponentData {}
+  public struct Team : IComponentData {
+    public ushort Value;
+  }
 }
