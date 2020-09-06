@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class Team : MonoBehaviour {
   // Config
@@ -13,17 +12,6 @@ public class Team : MonoBehaviour {
   public Base SpawnerTop;
   public Base SpawnerBot;
 
-  public struct ControlsMap {
-    public InputAction Move;
-    public InputAction PlaceStanchion;
-    public InputAction Attack;
-    public InputAction Ability1;
-    public InputAction Ability2;
-    public InputAction Ability3;
-    public InputAction Ability4;
-  }
-  public ControlsMap Controls;
-  public string ControlScheme;
 
   // State
   [HideInInspector]

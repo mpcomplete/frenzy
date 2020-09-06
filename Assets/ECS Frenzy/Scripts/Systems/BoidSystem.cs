@@ -122,7 +122,7 @@ public class BoidSystem : SystemBase {
     .WithBurst()
     .WithDisposeOnCompletion(spatialHashMapParallelWriter)
     .WithAll<Boid>()
-    .ForEach((Entity entity, in Translation translation, in Heading heading) => {
+    .ForEach((Entity entity, in Heading heading, in Translation translation) => {
       Neighbor neighbor = new Neighbor {
         entity = entity,
         position = translation.Value,

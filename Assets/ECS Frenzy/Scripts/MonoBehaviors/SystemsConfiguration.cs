@@ -5,6 +5,7 @@ using UnityEngine;
 public static class SystemConfig {
   public static RenderedPlayer RenderedPlayerPrefab;
   public static float PlayerMoveSpeed;
+  public static float ControllerDeadzone = .19f;
 }
 
 public class SystemsConfiguration : MonoBehaviour {

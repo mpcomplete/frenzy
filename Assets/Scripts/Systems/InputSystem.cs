@@ -1,14 +1,11 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Users;
 using static CoroutineHelpers;
 
 [System.Serializable]
 public class InputSystem {
-  public InputActionAsset InputActions;
+  // public InputActionAsset InputActions;
   public AbilityConfig AbilityConfig;
   public AudioSource StunSound;
   public AudioSource FireSound;
@@ -92,23 +89,6 @@ public class InputSystem {
     }
   }
 
-  public void InitControls(Team team, InputDevice dev) {
-    var actions = Object.Instantiate(InputActions);
-    actions.Enable();
-
-    InputUser user = InputUser.PerformPairingWithDevice(dev);
-    user.AssociateActionsWithUser(actions);
-    user.ActivateControlScheme(team.ControlScheme);
-
-    team.Controls.Move = actions.FindAction("Move");
-    team.Controls.PlaceStanchion = actions.FindAction("Stanchion");
-    team.Controls.Attack = actions.FindAction("Attack");
-    team.Controls.Ability1 = actions.FindAction("Ability1");
-    team.Controls.Ability2 = actions.FindAction("Ability2");
-    team.Controls.Ability3 = actions.FindAction("Ability3");
-    team.Controls.Ability4 = actions.FindAction("Ability4");
-  }
-
   public void Update(Team team, Team enemyTeam, float dt) {
     Player player = team.Player;
 
@@ -125,6 +105,8 @@ public class InputSystem {
       }
     }
     
+    Debug.Log("I REMOVED ALL INPUTS BECAUSE I AM AN ASSHOLE");
+    /*
     if (player.IsStunned || team.Controls.Move == null)
       return;
 
@@ -155,5 +137,6 @@ public class InputSystem {
         TryMove(player.transform.position + delta, player.transform);
       }
     }
+    */
   }
 }

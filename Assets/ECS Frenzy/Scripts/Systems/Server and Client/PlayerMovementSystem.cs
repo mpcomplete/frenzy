@@ -24,7 +24,7 @@ public class MovePlayer : ComponentSystem {
       if (input.horizontal == 0 && input.vertical == 0) {
         moveSpeed.Value = 0;
       } else {
-        float3 direction = normalize(float3(input.horizontal, 0, input.vertical));
+        float3 direction = float3(input.horizontal, 0, input.vertical);
         float3 velocity = direction * dt * maxMoveSpeed;
 
         moveSpeed.Value = 1;

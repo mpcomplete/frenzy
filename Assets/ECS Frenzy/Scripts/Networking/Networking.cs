@@ -1,7 +1,4 @@
-﻿using System;
-using Unity.Collections;
-using Unity.Transforms;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
 using UnityEngine;
@@ -19,18 +16,18 @@ public struct JoinGameRequest : IRpcCommand {}
 public struct PlayerInput : ICommandData<PlayerInput> {
   public uint Tick => tick;
   public uint tick;
-  public int horizontal;
-  public int vertical;
+  public float horizontal;
+  public float vertical;
 
   public void Deserialize(uint tick, ref DataStreamReader reader) {
     this.tick = tick;
-    horizontal = reader.ReadInt();
-    vertical = reader.ReadInt();
+    horizontal = reader.ReadFloat();
+    vertical = reader.ReadFloat();
   }
 
   public void Serialize(ref DataStreamWriter writer) {
-    writer.WriteInt(horizontal);
-    writer.WriteInt(vertical);
+    writer.WriteFloat(horizontal);
+    writer.WriteFloat(vertical);
   }
 
   public void Deserialize(uint tick, ref DataStreamReader reader, PlayerInput baseline, NetworkCompressionModel compressionModel) {
@@ -184,10 +181,20 @@ public class SamplePlayerInput : ComponentSystem {
     }
 
     DynamicBuffer<PlayerInput> playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
+    float2 stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+
+    if (length(stickInput) < SystemConfig.ControllerDeadzone) {
+      stickInput = float2(0,0);
+    } else {
+      stickInput = normalize(stickInput);
+    }
+
+    Debug.Log(stickInput);
+    uint tick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick;
     PlayerInput input = new PlayerInput {
-      tick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick,
-      horizontal = (Input.GetKey("a") ? -1 : 0) + (Input.GetKey("d") ? 1 : 0),
-      vertical = (Input.GetKey("s") ? -1 : 0) + (Input.GetKey("w") ? 1 : 0),
+      tick = tick,
+      horizontal = stickInput.x,
+      vertical = stickInput.y 
     };
 
     playerInputs.AddCommandData(input);

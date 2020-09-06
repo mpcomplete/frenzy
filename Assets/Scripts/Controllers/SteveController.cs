@@ -1,10 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
-using UnityEngine.InputSystem.LowLevel;
-using UnityEngine.InputSystem.Users;
+﻿using UnityEngine;
 
 public class SteveController : MonoBehaviour {
   public const int MAX_MINIONS = 2048;
@@ -23,10 +17,6 @@ public class SteveController : MonoBehaviour {
 
   void Start() {
     AudioListener.volume = .02f;
-
-    InputSystem.InputActions.Enable();
-    InputSystem.InitControls(Team1, Keyboard.current);
-    InputSystem.InitControls(Team2, (InputDevice)Gamepad.current ?? Keyboard.current);
   }
 
   void Update() {
