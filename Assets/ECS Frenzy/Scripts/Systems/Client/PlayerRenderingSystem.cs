@@ -11,56 +11,37 @@ using Unity.NetCode;
 public class PlayerRenderingSystem : ComponentSystem {
   const int MAX_PLAYERS = 4;
 
-  Dictionary<Entity, RenderedPlayer> entityToRendererMap = new Dictionary<Entity, RenderedPlayer>(MAX_PLAYERS);
+  // See https://docs.unity3d.com/Packages/com.unity.entities@0.14/manual/system_state_components.html
+  // This uses a "managed component" since it (a) is a class, and (b) contains a non-blittable type. Supposedly
+  // this has performance drawbacks, but they are unlikely to matter in this case, and I think the alternative
+  // (a Dictionary) has the same drawbacks.
+  public class PlayerState : ISystemStateComponentData {
+    public RenderedPlayer Value;
+  }
 
   protected override void OnUpdate() {
-    // get all the player entities found on this frame
-    EntityQuery playersQuery = Entities.WithAll<NetworkPlayer, Translation, Rotation, MoveSpeed>().ToEntityQuery();
-    using (NativeArray<Entity> playerEntities = playersQuery.ToEntityArray(Allocator.TempJob))
-    using (NativeArray<Translation> translations = playersQuery.ToComponentDataArray<Translation>(Allocator.Temp))
-    using (NativeArray<Rotation> rotations = playersQuery.ToComponentDataArray<Rotation>(Allocator.Temp))
-    using (NativeArray<MoveSpeed> moveSpeeds = playersQuery.ToComponentDataArray<MoveSpeed>(Allocator.Temp))
-    using (NativeList<Entity> expiredEntities = new NativeList<Entity>(Allocator.Temp)) {
-      // check for entities that do not have a rendered player associated with them and instantiate one
-      for (int i = 0; i < playerEntities.Length; i++) {
-        Entity e = playerEntities[i];
+    Entities
+    .WithNone<PlayerState>()
+    .ForEach((Entity e, ref NetworkPlayer np) => {
+      RenderedPlayer rp = RenderedPlayer.Instantiate(SystemConfig.Instance.RenderedPlayerPrefab);
+      PostUpdateCommands.AddComponent(e, new PlayerState { Value = rp });
+    });
 
-        if (!entityToRendererMap.ContainsKey(playerEntities[i])) {
-          RenderedPlayer rp = RenderedPlayer.Instantiate(SystemConfig.Instance.RenderedPlayerPrefab);
+    Entities
+    .WithAll<PlayerState>()
+    .WithNone<NetworkPlayer>()
+    .ForEach((Entity e) => {
+      RenderedPlayer rp = EntityManager.GetComponentData<PlayerState>(e).Value;
+      RenderedPlayer.Destroy(rp);
+      PostUpdateCommands.RemoveComponent<PlayerState>(e);
+    });
 
-          entityToRendererMap.Add(e, rp);
-        }
-      }
-
-      // check for entities stored in the dictionary that no longer exist and destroy them
-      foreach (var existingEntity in entityToRendererMap.Keys) {
-        if (!playerEntities.Contains(existingEntity)) {
-            expiredEntities.Add(existingEntity);
-        }
-      }
-
-      foreach (var expiredEntity in expiredEntities) {
-        if (entityToRendererMap.TryGetValue(expiredEntity, out RenderedPlayer expiredRenderedPlayer)) {
-          entityToRendererMap.Remove(expiredEntity);
-          RenderedPlayer.Destroy(expiredRenderedPlayer);
-        }
-      }
-
-      // Update the transforms of all rendered players that are still alive
-      for (int i = 0; i < playerEntities.Length; i++) {
-        Entity e = playerEntities[i];
-
-        if (entityToRendererMap.TryGetValue(e, out RenderedPlayer rp)) {
-          float3 position = translations[i].Value;
-          quaternion rotation = rotations[i].Value;
-          float moveSpeed = moveSpeeds[i].Value;
-
-          rp.transform.SetPositionAndRotation(position, rotation);
-          rp.Animator.SetFloat("Speed", moveSpeed);
-        } else {
-          UnityEngine.Debug.LogError($"Tried to find RenderedPlayer for Entity: {e} but did not exist. This should not happen.");
-        }
-      }
-    }
+    Entities
+    .WithAll<PlayerState>()
+    .ForEach((Entity e, ref NetworkPlayer np, ref Translation translation, ref Rotation rotation, ref MoveSpeed moveSpeed) => {
+      RenderedPlayer rp = EntityManager.GetComponentData<PlayerState>(e).Value;
+      rp.transform.SetPositionAndRotation(translation.Value, rotation.Value);
+      rp.Animator.SetFloat("Speed", moveSpeed.Value);
+    });
   }
 }
