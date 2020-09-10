@@ -1,16 +1,9 @@
-﻿using System.Collections.Generic;
-using Unity.Burst;
-using Unity.Collections;
-using Unity.Entities;
-using Unity.Jobs;
-using Unity.Mathematics;
+﻿using Unity.Entities;
 using Unity.Transforms;
 using Unity.NetCode;
 
 [UpdateInGroup(typeof(ClientPresentationSystemGroup))]
 public class PlayerRenderingSystem : ComponentSystem {
-  const int MAX_PLAYERS = 4;
-
   // See https://docs.unity3d.com/Packages/com.unity.entities@0.14/manual/system_state_components.html
   // This uses a "managed component" since it (a) is a class, and (b) contains a non-blittable type. Supposedly
   // this has performance drawbacks, but they are unlikely to matter in this case, and I think the alternative

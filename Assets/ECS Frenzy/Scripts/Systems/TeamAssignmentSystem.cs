@@ -1,12 +1,8 @@
-﻿using Unity.Burst;
-using Unity.Collections;
+﻿using Unity.Collections;
 using Unity.Entities;
-using Unity.Jobs;
-using Unity.Mathematics;
 using Unity.Transforms;
 using Unity.NetCode;
-using ECSFrenzy.Components;
-using ECSFrenzy.SharedComponents;
+using ECSFrenzy;
 
 [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 public class TeamAssignmentSystem : ComponentSystem {
@@ -22,28 +18,24 @@ public class TeamAssignmentSystem : ComponentSystem {
 
   protected override void OnUpdate() {
     EntityQuery spawnQuery = Entities.WithAll<SpawnLocation, Team, LocalToWorld>().ToEntityQuery();
-    NativeArray<SpawnLocation> spawnLocations = spawnQuery.ToComponentDataArray<SpawnLocation>(Allocator.Temp);
-    NativeArray<Team> teams = spawnQuery.ToComponentDataArray<Team>(Allocator.Temp);
-    NativeArray<LocalToWorld> spawnTransforms = spawnQuery.ToComponentDataArray<LocalToWorld>(Allocator.Temp);
+    using (NativeArray<SpawnLocation> spawnLocations = spawnQuery.ToComponentDataArray<SpawnLocation>(Allocator.Temp))
+    using (NativeArray<Team> teams = spawnQuery.ToComponentDataArray<Team>(Allocator.Temp))
+    using (NativeArray<LocalToWorld> spawnTransforms = spawnQuery.ToComponentDataArray<LocalToWorld>(Allocator.Temp)) {
+      Entities
+      .WithNone<SharedTeam>()
+      .WithAll<NetworkPlayer>()
+      .ForEach((Entity e, ref Translation translation, ref Rotation rotation) => {
+        int? validSpawnIndex = IndexOfValidSpawnLocationForTeam(spawnLocations, teams);
 
-    Entities
-    .WithNone<SharedTeam>()
-    .WithAll<NetworkPlayer>()
-    .ForEach((Entity e, ref Translation translation, ref Rotation rotation) => {
-      int? validSpawnIndex = IndexOfValidSpawnLocationForTeam(spawnLocations, teams);
-
-      if (validSpawnIndex.HasValue) {
-        EntityManager.SetComponentData(e, new Translation { Value = spawnTransforms[validSpawnIndex.Value].Position });
-        EntityManager.SetComponentData(e, new Rotation { Value = spawnTransforms[validSpawnIndex.Value].Rotation });
-        EntityManager.AddSharedComponentData(e, new SharedTeam { Value = currentTeamNumber });
-        currentTeamNumber = (currentTeamNumber + 1) % 2;
-      } else {
-        UnityEngine.Debug.LogError($"No valid Spawn Location found for Team Number {currentTeamNumber}!");
-      }
-    });
-
-    spawnLocations.Dispose();
-    teams.Dispose();
-    spawnTransforms.Dispose();
+        if (validSpawnIndex.HasValue) {
+          EntityManager.SetComponentData(e, new Translation { Value = spawnTransforms[validSpawnIndex.Value].Position });
+          EntityManager.SetComponentData(e, new Rotation { Value = spawnTransforms[validSpawnIndex.Value].Rotation });
+          EntityManager.AddSharedComponentData(e, new SharedTeam { Value = currentTeamNumber });
+          currentTeamNumber = (currentTeamNumber + 1) % 2;
+        } else {
+          UnityEngine.Debug.LogError($"No valid Spawn Location found for Team Number {currentTeamNumber}!");
+        }
+      });
+    }
   }
 }

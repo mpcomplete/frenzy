@@ -1,7 +1,7 @@
 ﻿using System;
 using Unity.Entities;
 
-namespace ECSFrenzy.SharedComponents {
+namespace ECSFrenzy {
   [Serializable]
   [GenerateAuthoringComponent]
   public struct SharedTeam : ISharedComponentData {

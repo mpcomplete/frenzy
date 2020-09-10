@@ -12,7 +12,7 @@ namespace ECSFrenzy {
   public struct Minion : IComponentData {
   }
 
-  [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+  [UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
   public class MinionSystem : ComponentSystem {
     protected override void OnUpdate() {
       Entities.ForEach((ref Minion minion, ref Translation translate, ref Rotation rot) => {

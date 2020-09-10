@@ -106,6 +106,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4234652190168365725}
   - component: {fileID: 7478291448966201767}
+  - component: {fileID: 6438998303357158676}
   m_Layer: 0
   m_Name: Base
   m_TagString: Untagged
@@ -146,6 +147,19 @@ MonoBehaviour:
   NextSpawnTime: 0
   SpawnLocation: {fileID: 4731445812316312976}
   MinionPrefab: {fileID: 5635783175123075587, guid: 2eb9f0f2d30c7674aa4b55e17c5d4fad, type: 3}
+--- !u!114 &6438998303357158676
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4234652190168365724}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e9fdc1759c186c4fbc56d377265b452, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Value: 0
 --- !u!1 &4234652191691400208
 GameObject:
   m_ObjectHideFlags: 0
@@ -284,4 +298,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6fe6d21a68509d44fb5bdd8313a1ff77, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TeamNumber: 0
