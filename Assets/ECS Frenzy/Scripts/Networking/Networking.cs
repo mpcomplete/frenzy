@@ -189,7 +189,7 @@ public class SamplePlayerInput : ComponentSystem {
       stickInput = normalize(stickInput);
     }
 
-    Debug.Log(stickInput);
+    //Debug.Log(stickInput);
     uint tick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick;
     PlayerInput input = new PlayerInput {
       tick = tick,
