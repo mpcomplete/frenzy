@@ -11,7 +11,7 @@ public class MovePlayer : ComponentSystem {
     GhostPredictionSystemGroup group = World.GetExistingSystem<GhostPredictionSystemGroup>();
     uint tick = group.PredictingTick;
     float dt = group.Time.DeltaTime;
-    float maxMoveSpeed = SystemConfig.PlayerMoveSpeed;
+    float maxMoveSpeed = SystemConfig.Instance.PlayerMoveSpeed;
 
     Entities
     .WithAll<NetworkPlayer>()

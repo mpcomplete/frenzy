@@ -26,7 +26,7 @@ public class PlayerRenderingSystem : ComponentSystem {
         Entity e = playerEntities[i];
 
         if (!entityToRendererMap.ContainsKey(playerEntities[i])) {
-          RenderedPlayer rp = RenderedPlayer.Instantiate(SystemConfig.RenderedPlayerPrefab);
+          RenderedPlayer rp = RenderedPlayer.Instantiate(SystemConfig.Instance.RenderedPlayerPrefab);
 
           entityToRendererMap.Add(e, rp);
         }

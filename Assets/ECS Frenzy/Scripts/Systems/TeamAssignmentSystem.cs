@@ -10,14 +10,11 @@ using ECSFrenzy.SharedComponents;
 
 [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 public class TeamAssignmentSystem : ComponentSystem {
-  public ushort currentTeamNumber = 0;
+  public int currentTeamNumber = 0;
 
-  static int? IndexOfValidSpawnLocationForTeam(
-  in ushort currentTeam, 
-  in NativeArray<SpawnLocation> spawnLocations, 
-  in NativeArray<Team> teams) {
+  int? IndexOfValidSpawnLocationForTeam(in NativeArray<SpawnLocation> spawnLocations, in NativeArray<Team> teams) {
     for (int i = 0; i < spawnLocations.Length; i++) {
-      if (teams[i].Value == currentTeam) 
+      if (teams[i].Value == currentTeamNumber)
         return i;
     }
     return null;
@@ -33,13 +30,13 @@ public class TeamAssignmentSystem : ComponentSystem {
     .WithNone<SharedTeam>()
     .WithAll<NetworkPlayer>()
     .ForEach((Entity e, ref Translation translation, ref Rotation rotation) => {
-      int? validSpawnIndex = IndexOfValidSpawnLocationForTeam(currentTeamNumber, spawnLocations, teams);
+      int? validSpawnIndex = IndexOfValidSpawnLocationForTeam(spawnLocations, teams);
 
       if (validSpawnIndex.HasValue) {
         EntityManager.SetComponentData(e, new Translation { Value = spawnTransforms[validSpawnIndex.Value].Position });
         EntityManager.SetComponentData(e, new Rotation { Value = spawnTransforms[validSpawnIndex.Value].Rotation });
         EntityManager.AddSharedComponentData(e, new SharedTeam { Value = currentTeamNumber });
-        currentTeamNumber = (currentTeamNumber == 0) ? (ushort)1 : (ushort)0;
+        currentTeamNumber = (currentTeamNumber + 1) % 2;
       } else {
         UnityEngine.Debug.LogError($"No valid Spawn Location found for Team Number {currentTeamNumber}!");
       }

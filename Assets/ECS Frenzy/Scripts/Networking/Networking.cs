@@ -183,7 +183,7 @@ public class SamplePlayerInput : ComponentSystem {
     DynamicBuffer<PlayerInput> playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
     float2 stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
 
-    if (length(stickInput) < SystemConfig.ControllerDeadzone) {
+    if (length(stickInput) < SystemConfig.Instance.ControllerDeadzone) {
       stickInput = float2(0,0);
     } else {
       stickInput = normalize(stickInput);

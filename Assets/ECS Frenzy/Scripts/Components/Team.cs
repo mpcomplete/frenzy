@@ -5,6 +5,6 @@ namespace ECSFrenzy.Components {
   [Serializable]
   [GenerateAuthoringComponent]
   public struct Team : IComponentData {
-    public ushort Value;
+    public int Value;
   }
 }
