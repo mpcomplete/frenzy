@@ -16,7 +16,7 @@ public class PlayerRenderingSystem : ComponentSystem {
   protected override void OnUpdate() {
     // get all the player entities found on this frame
     EntityQuery playersQuery = Entities.WithAll<NetworkPlayer, Translation, Rotation, MoveSpeed>().ToEntityQuery();
-    using (NativeArray<Entity> playerEntities = playersQuery.ToEntityArray(Allocator.Temp))
+    using (NativeArray<Entity> playerEntities = playersQuery.ToEntityArray(Allocator.TempJob))
     using (NativeArray<Translation> translations = playersQuery.ToComponentDataArray<Translation>(Allocator.Temp))
     using (NativeArray<Rotation> rotations = playersQuery.ToComponentDataArray<Rotation>(Allocator.Temp))
     using (NativeArray<MoveSpeed> moveSpeeds = playersQuery.ToComponentDataArray<MoveSpeed>(Allocator.Temp))
