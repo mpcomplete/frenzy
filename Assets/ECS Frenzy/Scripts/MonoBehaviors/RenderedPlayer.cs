@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 
-public class RenderedPlayer : MonoBehaviour {
-  public Animator Animator;
+namespace ECSFrenzy.MonoBehaviors {
+  public class RenderedPlayer : MonoBehaviour {
+    public Animator Animator;
+  }
 }

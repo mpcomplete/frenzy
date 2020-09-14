@@ -1,3 +1,5 @@
 ﻿using UnityEngine;
 
-public class RenderedFireball : MonoBehaviour {}
+namespace ECSFrenzy.MonoBehaviors {
+  public class RenderedFireball : MonoBehaviour {}
+}

@@ -2,6 +2,7 @@
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Rendering;
+using ECSFrenzy.MonoBehaviors;
 
 namespace ECSFrenzy {
   // TeamSkin is used by a Team-holding Entity to point to a child Entity that owns the RenderMesh to skin.

@@ -7,25 +7,26 @@ using Unity.Collections;
 using Unity.NetCode;
 using Unity.Transforms;
 using Unity.Mathematics;
+using ECSFrenzy.Networking;
 
 
 namespace ECSFrenzy.Generated
 {
     [BurstCompile]
-    public struct JoinGameRequestSerializer : IComponentData, IRpcCommandSerializer<JoinGameRequest>
+    public struct ECSFrenzyNetworkingJoinGameRequestSerializer : IComponentData, IRpcCommandSerializer<ECSFrenzy.Networking.JoinGameRequest>
     {
-        public void Serialize(ref DataStreamWriter writer, in JoinGameRequest data)
+        public void Serialize(ref DataStreamWriter writer, in ECSFrenzy.Networking.JoinGameRequest data)
         {
         }
 
-        public void Deserialize(ref DataStreamReader reader, ref JoinGameRequest data)
+        public void Deserialize(ref DataStreamReader reader, ref ECSFrenzy.Networking.JoinGameRequest data)
         {
         }
         [BurstCompile]
         [MonoPInvokeCallback(typeof(RpcExecutor.ExecuteDelegate))]
         private static void InvokeExecute(ref RpcExecutor.Parameters parameters)
         {
-            RpcExecutor.ExecuteCreateRequestComponent<JoinGameRequestSerializer, JoinGameRequest>(ref parameters);
+            RpcExecutor.ExecuteCreateRequestComponent<ECSFrenzyNetworkingJoinGameRequestSerializer, ECSFrenzy.Networking.JoinGameRequest>(ref parameters);
         }
 
         static PortableFunctionPointer<RpcExecutor.ExecuteDelegate> InvokeExecuteFunctionPointer =
@@ -35,7 +36,7 @@ namespace ECSFrenzy.Generated
             return InvokeExecuteFunctionPointer;
         }
     }
-    class JoinGameRequestRpcCommandRequestSystem : RpcCommandRequestSystem<JoinGameRequestSerializer, JoinGameRequest>
+    class ECSFrenzyNetworkingJoinGameRequestRpcCommandRequestSystem : RpcCommandRequestSystem<ECSFrenzyNetworkingJoinGameRequestSerializer, ECSFrenzy.Networking.JoinGameRequest>
     {
     }
 }
