@@ -17,17 +17,17 @@ namespace ECSFrenzy {
 
     protected override void OnUpdate() {
       Entities
-        .WithAll<RenderMesh>()
-        .WithNone<TeamState>()
-        .ForEach((Entity e, ref Team team) => {
-          SetMaterial(e, e, in team);
-        });
+      .WithAll<RenderMesh>()
+      .WithNone<TeamState>()
+      .ForEach((Entity e, ref Team team) => {
+        SetMaterial(e, e, in team);
+      });
 
       Entities
-        .WithNone<TeamState>()
-        .ForEach((Entity e, ref Team team, ref TeamSkin skin) => {
-          SetMaterial(e, EntityManager.GetComponentData<TeamSkin>(e).EntityToSkin, in team);
-        });
+      .WithNone<TeamState>()
+      .ForEach((Entity e, ref Team team, ref TeamSkin skin) => {
+        SetMaterial(e, EntityManager.GetComponentData<TeamSkin>(e).EntityToSkin, in team);
+      });
     }
 
     void SetMaterial(Entity e, Entity entityToSkin, in Team team) {

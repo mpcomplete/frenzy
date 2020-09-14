@@ -9,6 +9,7 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 
 [UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
+[UpdateBefore(typeof(MoveAlongHeadingSystem))]
 public class BoidSystem : SystemBase {
   public struct Neighbor {
     public Entity entity;
@@ -158,14 +159,6 @@ public class BoidSystem : SystemBase {
     .WithAll<Boid>()
     .ForEach((ref Rotation rotation, in Heading heading) => {
       rotation.Value = Quaternion.LookRotation(heading.Value, float3(0, 1, 0));
-    }).ScheduleParallel();
-
-    Entities
-    .WithName("Move_forward")
-    .WithBurst()
-    .WithAll<Boid>()
-    .ForEach((ref Translation translation, in Heading heading, in MoveSpeed moveSpeed) => {
-      translation.Value += dt * moveSpeed.Value * heading.Value;
     }).ScheduleParallel();
   }
 }
