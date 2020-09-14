@@ -14,7 +14,8 @@ public class FireballRenderingSystem : ComponentSystem {
     .WithAll<NetworkFireball>()
     .ForEach((Entity e) => {
       RenderedFireball rf = RenderedFireball.Instantiate(SystemConfig.Instance.RenderedFireballPrefab);
-      PostUpdateCommands.AddComponent(e, new FireballState { Value = rf });
+
+      EntityManager.AddComponentData(e, new FireballState { Value = rf });
     });
 
     Entities
@@ -22,14 +23,16 @@ public class FireballRenderingSystem : ComponentSystem {
     .WithNone<NetworkFireball>()
     .ForEach((Entity e) => {
       RenderedFireball rf = EntityManager.GetComponentData<FireballState>(e).Value;
+
       RenderedFireball.Destroy(rf.gameObject);
-      PostUpdateCommands.RemoveComponent<FireballState>(e);
+      EntityManager.RemoveComponent<FireballState>(e);
     });
 
     Entities
     .WithAll<NetworkFireball, FireballState>()
     .ForEach((Entity e, ref Translation translation, ref Rotation rotation) => {
       RenderedFireball rf = EntityManager.GetComponentData<FireballState>(e).Value;
+
       rf.transform.SetPositionAndRotation(translation.Value, rotation.Value);
     });
   }

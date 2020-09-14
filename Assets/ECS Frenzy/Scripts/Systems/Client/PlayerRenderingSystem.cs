@@ -13,7 +13,8 @@ public class PlayerRenderingSystem : ComponentSystem {
     .WithNone<PlayerState>()
     .ForEach((Entity e, ref NetworkPlayer np) => {
       RenderedPlayer rp = RenderedPlayer.Instantiate(SystemConfig.Instance.RenderedPlayerPrefab);
-      PostUpdateCommands.AddComponent(e, new PlayerState { Value = rp });
+
+      EntityManager.AddComponentData(e, new PlayerState { Value = rp });
     });
 
     Entities
@@ -21,8 +22,9 @@ public class PlayerRenderingSystem : ComponentSystem {
     .WithNone<NetworkPlayer>()
     .ForEach((Entity e) => {
       RenderedPlayer rp = EntityManager.GetComponentData<PlayerState>(e).Value;
+
       RenderedPlayer.Destroy(rp.gameObject);
-      PostUpdateCommands.RemoveComponent<PlayerState>(e);
+      EntityManager.RemoveComponent<PlayerState>(e);
     });
 
     Entities
