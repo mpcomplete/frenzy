@@ -122,7 +122,7 @@ NavMeshSettings:
     preserveTilesOutsideBounds: 0
     debug:
       m_Flags: 0
-  m_NavMeshData: {fileID: 0}
+  m_NavMeshData: {fileID: 23800000, guid: 8ed884340b8236e4bb5f2b2f499f15e5, type: 2}
 --- !u!1 &114261175
 GameObject:
   m_ObjectHideFlags: 0
@@ -478,7 +478,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-34972
+  m_Name: pb_Mesh-3400
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -695,6 +695,10 @@ PrefabInstance:
       propertyPath: MinionPrefab
       value: 
       objectReference: {fileID: 2484522229482473256, guid: 1b92d51253d5a944e9bbca447d4207e0, type: 3}
+    - target: {fileID: 7427366360830136179, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: SpawnCooldown
+      value: 0.1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
 --- !u!4 &1095727031 stripped
@@ -709,10 +713,22 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 497781729}
     m_Modifications:
+    - target: {fileID: 1941452477374895642, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2156574378808996588, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 2424984597869899122, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1487587748}
+    - target: {fileID: 2674026212404171534, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 2740179686268001140, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -725,6 +741,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 981383992}
+    - target: {fileID: 6101866646737678791, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 7693705678622791665, guid: 136ab413b657d794591b4fccf3809ded, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -790,7 +810,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-34974
+  m_Name: pb_Mesh-3402
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -994,11 +1014,9 @@ MonoBehaviour:
   Ghosts:
   - prefab: {fileID: 3679481439780764390, guid: d0e554df0c8893f41938f80cf008e972, type: 3}
     enabled: 1
-  - prefab: {fileID: 5029863540442783647, guid: 2eb9f0f2d30c7674aa4b55e17c5d4fad, type: 3}
+  - prefab: {fileID: 3375929130029482782, guid: 1b92d51253d5a944e9bbca447d4207e0, type: 3}
     enabled: 1
-  - prefab: {fileID: -7385701854441410809, guid: fdfdf0a0b7c09854f9be3eeccd17d404, type: 3}
-    enabled: 1
-  - prefab: {fileID: 5029863540442783647, guid: bf6e96200846188448c4ad2f8070aa9a, type: 3}
+  - prefab: {fileID: 4762118607386222133, guid: e5bd4880f4c86c3489c909d4145da22f, type: 3}
     enabled: 1
 --- !u!1 &1666351886
 GameObject:
@@ -1060,6 +1078,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   RenderedPlayerPrefab: {fileID: 7397049788785989640, guid: b0751c95da29cbd4a93ab8b273e57282, type: 3}
+  RenderedFireballPrefab: {fileID: 5229814469993547117, guid: d408c96b1c8ba3c478a626c1a03c5ed9, type: 3}
+  NavAgentBridgePrefab: {fileID: -6526023300986269157, guid: 081516d6ff4c7a84cbf69debb2f80e55, type: 3}
   PlayerMoveSpeed: 5
   ControllerDeadzone: 0.19
   TeamConfigs:
@@ -1146,9 +1166,21 @@ PrefabInstance:
       propertyPath: Value
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5724842221746357497, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: Value
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6449329482225273792, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
       propertyPath: Value
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7427366360830136179, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: MinionPrefab
+      value: 
+      objectReference: {fileID: 2484522229482473256, guid: 1b92d51253d5a944e9bbca447d4207e0, type: 3}
+    - target: {fileID: 7427366360830136179, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: SpawnCooldown
+      value: 0.1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}

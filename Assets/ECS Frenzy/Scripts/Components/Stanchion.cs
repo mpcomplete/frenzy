@@ -4,5 +4,6 @@ using Unity.Entities;
 namespace ECSFrenzy {
   [Serializable]
   [GenerateAuthoringComponent]
-  public struct Minion : IComponentData {}
+  public struct Stanchion : IComponentData {
+  }
 }

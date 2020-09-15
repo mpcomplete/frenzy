@@ -1,8 +1,9 @@
-﻿using ECSFrenzy;
-using System;
+﻿using System;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
+using UnityEngine.AI;
 
 namespace ECSFrenzy {
   [Serializable]
@@ -14,7 +15,7 @@ namespace ECSFrenzy {
     public Entity MinionPrefab;
   }
 
-  [UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
+  [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
   public class BaseSystem : ComponentSystem {
     protected override void OnUpdate() {
       Entities.ForEach((ref Base spawner, ref Team team) => {
@@ -23,11 +24,22 @@ namespace ECSFrenzy {
 
         Entity minion = EntityManager.Instantiate(spawner.MinionPrefab);
         var transform = EntityManager.GetComponentData<LocalToWorld>(spawner.SpawnLocation);
-        EntityManager.SetComponentData(minion, new Translation { Value = transform.Position });
+        float3 position = transform.Position;
+        if (NavMesh.SamplePosition(position, out NavMeshHit hit, 10f, 1))
+          position = hit.position;
+        EntityManager.SetComponentData(minion, new Translation { Value = position });
         EntityManager.SetComponentData(minion, new Rotation { Value = transform.Rotation });
         EntityManager.AddComponentData(minion, new Heading { Value = transform.Forward });
         EntityManager.AddComponentData(minion, new Team { Value = team.Value });
         spawner.NextSpawnTime = (float)Time.ElapsedTime + spawner.SpawnCooldown;
+
+        // TODO: move this to targeting system.
+        int teamNumber = team.Value;  // TODO: use SharedTeam?
+        Entities.ForEach((Entity stanchionEntity, ref Stanchion stanchion, ref Team stanchionTeam) => {
+          if (stanchionTeam.Value == teamNumber) {
+            EntityManager.AddComponentData(minion, new Target { Value = stanchionEntity });
+          }
+        });
       });
     }
   }
