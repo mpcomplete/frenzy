@@ -1,5 +1,4 @@
-﻿using ECSFrenzy.MonoBehaviors;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine.AI;

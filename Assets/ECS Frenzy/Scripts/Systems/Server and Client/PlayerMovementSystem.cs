@@ -3,8 +3,6 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using Unity.NetCode;
 using UnityEngine;
-using ECSFrenzy.MonoBehaviors;
-using ECSFrenzy.Networking;
 using static Unity.Mathematics.math;
 
 namespace ECSFrenzy {

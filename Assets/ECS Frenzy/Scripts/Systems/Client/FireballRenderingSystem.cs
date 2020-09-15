@@ -1,7 +1,6 @@
 ﻿using Unity.Entities;
 using Unity.Transforms;
 using Unity.NetCode;
-using ECSFrenzy.MonoBehaviors;
 
 namespace ECSFrenzy {
   [UpdateInGroup(typeof(ClientPresentationSystemGroup))]

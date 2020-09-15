@@ -3,10 +3,9 @@ using Unity.Networking.Transport;
 using Unity.NetCode;
 using UnityEngine;
 using Unity.Mathematics;
-using ECSFrenzy.MonoBehaviors;
 using static Unity.Mathematics.math;
 
-namespace ECSFrenzy.Networking {
+namespace ECSFrenzy {
   public static class NetworkConfiguration {
     public const ushort NETWORK_PORT = 8787;
   }

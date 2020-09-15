@@ -7,7 +7,7 @@ using Unity.NetCode;
 using UnityEngine;
 using static Unity.Mathematics.math;
 
-namespace ECSFrenzy.Boids {
+namespace ECSFrenzy {
   [UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
   [UpdateBefore(typeof(MoveAlongHeadingSystem))]
   public class BoidSystem : SystemBase {

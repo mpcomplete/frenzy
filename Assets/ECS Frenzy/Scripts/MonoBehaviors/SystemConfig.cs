@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 
-namespace ECSFrenzy.MonoBehaviors {
+namespace ECSFrenzy {
   public class SystemConfig : MonoBehaviour {
     public static SystemConfig Instance;
     public RenderedPlayer RenderedPlayerPrefab;

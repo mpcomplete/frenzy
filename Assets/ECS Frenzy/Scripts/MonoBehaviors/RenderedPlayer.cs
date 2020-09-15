@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace ECSFrenzy.MonoBehaviors {
+namespace ECSFrenzy {
   public class RenderedPlayer : MonoBehaviour {
     public Animator Animator;
   }
