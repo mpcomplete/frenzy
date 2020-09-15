@@ -1,10 +1,11 @@
 ﻿using System;
 using Unity.Entities;
+using Unity.NetCode;
 
 namespace ECSFrenzy {
   [Serializable]
   [GenerateAuthoringComponent]
   public struct Team : IComponentData {
-    public int Value;
+    [GhostField] public int Value;
   }
 }
