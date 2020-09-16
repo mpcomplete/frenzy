@@ -4,7 +4,7 @@ using Unity.Entities;
 using Unity.NetCode;
 
 namespace ECSFrenzy {
-  [UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
+  [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
   public class DeathTimerSystem : SystemBase {
     EntityCommandBuffer entityCommandBuffer;
 

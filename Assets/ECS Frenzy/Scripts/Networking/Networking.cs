@@ -1,4 +1,5 @@
-﻿using Unity.Entities;
+﻿using Unity.Collections;
+using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
 using UnityEngine;
@@ -7,6 +8,28 @@ using ECSFrenzy.MonoBehaviors;
 using static Unity.Mathematics.math;
 
 namespace ECSFrenzy.Networking {
+  public static class Utils {
+    public static Entity FindGhostPrefab<T>(EntityManager entityManager, DynamicBuffer<GhostPrefabBuffer> prefabs) {
+      var prefab = Entity.Null; 
+      for (int ghostId = 0; ghostId < prefabs.Length; ghostId++) {
+        if (entityManager.HasComponent<T>(prefabs[ghostId].Value)) {
+          prefab = prefabs[ghostId].Value;
+        }
+      }
+      return prefab;
+    }
+
+    public static Entity FindGhostPrefab<T>(EntityManager entityManager, NativeArray<GhostPrefabBuffer> prefabs) {
+      var prefab = Entity.Null; 
+      for (int ghostId = 0; ghostId < prefabs.Length; ghostId++) {
+        if (entityManager.HasComponent<T>(prefabs[ghostId].Value)) {
+          prefab = prefabs[ghostId].Value;
+        }
+      }
+      return prefab;
+    }
+  }
+
   public static class NetworkConfiguration {
     public const ushort NETWORK_PORT = 8787;
   }
@@ -15,21 +38,25 @@ namespace ECSFrenzy.Networking {
 
   public struct JoinGameRequest : IRpcCommand {}
 
+  [GhostComponent(PrefabType=GhostPrefabType.AllPredicted)]
   public struct PlayerInput : ICommandData<PlayerInput> {
     public uint Tick => tick;
     public uint tick;
     public float horizontal;
     public float vertical;
+    public int didFire;
 
     public void Deserialize(uint tick, ref DataStreamReader reader) {
       this.tick = tick;
       horizontal = reader.ReadFloat();
       vertical = reader.ReadFloat();
+      didFire = reader.ReadInt();
     }
 
     public void Serialize(ref DataStreamWriter writer) {
       writer.WriteFloat(horizontal);
       writer.WriteFloat(vertical);
+      writer.WriteInt(didFire);
     }
 
     public void Deserialize(uint tick, ref DataStreamReader reader, PlayerInput baseline, NetworkCompressionModel compressionModel) {
@@ -121,25 +148,14 @@ namespace ECSFrenzy.Networking {
 
   [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
   public class HandleRPCServer : ComponentSystem {
-    Entity FindGhost<T>() {
-      var prefab = Entity.Null; 
-      var ghostCollection = GetSingleton<GhostPrefabCollectionComponent>();
-      var serverPrefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(ghostCollection.serverPrefabs);
-      for (int ghostId = 0; ghostId < serverPrefabs.Length; ghostId++) {
-        if (EntityManager.HasComponent<T>(serverPrefabs[ghostId].Value)) {
-          prefab = serverPrefabs[ghostId].Value;
-        }
-      }
-      return prefab;
-    }
-
     protected override void OnUpdate() {
       Entities
       .WithNone<SendRpcCommandRequestComponent>()
       .ForEach((Entity requestEntity, ref JoinGameRequest joinGameRequest, ref ReceiveRpcCommandRequestComponent reqSrc) => {
         int networkId = EntityManager.GetComponentData<NetworkIdComponent>(reqSrc.SourceConnection).Value;
-        Entity prefab = FindGhost<NetworkPlayer>();
-        Entity player = EntityManager.Instantiate(prefab);
+        DynamicBuffer<GhostPrefabBuffer> serverPrefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(GetSingleton<GhostPrefabCollectionComponent>().serverPrefabs);
+        Entity playerPrefabEntity = Utils.FindGhostPrefab<NetworkPlayer>(EntityManager, serverPrefabs);
+        Entity player = EntityManager.Instantiate(playerPrefabEntity);
 
         UnityEngine.Debug.Log($"Server setting connection {networkId} to in game");
         PostUpdateCommands.AddBuffer<PlayerInput>(player);
@@ -184,6 +200,7 @@ namespace ECSFrenzy.Networking {
 
       DynamicBuffer<PlayerInput> playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
       float2 stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+      int didFire = Input.GetButtonDown("Fire1") ? 1 : 0;
 
       if (length(stickInput) < SystemConfig.Instance.ControllerDeadzone) {
         stickInput = float2(0,0);
@@ -191,12 +208,13 @@ namespace ECSFrenzy.Networking {
         stickInput = normalize(stickInput);
       }
 
-      //Debug.Log(stickInput);
       uint tick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick;
+
       PlayerInput input = new PlayerInput {
         tick = tick,
         horizontal = stickInput.x,
-        vertical = stickInput.y 
+        vertical = stickInput.y,
+        didFire = didFire
       };
 
       playerInputs.AddCommandData(input);
