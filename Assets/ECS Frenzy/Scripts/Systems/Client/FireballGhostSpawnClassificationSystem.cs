@@ -34,7 +34,7 @@ namespace ECSFrenzy {
       // TODO: for debugging only
       uint tick = World.GetExistingSystem<GhostPredictionSystemGroup>().PredictingTick;
 
-      Entities
+      Dependency = Entities
       .WithAll<GhostSpawnQueueComponent>()
       .WithoutBurst()
       .ForEach((DynamicBuffer<GhostSpawnBuffer> ghosts, DynamicBuffer<SnapshotDataBuffer> data) => {
@@ -63,7 +63,7 @@ namespace ECSFrenzy {
             ghosts[i] = ghost;
           }
         }
-      }).Schedule();
+      }).Schedule(Dependency);
     }
   }
 }

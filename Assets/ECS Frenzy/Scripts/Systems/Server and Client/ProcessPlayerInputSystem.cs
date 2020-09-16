@@ -73,7 +73,7 @@ namespace ECSFrenzy {
 
           // TODO: THIS stupid ass code is copied from the Asteroids project. However, this does not appear to do shit
           if (!inputBuffer.GetDataAtTick(tick, out PlayerInput input)) {
-            // input.didFire = 0;
+            input.didFire = 0;
           }
 
           if (input.horizontal == 0 && input.vertical == 0) {
@@ -118,7 +118,7 @@ namespace ECSFrenzy {
 
           // TODO: THIS stupid ass code is copied from the Asteroids project. However, this does not appear to do shit
           if (!inputBuffer.GetDataAtTick(tick, out PlayerInput input)) {
-            // input.didFire = 0;
+            input.didFire = 0;
           }
 
           if (input.horizontal == 0 && input.vertical == 0) {
@@ -158,6 +158,7 @@ namespace ECSFrenzy {
 
         translation.Value += dt * moveSpeed.Value * heading.Value;
       }).ScheduleParallel();
+      CommandBufferSystem.AddJobHandleForProducer(Dependency);
     }
   }
 }
