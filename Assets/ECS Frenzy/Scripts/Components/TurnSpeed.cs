@@ -1,8 +1,9 @@
 ﻿using System;
 using Unity.Entities;
+using Unity.NetCode;
 
 [Serializable]
 [GenerateAuthoringComponent]
 public struct TurnSpeed : IComponentData {
-  public float Value;
+  [GhostField] public float Value;
 }

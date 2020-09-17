@@ -1,4 +1,5 @@
-﻿using Unity.Entities;
+﻿using Unity.Collections;
+using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
 using UnityEngine;
@@ -6,6 +7,17 @@ using Unity.Mathematics;
 using static Unity.Mathematics.math;
 
 namespace ECSFrenzy {
+  public static class Utils {
+    public static Entity FindGhostPrefab(DynamicBuffer<GhostPrefabBuffer> prefabs, System.Predicate<Entity> predicate) {
+      for (int ghostId = 0; ghostId < prefabs.Length; ghostId++) {
+        if (predicate(prefabs[ghostId].Value)) {
+          return prefabs[ghostId].Value;
+        }
+      }
+      return Entity.Null;
+    }
+  }
+
   public static class NetworkConfiguration {
     public const ushort NETWORK_PORT = 8787;
   }
@@ -14,21 +26,25 @@ namespace ECSFrenzy {
 
   public struct JoinGameRequest : IRpcCommand {}
 
+  [GhostComponent(PrefabType=GhostPrefabType.AllPredicted)]
   public struct PlayerInput : ICommandData<PlayerInput> {
     public uint Tick => tick;
     public uint tick;
     public float horizontal;
     public float vertical;
+    public int didFire;
 
     public void Deserialize(uint tick, ref DataStreamReader reader) {
       this.tick = tick;
       horizontal = reader.ReadFloat();
       vertical = reader.ReadFloat();
+      didFire = reader.ReadInt();
     }
 
     public void Serialize(ref DataStreamWriter writer) {
       writer.WriteFloat(horizontal);
       writer.WriteFloat(vertical);
+      writer.WriteInt(didFire);
     }
 
     public void Deserialize(uint tick, ref DataStreamReader reader, PlayerInput baseline, NetworkCompressionModel compressionModel) {
@@ -120,25 +136,14 @@ namespace ECSFrenzy {
 
   [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
   public class HandleRPCServer : ComponentSystem {
-    Entity FindGhost<T>() {
-      var prefab = Entity.Null; 
-      var ghostCollection = GetSingleton<GhostPrefabCollectionComponent>();
-      var serverPrefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(ghostCollection.serverPrefabs);
-      for (int ghostId = 0; ghostId < serverPrefabs.Length; ghostId++) {
-        if (EntityManager.HasComponent<T>(serverPrefabs[ghostId].Value)) {
-          prefab = serverPrefabs[ghostId].Value;
-        }
-      }
-      return prefab;
-    }
-
     protected override void OnUpdate() {
       Entities
       .WithNone<SendRpcCommandRequestComponent>()
       .ForEach((Entity requestEntity, ref JoinGameRequest joinGameRequest, ref ReceiveRpcCommandRequestComponent reqSrc) => {
         int networkId = EntityManager.GetComponentData<NetworkIdComponent>(reqSrc.SourceConnection).Value;
-        Entity prefab = FindGhost<NetworkPlayer>();
-        Entity player = EntityManager.Instantiate(prefab);
+        DynamicBuffer<GhostPrefabBuffer> serverPrefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(GetSingleton<GhostPrefabCollectionComponent>().serverPrefabs);
+        Entity playerPrefabEntity = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<NetworkPlayer>(e));
+        Entity player = EntityManager.Instantiate(playerPrefabEntity);
 
         UnityEngine.Debug.Log($"Server setting connection {networkId} to in game");
         PostUpdateCommands.AddBuffer<PlayerInput>(player);
@@ -155,50 +160,60 @@ namespace ECSFrenzy {
   public class ReceivePlayerInputCommandSystem : CommandReceiveSystem<PlayerInput> {}
 
   [UpdateInGroup(typeof(ClientSimulationSystemGroup))]
-  public class SamplePlayerInput : ComponentSystem {
+  [UpdateBefore(typeof(SendPlayerInputCommandSystem))]
+  [UpdateAfter(typeof(GhostSimulationSystemGroup))]
+  public class SamplePlayerInput : SystemBase {
     protected override void OnCreate() {
       RequireSingletonForUpdate<NetworkIdComponent>();
     }
 
     protected override void OnUpdate() {
       Entity localInputEntity = GetSingleton<CommandTargetComponent>().targetEntity;
+      BeginSimulationEntityCommandBufferSystem barrier = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
 
       if (localInputEntity == Entity.Null) {
-        var localPlayerId = GetSingleton<NetworkIdComponent>().Value;
+        int localPlayerId = GetSingleton<NetworkIdComponent>().Value;
+        EntityCommandBuffer.ParallelWriter ecb = barrier.CreateCommandBuffer().AsParallelWriter();
+        Entity commandTargetEntity = GetSingletonEntity<CommandTargetComponent>();
 
         Entities
         .WithAll<NetworkPlayer>()
         .WithNone<PlayerInput>()
-        .ForEach((Entity ent, ref GhostOwnerComponent ghostOwner) => {
+        .ForEach((Entity ent, int nativeThreadIndex, ref GhostOwnerComponent ghostOwner) => {
           if (ghostOwner.NetworkId == localPlayerId) {
-            var e = GetSingletonEntity<CommandTargetComponent>();
             var ctc = new CommandTargetComponent { targetEntity = ent };
 
-            PostUpdateCommands.AddBuffer<PlayerInput>(ent);
-            PostUpdateCommands.SetComponent(e, ctc);
+            ecb.AddBuffer<PlayerInput>(nativeThreadIndex, ent);
+            ecb.SetComponent(nativeThreadIndex, commandTargetEntity, ctc);
           }
-        });
-        return;
-      }
-
-      DynamicBuffer<PlayerInput> playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
-      float2 stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-
-      if (length(stickInput) < SystemConfig.Instance.ControllerDeadzone) {
-        stickInput = float2(0,0);
+        }).Schedule();
       } else {
-        stickInput = normalize(stickInput);
+        DynamicBuffer<PlayerInput> playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
+        float2 stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        int didFire = Input.GetButtonDown("Fire1") ? 1 : 0;
+
+        if (length(stickInput) < SystemConfig.Instance.ControllerDeadzone) {
+          stickInput = float2(0,0);
+        } else {
+          stickInput = normalize(stickInput);
+        }
+
+        uint tick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick;
+
+        PlayerInput input = new PlayerInput {
+          tick = tick,
+          horizontal = stickInput.x,
+          vertical = stickInput.y,
+          didFire = didFire
+        };
+
+        Entities
+        .WithAll<NetworkPlayer, PlayerInput>()
+        .ForEach((Entity e, ref GhostOwnerComponent ghostOwner) => {
+          playerInputs.AddCommandData(input);
+        }).Schedule();
       }
-
-      //Debug.Log(stickInput);
-      uint tick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick;
-      PlayerInput input = new PlayerInput {
-        tick = tick,
-        horizontal = stickInput.x,
-        vertical = stickInput.y 
-      };
-
-      playerInputs.AddCommandData(input);
+      barrier.AddJobHandleForProducer(Dependency);
     }
   }
 }

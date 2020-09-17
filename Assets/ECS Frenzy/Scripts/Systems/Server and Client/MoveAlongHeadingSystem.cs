@@ -9,12 +9,15 @@ namespace ECSFrenzy {
     protected override void OnUpdate() {
       float dt = Time.DeltaTime;
 
+      /*
       Entities
       .WithName("Move_Along_Heading")
+      .WithNone<NetworkFireball>()
       .WithBurst()
       .ForEach((ref Translation translation, in Heading heading, in MoveSpeed moveSpeed) => {
         translation.Value += dt * moveSpeed.Value * heading.Value;
       }).ScheduleParallel();
+      */
     }
   }
 }

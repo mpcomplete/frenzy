@@ -4,7 +4,6 @@ using Unity.NetCode;
 
 [Serializable]
 [GenerateAuthoringComponent]
-[GhostComponent(PrefabType=GhostPrefabType.All)]
 public struct MoveSpeed : IComponentData {
-  public float Value;
+  [GhostField] public float Value;
 }

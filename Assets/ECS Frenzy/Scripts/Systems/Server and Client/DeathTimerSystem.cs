@@ -1,20 +1,19 @@
-﻿using Unity.Burst;
-using Unity.Collections;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.NetCode;
 
 namespace ECSFrenzy {
-  [UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
+  [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
+  [UpdateAfter(typeof(GhostSendSystem))]
   public class DeathTimerSystem : SystemBase {
-    EntityCommandBuffer entityCommandBuffer;
+    BeginSimulationEntityCommandBufferSystem commandBufferSystem;
 
     protected override void OnCreate() {
-      entityCommandBuffer = new EntityCommandBuffer(Allocator.Persistent, PlaybackPolicy.MultiPlayback);
+      commandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
     }
 
     protected override void OnUpdate() {
       float dt = Time.DeltaTime;
-      EntityCommandBuffer.ParallelWriter ecbWriter = entityCommandBuffer.AsParallelWriter();
+      EntityCommandBuffer.ParallelWriter ecbWriter = commandBufferSystem.CreateCommandBuffer().AsParallelWriter();
 
       Entities
       .WithName("Update_Death_Timer")
@@ -26,8 +25,7 @@ namespace ECSFrenzy {
           ecbWriter.DestroyEntity(entityInQueryIndex, e);
         }
       }).ScheduleParallel();
-
-      entityCommandBuffer.Playback(EntityManager);
+      commandBufferSystem.AddJobHandleForProducer(Dependency);
     }
   }
 }
