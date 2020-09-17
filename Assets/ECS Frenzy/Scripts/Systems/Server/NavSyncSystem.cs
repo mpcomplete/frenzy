@@ -14,6 +14,9 @@ namespace ECSFrenzy {
       .WithAll<Target>()
       .WithNone<NavState>()
       .ForEach((Entity e, ref Translation translation, ref Team team, ref Target target) => {
+        if (target.Value == Entity.Null)
+          return;
+
         NavMeshAgent agent = NavMeshAgent.Instantiate(SystemConfig.Instance.NavAgentBridgePrefab);
         EntityManager.AddComponentData(e, new NavState { Value = agent });
 
@@ -36,9 +39,12 @@ namespace ECSFrenzy {
       Entities
       .WithAll<Target>()
       .WithAll<NavState>()
-      .ForEach((Entity e, ref Translation translation) => {
+      .ForEach((Entity e, ref Translation translation, ref Target target) => {
         NavMeshAgent agent = EntityManager.GetComponentData<NavState>(e).Value;
         translation.Value = agent.transform.position;
+
+        LocalToWorld targetTransform = EntityManager.GetComponentData<LocalToWorld>(target.Value);
+        agent.SetDestination(targetTransform.Position);
       });
     }
   }

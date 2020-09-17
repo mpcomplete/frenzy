@@ -32,14 +32,6 @@ namespace ECSFrenzy {
         EntityManager.AddComponentData(minion, new Heading { Value = transform.Forward });
         EntityManager.AddComponentData(minion, new Team { Value = team.Value });
         spawner.NextSpawnTime = (float)Time.ElapsedTime + spawner.SpawnCooldown;
-
-        // TODO: move this to targeting system.
-        int teamNumber = team.Value;  // TODO: use SharedTeam?
-        Entities.ForEach((Entity stanchionEntity, ref Stanchion stanchion, ref Team stanchionTeam) => {
-          if (stanchionTeam.Value == teamNumber) {
-            EntityManager.AddComponentData(minion, new Target { Value = stanchionEntity });
-          }
-        });
       });
     }
   }
