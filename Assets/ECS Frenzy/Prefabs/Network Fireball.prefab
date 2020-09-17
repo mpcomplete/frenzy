@@ -91,7 +91,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74881f979b77d184c815400e46c618a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Value: 10
+  Value: 25
 --- !u!114 &4762118607386222131
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -120,4 +120,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90dc696101ba30844a60bafe4a43d226, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TimeRemaining: 2
+  TimeRemaining: 3

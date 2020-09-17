@@ -9,24 +9,13 @@ using static Unity.Mathematics.math;
 
 namespace ECSFrenzy.Networking {
   public static class Utils {
-    public static Entity FindGhostPrefab<T>(EntityManager entityManager, DynamicBuffer<GhostPrefabBuffer> prefabs) {
-      var prefab = Entity.Null; 
+    public static Entity FindGhostPrefab(DynamicBuffer<GhostPrefabBuffer> prefabs, System.Predicate<Entity> predicate) {
       for (int ghostId = 0; ghostId < prefabs.Length; ghostId++) {
-        if (entityManager.HasComponent<T>(prefabs[ghostId].Value)) {
-          prefab = prefabs[ghostId].Value;
+        if (predicate(prefabs[ghostId].Value)) {
+          return prefabs[ghostId].Value;
         }
       }
-      return prefab;
-    }
-
-    public static Entity FindGhostPrefab<T>(EntityManager entityManager, NativeArray<GhostPrefabBuffer> prefabs) {
-      var prefab = Entity.Null; 
-      for (int ghostId = 0; ghostId < prefabs.Length; ghostId++) {
-        if (entityManager.HasComponent<T>(prefabs[ghostId].Value)) {
-          prefab = prefabs[ghostId].Value;
-        }
-      }
-      return prefab;
+      return Entity.Null;
     }
   }
 
@@ -154,7 +143,7 @@ namespace ECSFrenzy.Networking {
       .ForEach((Entity requestEntity, ref JoinGameRequest joinGameRequest, ref ReceiveRpcCommandRequestComponent reqSrc) => {
         int networkId = EntityManager.GetComponentData<NetworkIdComponent>(reqSrc.SourceConnection).Value;
         DynamicBuffer<GhostPrefabBuffer> serverPrefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(GetSingleton<GhostPrefabCollectionComponent>().serverPrefabs);
-        Entity playerPrefabEntity = Utils.FindGhostPrefab<NetworkPlayer>(EntityManager, serverPrefabs);
+        Entity playerPrefabEntity = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<NetworkPlayer>(e));
         Entity player = EntityManager.Instantiate(playerPrefabEntity);
 
         UnityEngine.Debug.Log($"Server setting connection {networkId} to in game");
@@ -172,52 +161,60 @@ namespace ECSFrenzy.Networking {
   public class ReceivePlayerInputCommandSystem : CommandReceiveSystem<PlayerInput> {}
 
   [UpdateInGroup(typeof(ClientSimulationSystemGroup))]
-  public class SamplePlayerInput : ComponentSystem {
+  [UpdateBefore(typeof(SendPlayerInputCommandSystem))]
+  [UpdateAfter(typeof(GhostSimulationSystemGroup))]
+  public class SamplePlayerInput : SystemBase {
     protected override void OnCreate() {
       RequireSingletonForUpdate<NetworkIdComponent>();
     }
 
     protected override void OnUpdate() {
       Entity localInputEntity = GetSingleton<CommandTargetComponent>().targetEntity;
+      BeginSimulationEntityCommandBufferSystem barrier = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
 
       if (localInputEntity == Entity.Null) {
-        var localPlayerId = GetSingleton<NetworkIdComponent>().Value;
+        int localPlayerId = GetSingleton<NetworkIdComponent>().Value;
+        EntityCommandBuffer.ParallelWriter ecb = barrier.CreateCommandBuffer().AsParallelWriter();
+        Entity commandTargetEntity = GetSingletonEntity<CommandTargetComponent>();
 
         Entities
         .WithAll<NetworkPlayer>()
         .WithNone<PlayerInput>()
-        .ForEach((Entity ent, ref GhostOwnerComponent ghostOwner) => {
+        .ForEach((Entity ent, int nativeThreadIndex, ref GhostOwnerComponent ghostOwner) => {
           if (ghostOwner.NetworkId == localPlayerId) {
-            var e = GetSingletonEntity<CommandTargetComponent>();
             var ctc = new CommandTargetComponent { targetEntity = ent };
 
-            PostUpdateCommands.AddBuffer<PlayerInput>(ent);
-            PostUpdateCommands.SetComponent(e, ctc);
+            ecb.AddBuffer<PlayerInput>(nativeThreadIndex, ent);
+            ecb.SetComponent(nativeThreadIndex, commandTargetEntity, ctc);
           }
-        });
-        return;
-      }
-
-      DynamicBuffer<PlayerInput> playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
-      float2 stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-      int didFire = Input.GetButtonDown("Fire1") ? 1 : 0;
-
-      if (length(stickInput) < SystemConfig.Instance.ControllerDeadzone) {
-        stickInput = float2(0,0);
+        }).Schedule();
       } else {
-        stickInput = normalize(stickInput);
+        DynamicBuffer<PlayerInput> playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
+        float2 stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        int didFire = Input.GetButtonDown("Fire1") ? 1 : 0;
+
+        if (length(stickInput) < SystemConfig.Instance.ControllerDeadzone) {
+          stickInput = float2(0,0);
+        } else {
+          stickInput = normalize(stickInput);
+        }
+
+        uint tick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick;
+
+        PlayerInput input = new PlayerInput {
+          tick = tick,
+          horizontal = stickInput.x,
+          vertical = stickInput.y,
+          didFire = didFire
+        };
+
+        Entities
+        .WithAll<NetworkPlayer, PlayerInput>()
+        .ForEach((Entity e, ref GhostOwnerComponent ghostOwner) => {
+          playerInputs.AddCommandData(input);
+        }).Schedule();
       }
-
-      uint tick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick;
-
-      PlayerInput input = new PlayerInput {
-        tick = tick,
-        horizontal = stickInput.x,
-        vertical = stickInput.y,
-        didFire = didFire
-      };
-
-      playerInputs.AddCommandData(input);
+      barrier.AddJobHandleForProducer(Dependency);
     }
   }
 }
