@@ -55,9 +55,15 @@ namespace ECSFrenzy {
 
       Entity fireballPrefabEntity = FireballPrefabEntity;
 
+      // These are used on the server to check if actions that have cooldowns are available to be performed yet
+      var playerAbilities = GetComponentDataFromEntity<PlayerAbilites>(true);
+      var cooldowns = GetComponentDataFromEntity<Cooldown>(true);
+
       Entities
       .WithName("Predict_Player_Input")
-      .WithBurst()
+      .WithoutBurst() // TODO: This is a known bug where burst and shared components don't play nicely together... totally idiotic
+      .WithReadOnly(playerAbilities)
+      .WithReadOnly(cooldowns)
       .WithAll<NetworkPlayer, PlayerInput>()
       .ForEach((Entity entity, int nativeThreadIndex, ref Translation position, ref Rotation rotation, ref MoveSpeed moveSpeed, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost, in GhostOwnerComponent ghostOwner) => {
         if (!GhostPredictionSystemGroup.ShouldPredict(predictingTick, predictedGhost))
@@ -73,14 +79,20 @@ namespace ECSFrenzy {
         position.Value += velocity;
         rotation.Value = (speed > 0) ? (quaternion)Quaternion.LookRotation(direction, float3(0, 1, 0)) : rotation.Value;
 
-        if (isServer && input.didFire != 0) {
-          Entity fireball = commandBuffer.Instantiate(nativeThreadIndex, fireballPrefabEntity);
-          float3 spawnPosition = position.Value + forward(rotation.Value) + float3(0,1,0);
+        if (isServer) {
+          var abilities = playerAbilities[entity];
+          var fireballCooldown = cooldowns[abilities.Ability1];
 
-          commandBuffer.SetComponent(nativeThreadIndex, fireball, ghostOwner);
-          commandBuffer.SetComponent(nativeThreadIndex, fireball, new Translation { Value = spawnPosition });
-          commandBuffer.SetComponent(nativeThreadIndex, fireball, rotation);
-          commandBuffer.SetComponent(nativeThreadIndex, fireball, new Heading { Value = forward(rotation.Value) });
+          if (input.didFire != 0 && fireballCooldown.TimeRemaining <= 0) {
+            Entity fireball = commandBuffer.Instantiate(nativeThreadIndex, fireballPrefabEntity);
+            float3 spawnPosition = position.Value + forward(rotation.Value) + float3(0,1,0);
+
+            commandBuffer.SetComponent(nativeThreadIndex, fireball, ghostOwner);
+            commandBuffer.SetComponent(nativeThreadIndex, fireball, new Translation { Value = spawnPosition });
+            commandBuffer.SetComponent(nativeThreadIndex, fireball, rotation);
+            commandBuffer.SetComponent(nativeThreadIndex, fireball, new Heading { Value = forward(rotation.Value) });
+            Cooldown.Activate(commandBuffer, abilities.Ability1, nativeThreadIndex, fireballCooldown);
+          }
         }
       }).ScheduleParallel();
       CommandBufferSystem.AddJobHandleForProducer(Dependency);
