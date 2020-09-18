@@ -11,10 +11,6 @@ namespace ECSFrenzy {
       commandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
     }
 
-    protected override void OnDestroy() {
-      entityCommandBuffer.Dispose();
-    }
-
     protected override void OnUpdate() {
       float dt = Time.DeltaTime;
       EntityCommandBuffer.ParallelWriter ecbWriter = commandBufferSystem.CreateCommandBuffer().AsParallelWriter();

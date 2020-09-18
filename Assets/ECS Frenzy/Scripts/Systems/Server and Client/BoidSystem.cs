@@ -9,7 +9,6 @@ using static Unity.Mathematics.math;
 
 namespace ECSFrenzy {
   [UpdateInGroup(typeof(ClientAndServerSimulationSystemGroup))]
-  [UpdateBefore(typeof(MoveAlongHeadingSystem))]
   public class BoidSystem : SystemBase {
     public struct Neighbor {
       public Entity entity;
