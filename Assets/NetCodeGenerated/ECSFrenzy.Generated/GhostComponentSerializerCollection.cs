@@ -15,6 +15,7 @@ namespace ECSFrenzy.Generated
             ghostCollectionSystem.AddSerializer(MoveSpeedGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(TurnSpeedGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(ECSFrenzyBaseGhostComponentSerializer.State);
+            ghostCollectionSystem.AddSerializer(ECSFrenzyCooldownGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(ECSFrenzyTeamGhostComponentSerializer.State);
         }
 
