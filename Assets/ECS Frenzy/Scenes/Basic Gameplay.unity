@@ -1079,15 +1079,11 @@ MonoBehaviour:
   Ghosts:
   - prefab: {fileID: 3679481439780764390, guid: d0e554df0c8893f41938f80cf008e972, type: 3}
     enabled: 1
-  - prefab: {fileID: 5029863540442783647, guid: 2eb9f0f2d30c7674aa4b55e17c5d4fad, type: 3}
-    enabled: 1
-  - prefab: {fileID: -7385701854441410809, guid: fdfdf0a0b7c09854f9be3eeccd17d404, type: 3}
-    enabled: 1
-  - prefab: {fileID: 5029863540442783647, guid: bf6e96200846188448c4ad2f8070aa9a, type: 3}
-    enabled: 1
   - prefab: {fileID: 4762118607386222133, guid: e5bd4880f4c86c3489c909d4145da22f, type: 3}
     enabled: 1
   - prefab: {fileID: 924912124691510099, guid: f627a587adea7834ca64b16a09552db1, type: 3}
+    enabled: 1
+  - prefab: {fileID: 3375929130029482782, guid: 1b92d51253d5a944e9bbca447d4207e0, type: 3}
     enabled: 1
 --- !u!1 &507689455
 GameObject:
@@ -3697,6 +3693,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   RenderedPlayerPrefab: {fileID: 7397049788785989640, guid: b0751c95da29cbd4a93ab8b273e57282, type: 3}
   RenderedFireballPrefab: {fileID: 5229814469993547117, guid: d408c96b1c8ba3c478a626c1a03c5ed9, type: 3}
+  NavAgentBridgePrefab: {fileID: 0}
   PlayerMoveSpeed: 5
   ControllerDeadzone: 0.19
   TeamConfigs: []

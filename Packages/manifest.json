@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.unity.dots.editor": "0.10.0-preview",
     "com.unity.animation": "0.6.0-preview.2",
     "com.unity.animation.rigging": "0.3.4-preview",
     "com.unity.burst": "1.3.5",
