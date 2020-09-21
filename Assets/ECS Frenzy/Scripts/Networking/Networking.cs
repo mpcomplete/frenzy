@@ -26,6 +26,16 @@ namespace ECSFrenzy {
 
   public struct JoinGameRequest : IRpcCommand {}
 
+  public struct PlayAudioRequest : IRpcCommand {
+    public FixedString128 Name;
+    public float Volume;
+
+    public PlayAudioRequest(FixedString128 name, float volume) {
+      Name = name;
+      Volume = volume;
+    }
+  }
+
   [GhostComponent(PrefabType=GhostPrefabType.AllPredicted)]
   public struct PlayerInput : ICommandData<PlayerInput> {
     public uint Tick => tick;
@@ -114,11 +124,16 @@ namespace ECSFrenzy {
   [UpdateInGroup(typeof(ClientSimulationSystemGroup))]
   public class HandleRPCClient : ComponentSystem {
     EntityArchetype joinGameArchetype;
+    EntityArchetype playAudioArchetype;
 
     protected override void OnCreate() {
       joinGameArchetype = EntityManager.CreateArchetype(new ComponentType[] { 
         typeof(JoinGameRequest),
         typeof(SendRpcCommandRequestComponent)
+      });
+
+      playAudioArchetype = EntityManager.CreateArchetype(new ComponentType[] {
+        typeof(PlayAudio)
       });
     }
 
@@ -130,6 +145,14 @@ namespace ECSFrenzy {
 
         PostUpdateCommands.SetComponent(requestEntity, new SendRpcCommandRequestComponent { TargetConnection = entity });
         PostUpdateCommands.AddComponent<NetworkStreamInGame>(entity);
+      });
+
+      Entities
+      .ForEach((Entity requestEntity, ref PlayAudioRequest playAudioRequest) => {
+        var playEntity = PostUpdateCommands.CreateEntity(playAudioArchetype);
+
+        PostUpdateCommands.SetComponent<PlayAudio>(playEntity, new PlayAudio { Name = playAudioRequest.Name, Volume = playAudioRequest.Volume });
+        PostUpdateCommands.DestroyEntity(requestEntity);
       });
     }
   }
@@ -151,6 +174,12 @@ namespace ECSFrenzy {
         PostUpdateCommands.SetComponent(reqSrc.SourceConnection, new CommandTargetComponent { targetEntity = player });
         PostUpdateCommands.DestroyEntity(requestEntity);
         PostUpdateCommands.AddComponent<NetworkStreamInGame>(reqSrc.SourceConnection);
+
+        // TODO: This is a stupid test of the sound code... just a sound to be played on the connecting client when they login
+        Entity soundEntity = PostUpdateCommands.CreateEntity();
+
+        PostUpdateCommands.AddComponent<SendRpcCommandRequestComponent>(soundEntity); 
+        PostUpdateCommands.AddComponent<PlayAudioRequest>(soundEntity, new PlayAudioRequest { Name = "Login", Volume = 1f });
       });
     }
   }

@@ -12,6 +12,7 @@ namespace ECSFrenzy {
     Entity FireballPrefabEntity;
     BeginSimulationEntityCommandBufferSystem CommandBufferSystem;
     GhostPredictionSystemGroup PredictionGroup;
+    EntityArchetype SoundArchetype;
 
     static Entity PredictedClientFireballPrefab(EntityManager entityManager, GhostPrefabCollectionComponent ghostPrefabs) {
       bool IsPredictedSpawnFireball(Entity e) => entityManager.HasComponent<NetworkFireball>(e) && entityManager.HasComponent<PredictedGhostSpawnRequestComponent>(e);
@@ -36,6 +37,10 @@ namespace ECSFrenzy {
     protected override void OnCreate() {
       CommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
       PredictionGroup = World.GetExistingSystem<GhostPredictionSystemGroup>();
+      SoundArchetype = EntityManager.CreateArchetype(new ComponentType[] { 
+        typeof(SendRpcCommandRequestComponent),
+        typeof(PlayAudioRequest)
+      });
     }
 
     protected override void OnUpdate() {
@@ -58,6 +63,7 @@ namespace ECSFrenzy {
       // These are used on the server to check if actions that have cooldowns are available to be performed yet
       var playerAbilities = GetComponentDataFromEntity<PlayerAbilites>(true);
       var cooldowns = GetComponentDataFromEntity<Cooldown>(true);
+      var soundArchetype = SoundArchetype;
 
       Entities
       .WithName("Predict_Player_Input")
@@ -71,9 +77,9 @@ namespace ECSFrenzy {
 
         inputBuffer.GetDataAtTick(predictingTick, out PlayerInput input);
 
-        float speed = MoveSpeedFromInput(input);
-        float3 direction = DirectionFromInput(input);
-        float3 velocity = Velocity(direction, maxMoveSpeed, dt);
+        var speed = MoveSpeedFromInput(input);
+        var direction = DirectionFromInput(input);
+        var velocity = Velocity(direction, maxMoveSpeed, dt);
 
         moveSpeed.Value = speed;
         position.Value += velocity;
@@ -84,14 +90,26 @@ namespace ECSFrenzy {
           var fireballCooldown = cooldowns[abilities.Ability1];
 
           if (input.didFire != 0 && fireballCooldown.TimeRemaining <= 0) {
-            Entity fireball = commandBuffer.Instantiate(nativeThreadIndex, fireballPrefabEntity);
-            float3 spawnPosition = position.Value + forward(rotation.Value) + float3(0,1,0);
+            // create fireball ghost
+            {
+              var spawnPosition = position.Value + forward(rotation.Value) + float3(0,1,0);
+              var fireball = commandBuffer.Instantiate(nativeThreadIndex, fireballPrefabEntity);
 
-            commandBuffer.SetComponent(nativeThreadIndex, fireball, ghostOwner);
-            commandBuffer.SetComponent(nativeThreadIndex, fireball, new Translation { Value = spawnPosition });
-            commandBuffer.SetComponent(nativeThreadIndex, fireball, rotation);
-            commandBuffer.SetComponent(nativeThreadIndex, fireball, new Heading { Value = forward(rotation.Value) });
-            Cooldown.Activate(commandBuffer, abilities.Ability1, nativeThreadIndex, fireballCooldown);
+              commandBuffer.SetComponent(nativeThreadIndex, fireball, ghostOwner);
+              commandBuffer.SetComponent(nativeThreadIndex, fireball, new Translation { Value = spawnPosition });
+              commandBuffer.SetComponent(nativeThreadIndex, fireball, rotation);
+              commandBuffer.SetComponent(nativeThreadIndex, fireball, new Heading { Value = forward(rotation.Value) });
+            }
+            // play fireball sound
+            {
+              var fireballSoundEntity = commandBuffer.CreateEntity(nativeThreadIndex, soundArchetype);
+
+              commandBuffer.SetComponent<PlayAudioRequest>(nativeThreadIndex, fireballSoundEntity, new PlayAudioRequest("Fireball", 1f));
+            }
+            // activate fireball cooldown
+            {
+              Cooldown.Activate(commandBuffer, abilities.Ability1, nativeThreadIndex, fireballCooldown);
+            }
           }
         }
       }).ScheduleParallel();
