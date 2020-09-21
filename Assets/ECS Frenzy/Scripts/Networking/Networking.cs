@@ -168,15 +168,19 @@ namespace ECSFrenzy {
       .ForEach((Entity requestEntity, ref JoinGameRequest joinGameRequest, ref ReceiveRpcCommandRequestComponent reqSrc) => {
         int networkId = EntityManager.GetComponentData<NetworkIdComponent>(reqSrc.SourceConnection).Value;
         DynamicBuffer<GhostPrefabBuffer> serverPrefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(GetSingleton<GhostPrefabCollectionComponent>().serverPrefabs);
-        Entity playerPrefabEntity = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<NetworkPlayer>(e));
-        Entity player = EntityManager.Instantiate(playerPrefabEntity);
+        Entity playerPrefab = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<NetworkPlayer>(e));
+        Entity stanchionPrefab = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<Stanchion>(e));
+        Entity player = EntityManager.Instantiate(playerPrefab);
 
-        UnityEngine.Debug.Log($"Server setting connection {networkId} to in game");
+        Debug.Log($"Server setting connection {networkId} to in game");
         PostUpdateCommands.AddBuffer<PlayerInput>(player);
         PostUpdateCommands.SetComponent(player, new GhostOwnerComponent { NetworkId = networkId });
         PostUpdateCommands.SetComponent(reqSrc.SourceConnection, new CommandTargetComponent { targetEntity = player });
         PostUpdateCommands.DestroyEntity(requestEntity);
         PostUpdateCommands.AddComponent<NetworkStreamInGame>(reqSrc.SourceConnection);
+
+        Entity stanchion = EntityManager.Instantiate(stanchionPrefab);
+        PostUpdateCommands.SetComponent(stanchion, new GhostOwnerComponent { NetworkId = networkId });
 
         // TODO: This is a stupid test of the sound code... just a sound to be played on the connecting client when they login
         Entity soundEntity = PostUpdateCommands.CreateEntity();

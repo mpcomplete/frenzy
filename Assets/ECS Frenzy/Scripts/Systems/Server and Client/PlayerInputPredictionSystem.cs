@@ -130,7 +130,7 @@ namespace ECSFrenzy {
           return;
 
         inputBuffer.GetDataAtTick(predictingTick, out PlayerInput input);
-        if (isServer && input.didStanchion != 0) {
+        if (input.didStanchion != 0) {
           int playerTeam = team.Value;
           float3 playerPos = position.Value;
           for (int i = 0; i < stanchionTeams.Length; i++) {
