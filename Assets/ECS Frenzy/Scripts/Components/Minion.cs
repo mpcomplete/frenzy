@@ -17,64 +17,68 @@ namespace ECSFrenzy {
   }
 
   [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-  public class MinionAISystem : ComponentSystem {
+  public class MinionAISystem : SystemBase {
+    BeginSimulationEntityCommandBufferSystem commandBufferSystem;
     BuildPhysicsWorld physicsWorldSystem;
     const float MinionAggroRange = 5f;  // TODO: move
 
     protected override void OnCreate() {
+      commandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
       physicsWorldSystem = World.GetExistingSystem<BuildPhysicsWorld>();
     }
 
-    protected override void OnDestroy() {
-      Hits.Dispose();
-    }
-
     protected override void OnUpdate() {
-      var query = Entities.WithAll<Stanchion, Team>().ToEntityQuery();
-      using (var teams = query.ToComponentDataArray<Team>(Allocator.TempJob))
-      using (var stanchions = query.ToEntityArray(Allocator.TempJob)) {
-        Entities.ForEach((Entity e, ref Minion minion, ref Team team, ref LocalToWorld transform) => {
-          switch (minion.CurrentBehavior) {
-          case Minion.Behavior.Idle:
-          case Minion.Behavior.OnStanchion:
-            Entity target = FindTarget(transform.Position, team);
-            if (target != Entity.Null) {
-              EntityManager.SetComponentData<Target>(e, new Target { Value = target });
-              minion.CurrentBehavior = Minion.Behavior.Fighting;
-            } else if (minion.CurrentBehavior == Minion.Behavior.Idle) {
-              for (int i = 0; i < teams.Length; i++) {
-                if (teams[i].Value == team.Value)
-                  target = stanchions[i];
-              }
-              EntityManager.SetComponentData<Target>(e, new Target { Value = target });
-              minion.CurrentBehavior = Minion.Behavior.OnStanchion;
+      var ecb = commandBufferSystem.CreateCommandBuffer().AsParallelWriter();
+      var collisionWorld = physicsWorldSystem.PhysicsWorld.CollisionWorld;
+      var query = GetEntityQuery(typeof(Stanchion), typeof(Team));
+      var stanchions = query.ToEntityArray(Allocator.TempJob);
+      var stanchionTeams = query.ToComponentDataArray<Team>(Allocator.TempJob);
+      Entities
+        .WithDisposeOnCompletion(stanchions)
+        .WithDisposeOnCompletion(stanchionTeams)
+        .ForEach((Entity e, int nativeThreadIndex, ref Minion minion, ref Team team, ref LocalToWorld transform) => {
+        switch (minion.CurrentBehavior) {
+        case Minion.Behavior.Idle:
+        case Minion.Behavior.OnStanchion:
+          Entity target = FindTarget(collisionWorld, transform.Position, team);
+          if (target != Entity.Null) {
+            ecb.SetComponent(nativeThreadIndex, e, new Target { Value = target });
+            minion.CurrentBehavior = Minion.Behavior.Fighting;
+          } else if (minion.CurrentBehavior == Minion.Behavior.Idle) {
+            for (int i = 0; i < stanchionTeams.Length; i++) {
+              if (stanchionTeams[i].Value == team.Value)
+                target = stanchions[i];
             }
-            break;
-          case Minion.Behavior.Fighting:
-            break;
+            ecb.SetComponent(nativeThreadIndex, e, new Target { Value = target });
+            minion.CurrentBehavior = Minion.Behavior.OnStanchion;
           }
-        });
-      }
+          break;
+        case Minion.Behavior.Fighting:
+          break;
+        }
+      }).ScheduleParallel();
     }
 
-    NativeList<DistanceHit> Hits = new NativeList<DistanceHit>(Allocator.Persistent);
-    Entity FindTarget(float3 pos, in Team team) {
+    static Entity FindTarget(in CollisionWorld collisionWorld, float3 pos, in Team team) {
       (float distsq, Entity e) closest = (float.MaxValue, Entity.Null);
+      NativeList<DistanceHit> hits = new NativeList<DistanceHit>(8, Allocator.Temp);
       // Collide with opposite team.
       uint layer = team.Value == 0 ? CollisionLayer.Team2 : CollisionLayer.Team1;
       var fromPoint = new PointDistanceInput() { Filter = new CollisionFilter { BelongsTo = layer, CollidesWith = layer }, Position = pos, MaxDistance = MinionAggroRange };
-      if (physicsWorldSystem.PhysicsWorld.CollisionWorld.CalculateDistance(fromPoint, ref Hits)) {
-        foreach (var hit in Hits) {
+      if (collisionWorld.CalculateDistance(fromPoint, ref hits)) {
+        for (int i = 0; i < hits.Length; i++) {
+          var hit = hits[i];  // TODO: isn't random-access on a list slow?
           Entity e = hit.Entity;
           float distsq = math.distancesq(hit.Position, pos);
-          Debug.Assert(EntityManager.HasComponent<Team>(e), $"Minion target collided invalid object: {EntityManager.GetName(e)}.");
-          Debug.Assert(EntityManager.GetComponentData<Team>(e).Value != team.Value, "Minion target collided with own team. CollisionFilters are incorrect.");
+          //Debug.Assert(EntityManager.HasComponent<Team>(e), $"Minion target collided invalid object: {EntityManager.GetName(e)}.");
+          //Debug.Assert(EntityManager.GetComponentData<Team>(e).Value != team.Value, "Minion target collided with own team. CollisionFilters are incorrect.");
           if (distsq < closest.distsq) {
             closest = (distsq, e);
           }
         }
       }
-      Hits.Clear();
+      if (hits.IsCreated)
+        hits.Dispose();
       return closest.e;
     }
   }
