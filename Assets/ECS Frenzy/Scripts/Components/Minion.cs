@@ -60,14 +60,16 @@ namespace ECSFrenzy {
     NativeList<DistanceHit> Hits = new NativeList<DistanceHit>(Allocator.Persistent);
     Entity FindTarget(float3 pos, in Team team) {
       (float distsq, Entity e) closest = (float.MaxValue, Entity.Null);
-      var fromPoint = new PointDistanceInput() { Filter = CollisionFilter.Default, Position = pos, MaxDistance = MinionAggroRange };
+      // Collide with opposite team.
+      uint layer = team.Value == 0 ? CollisionLayer.Team2 : CollisionLayer.Team1;
+      var fromPoint = new PointDistanceInput() { Filter = new CollisionFilter { BelongsTo = layer, CollidesWith = layer }, Position = pos, MaxDistance = MinionAggroRange };
       if (physicsWorldSystem.PhysicsWorld.CollisionWorld.CalculateDistance(fromPoint, ref Hits)) {
         foreach (var hit in Hits) {
           Entity e = hit.Entity;
           float distsq = math.distancesq(hit.Position, pos);
-          if (EntityManager.HasComponent<Minion>(e) &&
-              EntityManager.GetComponentData<Team>(e).Value != team.Value &&
-              distsq < closest.distsq) {
+          Debug.Assert(EntityManager.HasComponent<Team>(e), $"Minion target collided invalid object: {EntityManager.GetName(e)}.");
+          Debug.Assert(EntityManager.GetComponentData<Team>(e).Value != team.Value, "Minion target collided with own team. CollisionFilters are incorrect.");
+          if (distsq < closest.distsq) {
             closest = (distsq, e);
           }
         }

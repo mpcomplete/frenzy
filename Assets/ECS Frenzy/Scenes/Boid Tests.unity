@@ -1006,7 +1006,7 @@ MonoBehaviour:
   RenderedPlayerPrefab: {fileID: 7397049788785989640, guid: b0751c95da29cbd4a93ab8b273e57282, type: 3}
   RenderedFireballPrefab: {fileID: 5229814469993547117, guid: d408c96b1c8ba3c478a626c1a03c5ed9, type: 3}
   NavAgentBridgePrefab: {fileID: -6526023300986269157, guid: 081516d6ff4c7a84cbf69debb2f80e55, type: 3}
-  PlayerMoveSpeed: 5
+  PlayerMoveSpeed: 25
   ControllerDeadzone: 0.19
   TeamConfigs:
   - {fileID: 11400000, guid: 6124eef8c01cbd0488c53bfccb124e29, type: 2}

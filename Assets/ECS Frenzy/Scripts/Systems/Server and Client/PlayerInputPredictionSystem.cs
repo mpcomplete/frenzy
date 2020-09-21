@@ -5,6 +5,7 @@ using Unity.NetCode;
 using UnityEngine;
 using static Unity.Mathematics.math;
 using static ECSFrenzy.Utils;
+using Unity.Collections;
 
 namespace ECSFrenzy {
   [UpdateInGroup(typeof(GhostPredictionSystemGroup))]
@@ -113,6 +114,33 @@ namespace ECSFrenzy {
           }
         }
       }).ScheduleParallel();
+
+      EntityQuery query = GetEntityQuery(typeof(Stanchion), typeof(Team));
+      var stanchions = query.ToEntityArray(Allocator.TempJob);
+      var stanchionTeams = query.ToComponentDataArray<Team>(Allocator.TempJob);
+
+      Entities
+      .WithName("Predict_Player_Input_Stanchion")
+      .WithBurst()
+      .WithAll<NetworkPlayer, PlayerInput>()
+      .WithDisposeOnCompletion(stanchions)
+      .WithDisposeOnCompletion(stanchionTeams)
+      .ForEach((Entity entity, int nativeThreadIndex, ref Translation position, in Team team, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost) => {
+        if (!GhostPredictionSystemGroup.ShouldPredict(predictingTick, predictedGhost))
+          return;
+
+        inputBuffer.GetDataAtTick(predictingTick, out PlayerInput input);
+        if (isServer && input.didStanchion != 0) {
+          int playerTeam = team.Value;
+          float3 playerPos = position.Value;
+          for (int i = 0; i < stanchionTeams.Length; i++) {
+            if (stanchionTeams[i].Value == playerTeam) {
+              commandBuffer.SetComponent(nativeThreadIndex, stanchions[i], new Translation { Value = playerPos });
+            }
+          }
+        }
+      }).ScheduleParallel();
+
       CommandBufferSystem.AddJobHandleForProducer(Dependency);
     }
   }

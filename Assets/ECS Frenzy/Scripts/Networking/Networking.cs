@@ -43,18 +43,21 @@ namespace ECSFrenzy {
     public float horizontal;
     public float vertical;
     public int didFire;
+    public int didStanchion;
 
     public void Deserialize(uint tick, ref DataStreamReader reader) {
       this.tick = tick;
       horizontal = reader.ReadFloat();
       vertical = reader.ReadFloat();
       didFire = reader.ReadInt();
+      didStanchion = reader.ReadInt();
     }
 
     public void Serialize(ref DataStreamWriter writer) {
       writer.WriteFloat(horizontal);
       writer.WriteFloat(vertical);
       writer.WriteInt(didFire);
+      writer.WriteInt(didStanchion);
     }
 
     public void Deserialize(uint tick, ref DataStreamReader reader, PlayerInput baseline, NetworkCompressionModel compressionModel) {
@@ -220,6 +223,7 @@ namespace ECSFrenzy {
         DynamicBuffer<PlayerInput> playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
         float2 stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         int didFire = Input.GetButtonDown("Fire1") ? 1 : 0;
+        int didStanchion = Input.GetButtonDown("Jump") ? 1 : 0;
 
         if (length(stickInput) < SystemConfig.Instance.ControllerDeadzone) {
           stickInput = float2(0,0);
@@ -233,7 +237,8 @@ namespace ECSFrenzy {
           tick = tick,
           horizontal = stickInput.x,
           vertical = stickInput.y,
-          didFire = didFire
+          didFire = didFire,
+          didStanchion = didStanchion
         };
 
         Entities
