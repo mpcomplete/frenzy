@@ -2,18 +2,25 @@
 using Unity.Entities;
 using Unity.Transforms;
 using Unity.NetCode;
+using Unity.Physics;
+using Unity.Mathematics;
 
 namespace ECSFrenzy {
   [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
   public class TeamAssignmentSystem : ComponentSystem {
-    public int currentTeamNumber = 0;
+    int currentTeamNumber = 0;
+    BlobAssetReference<Collider>[] colliderForTeam;
 
-    int? IndexOfMatchingTeam(in NativeArray<Team> teams) {
-      for (int i = 0; i < teams.Length; i++) {
-        if (teams[i].Value == currentTeamNumber)
-          return i;
-      }
-      return null;
+    protected override void OnCreate() {
+      colliderForTeam = new BlobAssetReference<Collider>[] {
+        CollisionLayer.CreateCollider(0, CollisionLayer.Player),
+        CollisionLayer.CreateCollider(1, CollisionLayer.Player),
+      };
+    }
+
+    protected override void OnDestroy() {
+      colliderForTeam[0].Dispose();
+      colliderForTeam[1].Dispose();
     }
 
     protected override void OnUpdate() {
@@ -33,6 +40,7 @@ namespace ECSFrenzy {
             var transform = spawnTransforms[spawnIndex.Value];
             EntityManager.SetComponentData(e, new Translation { Value = transform.Position });
             EntityManager.SetComponentData(e, new Rotation { Value = transform.Rotation });
+            EntityManager.SetComponentData(e, new PhysicsCollider { Value = colliderForTeam[currentTeamNumber] });
             EntityManager.SetComponentData(e, new Team { Value = currentTeamNumber });
             EntityManager.AddSharedComponentData(e, new SharedTeam { Value = currentTeamNumber });
 
@@ -46,6 +54,14 @@ namespace ECSFrenzy {
           }
         });
       }
+    }
+
+    int? IndexOfMatchingTeam(in NativeArray<Team> teams) {
+      for (int i = 0; i < teams.Length; i++) {
+        if (teams[i].Value == currentTeamNumber)
+          return i;
+      }
+      return null;
     }
   }
 }

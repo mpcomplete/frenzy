@@ -61,7 +61,7 @@ namespace ECSFrenzy {
 
     static Entity FindTarget(in CollisionWorld collisionWorld, float3 pos, in Team team) {
       (float distsq, Entity e) closest = (float.MaxValue, Entity.Null);
-      NativeList<DistanceHit> hits = new NativeList<DistanceHit>(8, Allocator.Temp);
+      var hits = new NativeList<DistanceHit>(8, Allocator.Temp);
       // Collide with opposite team.
       uint layer = team.Value == 0 ? CollisionLayer.Team2 : CollisionLayer.Team1;
       var fromPoint = new PointDistanceInput() { Filter = new CollisionFilter { BelongsTo = layer, CollidesWith = layer }, Position = pos, MaxDistance = MinionAggroRange };

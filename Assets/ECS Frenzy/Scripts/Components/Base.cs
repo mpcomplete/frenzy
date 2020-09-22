@@ -22,15 +22,9 @@ namespace ECSFrenzy {
     BlobAssetReference<Collider>[] colliderForTeam;
 
     protected override void OnCreate() {
-      uint layer1 = CollisionLayer.Minion|CollisionLayer.Team1;
-      uint layer2 = CollisionLayer.Minion|CollisionLayer.Team2;
       colliderForTeam = new BlobAssetReference<Collider>[] {
-        SphereCollider.Create(
-          new SphereGeometry { Center = float3.zero, Radius = 0.25f },
-          new CollisionFilter { BelongsTo = layer1, CollidesWith = layer1, GroupIndex = 0 }),
-        SphereCollider.Create(
-          new SphereGeometry { Center = float3.zero, Radius = 0.25f },
-          new CollisionFilter { BelongsTo = layer2, CollidesWith = layer2, GroupIndex = 0 })
+        CollisionLayer.CreateCollider(0, CollisionLayer.Minion),
+        CollisionLayer.CreateCollider(1, CollisionLayer.Minion),
       };
     }
 
