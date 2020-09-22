@@ -10,19 +10,19 @@ namespace ECSFrenzy {
   [UpdateInGroup(typeof(GhostPredictionSystemGroup))]
   public class PlayerInputPredictionSystem : SystemBase {
     Entity FireballPrefabEntity;
+    Entity FireballAbilityPrefabEntity;
     BeginSimulationEntityCommandBufferSystem CommandBufferSystem;
     GhostPredictionSystemGroup PredictionGroup;
-    EntityArchetype SoundArchetype;
 
-    static Entity PredictedClientFireballPrefab(EntityManager entityManager, GhostPrefabCollectionComponent ghostPrefabs) {
-      bool IsPredictedSpawnFireball(Entity e) => entityManager.HasComponent<NetworkFireball>(e) && entityManager.HasComponent<PredictedGhostSpawnRequestComponent>(e);
+    static Entity PredictedClientPrefab<T>(EntityManager entityManager, GhostPrefabCollectionComponent ghostPrefabs) where T : IComponentData {
+      bool IsPredictedSpawnFireball(Entity e) => entityManager.HasComponent<T>(e) && entityManager.HasComponent<PredictedGhostSpawnRequestComponent>(e);
       DynamicBuffer<GhostPrefabBuffer> clientPredictedPrefabs = entityManager.GetBuffer<GhostPrefabBuffer>(ghostPrefabs.clientPredictedPrefabs);
 
       return FindGhostPrefab(clientPredictedPrefabs, IsPredictedSpawnFireball);
     }
 
-    static Entity ServerFireballPrefab(EntityManager entityManager, GhostPrefabCollectionComponent ghostPrefabs) {
-      bool IsNetworkFireball(Entity e) => entityManager.HasComponent<NetworkFireball>(e);
+    static Entity ServerPrefab<T>(EntityManager entityManager, GhostPrefabCollectionComponent ghostPrefabs) where T : IComponentData {
+      bool IsNetworkFireball(Entity e) => entityManager.HasComponent<T>(e);
       DynamicBuffer<GhostPrefabBuffer> serverPrefabs = entityManager.GetBuffer<GhostPrefabBuffer>(ghostPrefabs.serverPrefabs);
 
       return FindGhostPrefab(serverPrefabs, IsNetworkFireball);
@@ -37,33 +37,32 @@ namespace ECSFrenzy {
     protected override void OnCreate() {
       CommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
       PredictionGroup = World.GetExistingSystem<GhostPredictionSystemGroup>();
-      SoundArchetype = EntityManager.CreateArchetype(new ComponentType[] { 
-        typeof(SendRpcCommandRequestComponent),
-        typeof(PlayAudioRequest)
-      });
     }
 
     protected override void OnUpdate() {
-      float dt = Time.DeltaTime;
-      uint predictingTick = PredictionGroup.PredictingTick;
-      float maxMoveSpeed = SystemConfig.Instance.PlayerMoveSpeed;
-      bool isServer = World.GetExistingSystem<ServerSimulationSystemGroup>() != null;
-      EntityCommandBuffer.ParallelWriter commandBuffer = CommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
+      var dt = Time.DeltaTime;
+      var predictingTick = PredictionGroup.PredictingTick;
+      var maxMoveSpeed = SystemConfig.Instance.PlayerMoveSpeed;
+      var isServer = World.GetExistingSystem<ServerSimulationSystemGroup>() != null;
+      var commandBuffer = CommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
 
       if (FireballPrefabEntity == Entity.Null) {
+        var ghostPrefabs = GetSingleton<GhostPrefabCollectionComponent>();
         if (isServer) {
-          FireballPrefabEntity = ServerFireballPrefab(EntityManager, GetSingleton<GhostPrefabCollectionComponent>());
+          FireballPrefabEntity = ServerPrefab<NetworkFireball>(EntityManager, ghostPrefabs);
+          FireballAbilityPrefabEntity = ServerPrefab<FireballAbility>(EntityManager, ghostPrefabs);
         } else {
-          FireballPrefabEntity = PredictedClientFireballPrefab(EntityManager, GetSingleton<GhostPrefabCollectionComponent>());
+          FireballPrefabEntity = PredictedClientPrefab<NetworkFireball>(EntityManager, ghostPrefabs);
+          FireballAbilityPrefabEntity = PredictedClientPrefab<FireballAbility>(EntityManager, ghostPrefabs);
         }
       }
 
-      Entity fireballPrefabEntity = FireballPrefabEntity;
+      var fireballPrefabEntity = FireballPrefabEntity;
+      var fireballAbilityPrefabEntity = FireballAbilityPrefabEntity;
 
       // These are used on the server to check if actions that have cooldowns are available to be performed yet
       var playerAbilities = GetComponentDataFromEntity<PlayerAbilites>(true);
       var cooldowns = GetComponentDataFromEntity<Cooldown>(true);
-      var soundArchetype = SoundArchetype;
 
       Entities
       .WithName("Predict_Player_Input")
@@ -90,6 +89,14 @@ namespace ECSFrenzy {
           var fireballCooldown = cooldowns[abilities.Ability1];
 
           if (input.didFire != 0 && fireballCooldown.TimeRemaining <= 0) {
+            // create fireball ability ghost
+            {
+              var fireballAbility = commandBuffer.Instantiate(nativeThreadIndex, fireballAbilityPrefabEntity);
+
+              // TODO: These ability instances should be "owned" by the player's entity and should be listed in their LinkedEntityGroup for automatic destruction if the player is destroyed
+              commandBuffer.SetComponent(nativeThreadIndex, fireballAbility, ghostOwner);
+              commandBuffer.SetComponent<FireballAbility>(nativeThreadIndex, fireballAbility, new FireballAbility { SpawnTick = (int)predictingTick });
+            }
             // create fireball ghost
             {
               var spawnPosition = position.Value + forward(rotation.Value) + float3(0,1,0);
@@ -99,12 +106,6 @@ namespace ECSFrenzy {
               commandBuffer.SetComponent(nativeThreadIndex, fireball, new Translation { Value = spawnPosition });
               commandBuffer.SetComponent(nativeThreadIndex, fireball, rotation);
               commandBuffer.SetComponent(nativeThreadIndex, fireball, new Heading { Value = forward(rotation.Value) });
-            }
-            // play fireball sound
-            {
-              var fireballSoundEntity = commandBuffer.CreateEntity(nativeThreadIndex, soundArchetype);
-
-              commandBuffer.SetComponent<PlayAudioRequest>(nativeThreadIndex, fireballSoundEntity, new PlayAudioRequest("Fireball", 1f));
             }
             // activate fireball cooldown
             {

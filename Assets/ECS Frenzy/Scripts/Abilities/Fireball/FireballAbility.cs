@@ -5,7 +5,6 @@ namespace ECSFrenzy {
   [GenerateAuthoringComponent]
   [GhostComponent(PrefabType=GhostPrefabType.All)]
   public struct FireballAbility : IComponentData {
-    public uint SpawnTick;
-    public Entity ownerEntity;
+    [GhostField] public int SpawnTick;
   }
 }
