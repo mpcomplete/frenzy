@@ -45,8 +45,10 @@ namespace ECSFrenzy {
             EntityManager.AddSharedComponentData(e, new SharedTeam { Value = currentTeamNumber });
 
             // TODO: Maybe we should just spawn the banner here? (Instead of with the Player.)
-            EntityManager.SetComponentData(banners[spawnIndex.Value], new Team { Value = currentTeamNumber });
-            EntityManager.SetComponentData(banners[spawnIndex.Value], new Translation { Value = transform.Position + 3*transform.Forward });
+            if (currentTeamNumber < banners.Length) {
+              EntityManager.SetComponentData(banners[currentTeamNumber], new Team { Value = currentTeamNumber });
+              EntityManager.SetComponentData(banners[currentTeamNumber], new Translation { Value = transform.Position + 3*transform.Forward });
+            }
 
             currentTeamNumber = (currentTeamNumber + 1) % 2;
           } else {

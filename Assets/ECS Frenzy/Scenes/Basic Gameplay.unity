@@ -1087,6 +1087,8 @@ MonoBehaviour:
     enabled: 1
   - prefab: {fileID: 6962904195207784889, guid: 7c5cb00cca857c74e9a6edc0b1244e93, type: 3}
     enabled: 1
+  - prefab: {fileID: 7032664890655128123, guid: 89502ac4cfb941843b0fe12488b36489, type: 3}
+    enabled: 1
 --- !u!1 &507689455
 GameObject:
   m_ObjectHideFlags: 0
@@ -3698,7 +3700,9 @@ MonoBehaviour:
   NavAgentBridgePrefab: {fileID: 0}
   PlayerMoveSpeed: 5
   ControllerDeadzone: 0.19
-  TeamConfigs: []
+  TeamConfigs:
+  - {fileID: 11400000, guid: 6124eef8c01cbd0488c53bfccb124e29, type: 2}
+  - {fileID: 11400000, guid: 0e752cb8f86dee942b977b2eb1804177, type: 2}
 --- !u!4 &1806202367
 Transform:
   m_ObjectHideFlags: 0
