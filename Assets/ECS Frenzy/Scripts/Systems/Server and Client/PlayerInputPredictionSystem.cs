@@ -5,6 +5,7 @@ using Unity.NetCode;
 using UnityEngine;
 using static Unity.Mathematics.math;
 using static ECSFrenzy.Utils;
+using Unity.Collections;
 
 namespace ECSFrenzy {
   [UpdateInGroup(typeof(GhostPredictionSystemGroup))]
@@ -114,6 +115,33 @@ namespace ECSFrenzy {
           }
         }
       }).ScheduleParallel();
+
+      EntityQuery query = GetEntityQuery(typeof(Banner), typeof(Team));
+      var banners = query.ToEntityArray(Allocator.TempJob);
+      var bannerTeams = query.ToComponentDataArray<Team>(Allocator.TempJob);
+
+      Entities
+      .WithName("Predict_Player_Input_Banner")
+      .WithBurst()
+      .WithAll<NetworkPlayer, PlayerInput>()
+      .WithDisposeOnCompletion(banners)
+      .WithDisposeOnCompletion(bannerTeams)
+      .ForEach((Entity entity, int nativeThreadIndex, ref Translation position, in Team team, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost) => {
+        if (!GhostPredictionSystemGroup.ShouldPredict(predictingTick, predictedGhost))
+          return;
+
+        inputBuffer.GetDataAtTick(predictingTick, out PlayerInput input);
+        if (input.didBanner != 0) {
+          int playerTeam = team.Value;
+          float3 playerPos = position.Value;
+          for (int i = 0; i < bannerTeams.Length; i++) {
+            if (bannerTeams[i].Value == playerTeam) {
+              commandBuffer.SetComponent(nativeThreadIndex, banners[i], new Translation { Value = playerPos });
+            }
+          }
+        }
+      }).ScheduleParallel();
+
       CommandBufferSystem.AddJobHandleForProducer(Dependency);
     }
   }
