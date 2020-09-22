@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 6324906736154444848}
   - component: {fileID: 2487692224354994976}
   m_Layer: 0
-  m_Name: Stanchion
+  m_Name: Banner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -80,7 +80,7 @@ MonoBehaviour:
   OptimizationMode: 0
   Importance: 1
   prefabId: 89502ac4cfb941843b0fe12488b36489
-  Name: Stanchion
+  Name: Banner
   doNotStrip: 0
 --- !u!114 &6324906736154444848
 MonoBehaviour:

@@ -24,9 +24,9 @@ namespace ECSFrenzy {
     }
 
     protected override void OnUpdate() {
-      EntityQuery stanchionQuery = Entities.WithAll<Stanchion, Team, LocalToWorld>().ToEntityQuery();
+      EntityQuery bannerQuery = Entities.WithAll<Banner, Team, LocalToWorld>().ToEntityQuery();
       EntityQuery spawnQuery = Entities.WithAll<SpawnLocation, Team, LocalToWorld>().ToEntityQuery();
-      using (var stanchions = stanchionQuery.ToEntityArray(Allocator.TempJob))
+      using (var banners = bannerQuery.ToEntityArray(Allocator.TempJob))
       using (var spawnLocations = spawnQuery.ToComponentDataArray<SpawnLocation>(Allocator.TempJob))
       using (var teams = spawnQuery.ToComponentDataArray<Team>(Allocator.TempJob))
       using (var spawnTransforms = spawnQuery.ToComponentDataArray<LocalToWorld>(Allocator.TempJob)) {
@@ -44,9 +44,9 @@ namespace ECSFrenzy {
             EntityManager.SetComponentData(e, new Team { Value = currentTeamNumber });
             EntityManager.AddSharedComponentData(e, new SharedTeam { Value = currentTeamNumber });
 
-            // TODO: Maybe we should just spawn the stanchion here? (Instead of with the Player.)
-            EntityManager.SetComponentData(stanchions[spawnIndex.Value], new Team { Value = currentTeamNumber });
-            EntityManager.SetComponentData(stanchions[spawnIndex.Value], new Translation { Value = transform.Position + 3*transform.Forward });
+            // TODO: Maybe we should just spawn the banner here? (Instead of with the Player.)
+            EntityManager.SetComponentData(banners[spawnIndex.Value], new Team { Value = currentTeamNumber });
+            EntityManager.SetComponentData(banners[spawnIndex.Value], new Translation { Value = transform.Position + 3*transform.Forward });
 
             currentTeamNumber = (currentTeamNumber + 1) % 2;
           } else {

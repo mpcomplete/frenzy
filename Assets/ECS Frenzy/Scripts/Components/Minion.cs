@@ -12,7 +12,7 @@ namespace ECSFrenzy {
   [Serializable]
   [GenerateAuthoringComponent]
   public struct Minion : IComponentData {
-    public enum Behavior { Idle, OnStanchion, Fighting }
+    public enum Behavior { Idle, OnBanner, Fighting }
     public Behavior CurrentBehavior;
   }
 
@@ -30,27 +30,27 @@ namespace ECSFrenzy {
     protected override void OnUpdate() {
       var ecb = commandBufferSystem.CreateCommandBuffer().AsParallelWriter();
       var collisionWorld = physicsWorldSystem.PhysicsWorld.CollisionWorld;
-      var query = GetEntityQuery(typeof(Stanchion), typeof(Team));
-      var stanchions = query.ToEntityArray(Allocator.TempJob);
-      var stanchionTeams = query.ToComponentDataArray<Team>(Allocator.TempJob);
+      var query = GetEntityQuery(typeof(Banner), typeof(Team));
+      var banners = query.ToEntityArray(Allocator.TempJob);
+      var bannerTeams = query.ToComponentDataArray<Team>(Allocator.TempJob);
       Entities
-        .WithDisposeOnCompletion(stanchions)
-        .WithDisposeOnCompletion(stanchionTeams)
+        .WithDisposeOnCompletion(banners)
+        .WithDisposeOnCompletion(bannerTeams)
         .ForEach((Entity e, int nativeThreadIndex, ref Minion minion, ref Team team, ref LocalToWorld transform) => {
         switch (minion.CurrentBehavior) {
         case Minion.Behavior.Idle:
-        case Minion.Behavior.OnStanchion:
+        case Minion.Behavior.OnBanner:
           Entity target = FindTarget(collisionWorld, transform.Position, team);
           if (target != Entity.Null) {
             ecb.SetComponent(nativeThreadIndex, e, new Target { Value = target });
             minion.CurrentBehavior = Minion.Behavior.Fighting;
           } else if (minion.CurrentBehavior == Minion.Behavior.Idle) {
-            for (int i = 0; i < stanchionTeams.Length; i++) {
-              if (stanchionTeams[i].Value == team.Value)
-                target = stanchions[i];
+            for (int i = 0; i < bannerTeams.Length; i++) {
+              if (bannerTeams[i].Value == team.Value)
+                target = banners[i];
             }
             ecb.SetComponent(nativeThreadIndex, e, new Target { Value = target });
-            minion.CurrentBehavior = Minion.Behavior.OnStanchion;
+            minion.CurrentBehavior = Minion.Behavior.OnBanner;
           }
           break;
         case Minion.Behavior.Fighting:

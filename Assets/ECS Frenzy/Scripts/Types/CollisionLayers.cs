@@ -9,7 +9,7 @@ namespace ECSFrenzy {
     public const uint Team2 = 1<<2;
     public const uint Player = 1<<3;
     public const uint Minion = 1<<4;
-    public const uint Stanchion = 1<<5;
+    public const uint Banner = 1<<5;
     public const uint Base = 1<<6;
 
     public static BlobAssetReference<Collider> CreateCollider(int teamNumber, uint layerMask) {

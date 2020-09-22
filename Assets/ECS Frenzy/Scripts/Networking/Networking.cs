@@ -43,21 +43,21 @@ namespace ECSFrenzy {
     public float horizontal;
     public float vertical;
     public int didFire;
-    public int didStanchion;
+    public int didBanner;
 
     public void Deserialize(uint tick, ref DataStreamReader reader) {
       this.tick = tick;
       horizontal = reader.ReadFloat();
       vertical = reader.ReadFloat();
       didFire = reader.ReadInt();
-      didStanchion = reader.ReadInt();
+      didBanner = reader.ReadInt();
     }
 
     public void Serialize(ref DataStreamWriter writer) {
       writer.WriteFloat(horizontal);
       writer.WriteFloat(vertical);
       writer.WriteInt(didFire);
-      writer.WriteInt(didStanchion);
+      writer.WriteInt(didBanner);
     }
 
     public void Deserialize(uint tick, ref DataStreamReader reader, PlayerInput baseline, NetworkCompressionModel compressionModel) {
@@ -169,7 +169,7 @@ namespace ECSFrenzy {
         int networkId = EntityManager.GetComponentData<NetworkIdComponent>(reqSrc.SourceConnection).Value;
         DynamicBuffer<GhostPrefabBuffer> serverPrefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(GetSingleton<GhostPrefabCollectionComponent>().serverPrefabs);
         Entity playerPrefab = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<NetworkPlayer>(e));
-        Entity stanchionPrefab = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<Stanchion>(e));
+        Entity bannerPrefab = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<Banner>(e));
         Entity player = EntityManager.Instantiate(playerPrefab);
 
         Debug.Log($"Server setting connection {networkId} to in game");
@@ -179,8 +179,8 @@ namespace ECSFrenzy {
         PostUpdateCommands.DestroyEntity(requestEntity);
         PostUpdateCommands.AddComponent<NetworkStreamInGame>(reqSrc.SourceConnection);
 
-        Entity stanchion = EntityManager.Instantiate(stanchionPrefab);
-        PostUpdateCommands.SetComponent(stanchion, new GhostOwnerComponent { NetworkId = networkId });
+        Entity banner = EntityManager.Instantiate(bannerPrefab);
+        PostUpdateCommands.SetComponent(banner, new GhostOwnerComponent { NetworkId = networkId });
 
         // TODO: This is a stupid test of the sound code... just a sound to be played on the connecting client when they login
         Entity soundEntity = PostUpdateCommands.CreateEntity();
@@ -227,7 +227,7 @@ namespace ECSFrenzy {
         DynamicBuffer<PlayerInput> playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
         float2 stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         int didFire = Input.GetButtonDown("Fire1") ? 1 : 0;
-        int didStanchion = Input.GetButtonDown("Jump") ? 1 : 0;
+        int didBanner = Input.GetButtonDown("Jump") ? 1 : 0;
 
         if (length(stickInput) < SystemConfig.Instance.ControllerDeadzone) {
           stickInput = float2(0,0);
@@ -242,7 +242,7 @@ namespace ECSFrenzy {
           horizontal = stickInput.x,
           vertical = stickInput.y,
           didFire = didFire,
-          didStanchion = didStanchion
+          didBanner = didBanner
         };
 
         Entities
