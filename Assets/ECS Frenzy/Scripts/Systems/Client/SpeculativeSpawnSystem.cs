@@ -1,5 +1,6 @@
 ﻿using Unity.Entities;
 using Unity.NetCode;
+using UnityEngine;
 
 namespace ECSFrenzy {
   [UpdateInGroup(typeof(GhostPredictionSystemGroup))]
@@ -13,20 +14,17 @@ namespace ECSFrenzy {
     protected override void OnUpdate() {
       var predictingTick = PredictionSystemGroup.PredictingTick;  
 
-      // UnityEngine.Debug.Log("-----------------------------------------------------------------");
-      // UnityEngine.Debug.Log($"SpeculativeSpawnSystem fired on PredictingTick: {predictingTick}");
-
       Entities
-      .ForEach((ref Entity e, in SpeculativeSpawn speculativeSpawn) => {
+      .ForEach((Entity e, AudioSourceWrapper audioWrapper, in SpeculativeSpawn speculativeSpawn) => {
         if (predictingTick <= speculativeSpawn.SpawnTick) {
-          UnityEngine.Debug.Log($"Predicting the past so destroyed");
           EntityManager.DestroyEntity(e);
+          AudioSource.Destroy(audioWrapper.Source.gameObject);
         }
 
         // TODO: This is just here for testing convenience. Probably not an intended behavior
         if (speculativeSpawn.SpawnTick + 300 < predictingTick) {
-          UnityEngine.Debug.Log($"Too old so destroyed");
           EntityManager.DestroyEntity(e);
+          AudioSource.Destroy(audioWrapper.Source.gameObject);
         }
       }) 
       .WithStructuralChanges()

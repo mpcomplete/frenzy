@@ -117,16 +117,11 @@ namespace ECSFrenzy {
   [UpdateInGroup(typeof(ClientSimulationSystemGroup))]
   public class HandleRPCClient : ComponentSystem {
     EntityArchetype joinGameArchetype;
-    EntityArchetype playAudioArchetype;
 
     protected override void OnCreate() {
       joinGameArchetype = EntityManager.CreateArchetype(new ComponentType[] { 
         typeof(JoinGameRequest),
         typeof(SendRpcCommandRequestComponent)
-      });
-
-      playAudioArchetype = EntityManager.CreateArchetype(new ComponentType[] {
-        typeof(PlayAudio)
       });
     }
 

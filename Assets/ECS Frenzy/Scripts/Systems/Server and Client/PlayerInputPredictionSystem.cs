@@ -60,10 +60,6 @@ namespace ECSFrenzy {
       var predictingTick = GhostPredictionSystemGroup.PredictingTick;
       var maxMoveSpeed = SystemConfig.Instance.PlayerMoveSpeed;
 
-      // if (!isServer) {
-      //   UnityEngine.Debug.Log($"Client Prediction fired for PredictingTick: {predictingTick}");
-      // }
-
       if (FireballPrefabEntity == Entity.Null) {
         var ghostPrefabs = GetSingleton<GhostPrefabCollectionComponent>();
 
@@ -82,13 +78,16 @@ namespace ECSFrenzy {
       var speculativeTestPrefabEntity = TestSpeculativePrefabEntity;
       var playerAbilities = GetComponentDataFromEntity<PlayerAbilites>(true);
       var cooldowns = GetComponentDataFromEntity<Cooldown>(true);
+      var query = GetEntityQuery(typeof(Banner), typeof(Team));
+      var banners = query.ToEntityArray(Allocator.TempJob);
+      var bannerTeams = query.ToComponentDataArray<Team>(Allocator.TempJob);
 
       Entities
       .WithName("Predict_Player_Input")
       .WithReadOnly(playerAbilities)
       .WithReadOnly(cooldowns)
       .WithAll<NetworkPlayer, PlayerInput>()
-      .ForEach((Entity entity, ref Translation position, ref Rotation rotation, ref MoveSpeed moveSpeed, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost, in GhostOwnerComponent ghostOwner) => {
+      .ForEach((Entity entity, ref Translation position, ref Rotation rotation, ref MoveSpeed moveSpeed, in Team team, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost, in GhostOwnerComponent ghostOwner) => {
         if (!GhostPredictionSystemGroup.ShouldPredict(predictingTick, predictedGhost))
           return;
 
@@ -118,35 +117,16 @@ namespace ECSFrenzy {
             EntityManager.SetSharedComponentData<SharedCooldownStatus>(abilities.Ability1, SharedCooldownStatus.JustActive);
           } else {
             var speculativeEntity = EntityManager.Instantiate(speculativeTestPrefabEntity);
-            // var playAudio = new PlayAudio { NameHash = FireballNameHash, Volume = 1 };
             var speculativeSpawn = new SpeculativeSpawn { SpawnTick = (int)input.Tick, Identifier = 0 };
+            var prefabAudioSourceShit = EntityManager.GetComponentData<AudioSourceWrapper>(speculativeEntity);
 
-            // UnityEngine.Debug.Log($"Spawned Speculative Entity {speculativeEntity} from prefab {speculativeTestPrefabEntity} on PredictingTick: {predictingTick} with INPUT.TICK : {input.Tick}");
-            // EntityManager.SetComponentData<PlayAudio>(speculativeEntity, playAudio);
+            EntityManager.SetComponentData(speculativeEntity, new AudioSourceWrapper { Source = AudioSource.Instantiate(prefabAudioSourceShit.Source) });
             EntityManager.SetComponentData<SpeculativeSpawn>(speculativeEntity, speculativeSpawn);
           }
         }
-      })
-      .WithStructuralChanges()
-      .WithoutBurst() // TODO: This is a known bug where burst and shared components don't play nicely together... totally idiotic
-      .Run();
-
-      /*
-      EntityQuery query = GetEntityQuery(typeof(Banner), typeof(Team));
-      var banners = query.ToEntityArray(Allocator.TempJob);
-      var bannerTeams = query.ToComponentDataArray<Team>(Allocator.TempJob);
-
-      Entities
-      .WithName("Predict_Player_Input_Banner")
-      .WithAll<NetworkPlayer, PlayerInput>()
-      .ForEach((Entity entity, int nativeThreadIndex, ref Translation position, in Team team, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost) => {
-        if (!GhostPredictionSystemGroup.ShouldPredict(predictingTick, predictedGhost))
-          return;
-
-        inputBuffer.GetDataAtTick(predictingTick, out PlayerInput input);
         if (input.didBanner != 0) {
-          int playerTeam = team.Value;
-          float3 playerPos = position.Value;
+          var playerTeam = team.Value;
+          var playerPos = position.Value;
           for (int i = 0; i < bannerTeams.Length; i++) {
             if (bannerTeams[i].Value == playerTeam) {
               EntityManager.SetComponentData(banners[i], playerPos.ToTranslation());
@@ -154,19 +134,12 @@ namespace ECSFrenzy {
           }
         }
       })
-      // .WithDisposeOnCompletion(banners)
-      // .WithDisposeOnCompletion(bannerTeams)
       .WithStructuralChanges()
-      .WithoutBurst()
+      .WithoutBurst() // TODO: This is a known bug where burst and shared components don't play nicely together... totally idiotic
       .Run();
 
       banners.Dispose();
       bannerTeams.Dispose();
-      */
-
-      // if (!isServer) {
-      //   UnityEngine.Debug.Log($"ECB Playback for PredictingTick : {predictingTick}");
-      // }
     }
   }
 }
