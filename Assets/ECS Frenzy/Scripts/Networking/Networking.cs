@@ -197,7 +197,7 @@ namespace ECSFrenzy {
 
   [UpdateInGroup(typeof(ClientSimulationSystemGroup))]
   [UpdateBefore(typeof(SendPlayerInputCommandSystem))]
-  [UpdateAfter(typeof(GhostSimulationSystemGroup))]
+  [UpdateBefore(typeof(GhostSimulationSystemGroup))]
   public class SamplePlayerInput : SystemBase {
     protected override void OnCreate() {
       RequireSingletonForUpdate<NetworkIdComponent>();
@@ -222,7 +222,9 @@ namespace ECSFrenzy {
             ecb.AddBuffer<PlayerInput>(nativeThreadIndex, ent);
             ecb.SetComponent(nativeThreadIndex, commandTargetEntity, ctc);
           }
-        }).Schedule();
+        })
+        .ScheduleParallel();
+        barrier.AddJobHandleForProducer(Dependency);
       } else {
         DynamicBuffer<PlayerInput> playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
         float2 stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
@@ -237,6 +239,10 @@ namespace ECSFrenzy {
 
         uint tick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick;
 
+        if (didFire == 1) {
+          UnityEngine.Debug.Log($"DIDFIRE on ServerTick : { tick }");
+        }
+
         PlayerInput input = new PlayerInput {
           tick = tick,
           horizontal = stickInput.x,
@@ -249,9 +255,11 @@ namespace ECSFrenzy {
         .WithAll<NetworkPlayer, PlayerInput>()
         .ForEach((Entity e, ref GhostOwnerComponent ghostOwner) => {
           playerInputs.AddCommandData(input);
-        }).Schedule();
+        })
+        .WithoutBurst()
+        .WithStructuralChanges()
+        .Run();
       }
-      barrier.AddJobHandleForProducer(Dependency);
     }
   }
 }
