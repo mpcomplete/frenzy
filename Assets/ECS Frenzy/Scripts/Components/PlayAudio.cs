@@ -6,11 +6,11 @@ namespace ECSFrenzy {
   [Serializable]
   [GenerateAuthoringComponent]
   public struct PlayAudio : IComponentData {
-    public FixedString128 Name;
+    public int NameHash;
     public float Volume;
 
-    public PlayAudio(FixedString128 name, float volume) {
-      Name = name;
+    public PlayAudio(int nameHash, float volume) {
+      NameHash = nameHash;
       Volume = volume;
     }
   }

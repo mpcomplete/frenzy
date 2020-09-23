@@ -4,6 +4,7 @@ using UnityEngine.AI;
 namespace ECSFrenzy {
   public class SystemConfig : MonoBehaviour {
     public static SystemConfig Instance;
+    public GameObject SpeculativeSpawnTestPrefab; 
     public RenderedPlayer RenderedPlayerPrefab;
     public RenderedFireball RenderedFireballPrefab;
     public NavMeshAgent NavAgentBridgePrefab;

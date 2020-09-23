@@ -9,24 +9,37 @@ using Unity.Collections;
 
 namespace ECSFrenzy {
   [UpdateInGroup(typeof(GhostPredictionSystemGroup))]
+  [UpdateAfter(typeof(SpeculativeSpawnSystem))]
   public class PlayerInputPredictionSystem : SystemBase {
     Entity FireballPrefabEntity;
     Entity FireballAbilityPrefabEntity;
+    Entity TestSpeculativePrefabEntity;
     BeginSimulationEntityCommandBufferSystem CommandBufferSystem;
-    GhostPredictionSystemGroup PredictionGroup;
+    GhostPredictionSystemGroup GhostPredictionSystemGroup;
+    int FireballNameHash;
 
     static Entity PredictedClientPrefab<T>(EntityManager entityManager, GhostPrefabCollectionComponent ghostPrefabs) where T : IComponentData {
-      bool IsPredictedSpawnFireball(Entity e) => entityManager.HasComponent<T>(e) && entityManager.HasComponent<PredictedGhostSpawnRequestComponent>(e);
+      bool matches(Entity e) => entityManager.HasComponent<T>(e) && entityManager.HasComponent<PredictedGhostSpawnRequestComponent>(e);
       DynamicBuffer<GhostPrefabBuffer> clientPredictedPrefabs = entityManager.GetBuffer<GhostPrefabBuffer>(ghostPrefabs.clientPredictedPrefabs);
 
-      return FindGhostPrefab(clientPredictedPrefabs, IsPredictedSpawnFireball);
+      return FindGhostPrefab(clientPredictedPrefabs, matches);
     }
 
     static Entity ServerPrefab<T>(EntityManager entityManager, GhostPrefabCollectionComponent ghostPrefabs) where T : IComponentData {
-      bool IsNetworkFireball(Entity e) => entityManager.HasComponent<T>(e);
+      bool matches(Entity e) => entityManager.HasComponent<T>(e);
       DynamicBuffer<GhostPrefabBuffer> serverPrefabs = entityManager.GetBuffer<GhostPrefabBuffer>(ghostPrefabs.serverPrefabs);
 
-      return FindGhostPrefab(serverPrefabs, IsNetworkFireball);
+      return FindGhostPrefab(serverPrefabs, matches);
+    }
+
+    static Entity SpeculativeTestPrefab(World world, GameObject prefab) {
+      var blobAssetStore = new BlobAssetStore(); 
+      var conversionFlags = GameObjectConversionUtility.ConversionFlags.AssignName;
+      var conversionSettings = new GameObjectConversionSettings(world, conversionFlags, blobAssetStore);
+      var entity = GameObjectConversionUtility.ConvertGameObjectHierarchy(prefab, conversionSettings);
+
+      blobAssetStore.Dispose();
+      return entity;
     }
 
     static float MoveSpeedFromInput(in PlayerInput input) => (input.horizontal == 0 && input.vertical == 0) ? 0 : 1;
@@ -37,41 +50,45 @@ namespace ECSFrenzy {
 
     protected override void OnCreate() {
       CommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
-      PredictionGroup = World.GetExistingSystem<GhostPredictionSystemGroup>();
+      GhostPredictionSystemGroup = World.GetExistingSystem<GhostPredictionSystemGroup>();
+      FireballNameHash = Animator.StringToHash("Fireball");
     }
 
     protected override void OnUpdate() {
-      var dt = Time.DeltaTime;
-      var predictingTick = PredictionGroup.PredictingTick;
-      var maxMoveSpeed = SystemConfig.Instance.PlayerMoveSpeed;
       var isServer = World.GetExistingSystem<ServerSimulationSystemGroup>() != null;
-      var commandBuffer = CommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
+      var dt = Time.DeltaTime;
+      var predictingTick = GhostPredictionSystemGroup.PredictingTick;
+      var maxMoveSpeed = SystemConfig.Instance.PlayerMoveSpeed;
+
+      // if (!isServer) {
+      //   UnityEngine.Debug.Log($"Client Prediction fired for PredictingTick: {predictingTick}");
+      // }
 
       if (FireballPrefabEntity == Entity.Null) {
         var ghostPrefabs = GetSingleton<GhostPrefabCollectionComponent>();
+
         if (isServer) {
           FireballPrefabEntity = ServerPrefab<NetworkFireball>(EntityManager, ghostPrefabs);
           FireballAbilityPrefabEntity = ServerPrefab<FireballAbility>(EntityManager, ghostPrefabs);
         } else {
           FireballPrefabEntity = PredictedClientPrefab<NetworkFireball>(EntityManager, ghostPrefabs);
           FireballAbilityPrefabEntity = PredictedClientPrefab<FireballAbility>(EntityManager, ghostPrefabs);
+          TestSpeculativePrefabEntity = SpeculativeTestPrefab(World, SystemConfig.Instance.SpeculativeSpawnTestPrefab);
         }
       }
 
       var fireballPrefabEntity = FireballPrefabEntity;
       var fireballAbilityPrefabEntity = FireballAbilityPrefabEntity;
-
-      // These are used on the server to check if actions that have cooldowns are available to be performed yet
+      var speculativeTestPrefabEntity = TestSpeculativePrefabEntity;
       var playerAbilities = GetComponentDataFromEntity<PlayerAbilites>(true);
       var cooldowns = GetComponentDataFromEntity<Cooldown>(true);
 
       Entities
       .WithName("Predict_Player_Input")
-      .WithoutBurst() // TODO: This is a known bug where burst and shared components don't play nicely together... totally idiotic
       .WithReadOnly(playerAbilities)
       .WithReadOnly(cooldowns)
       .WithAll<NetworkPlayer, PlayerInput>()
-      .ForEach((Entity entity, int nativeThreadIndex, ref Translation position, ref Rotation rotation, ref MoveSpeed moveSpeed, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost, in GhostOwnerComponent ghostOwner) => {
+      .ForEach((Entity entity, ref Translation position, ref Rotation rotation, ref MoveSpeed moveSpeed, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost, in GhostOwnerComponent ghostOwner) => {
         if (!GhostPredictionSystemGroup.ShouldPredict(predictingTick, predictedGhost))
           return;
 
@@ -85,47 +102,43 @@ namespace ECSFrenzy {
         position.Value += velocity;
         rotation.Value = (speed > 0) ? (quaternion)Quaternion.LookRotation(direction, float3(0, 1, 0)) : rotation.Value;
 
-        if (isServer) {
-          var abilities = playerAbilities[entity];
-          var fireballCooldown = cooldowns[abilities.Ability1];
+        var abilities = playerAbilities[entity];
+        var fireballCooldown = cooldowns[abilities.Ability1];
 
-          if (input.didFire != 0 && fireballCooldown.TimeRemaining <= 0) {
-            // create fireball ability ghost
-            {
-              var fireballAbility = commandBuffer.Instantiate(nativeThreadIndex, fireballAbilityPrefabEntity);
+        if (input.didFire != 0 && fireballCooldown.TimeRemaining <= 0) {
+          if (isServer) {
+            var spawnPosition = position.Value + forward(rotation.Value) + float3(0,1,0);
+            var fireball = EntityManager.Instantiate(fireballPrefabEntity);
 
-              // TODO: These ability instances should be "owned" by the player's entity and should be listed in their LinkedEntityGroup for automatic destruction if the player is destroyed
-              commandBuffer.SetComponent(nativeThreadIndex, fireballAbility, ghostOwner);
-              commandBuffer.SetComponent<FireballAbility>(nativeThreadIndex, fireballAbility, new FireballAbility { SpawnTick = (int)predictingTick });
-            }
-            // create fireball ghost
-            {
-              var spawnPosition = position.Value + forward(rotation.Value) + float3(0,1,0);
-              var fireball = commandBuffer.Instantiate(nativeThreadIndex, fireballPrefabEntity);
+            EntityManager.SetComponentData(fireball, ghostOwner);
+            EntityManager.SetComponentData(fireball, rotation);
+            EntityManager.SetComponentData(fireball, (Heading)rotation.Value);
+            EntityManager.SetComponentData(fireball, spawnPosition.ToTranslation());
+            EntityManager.SetComponentData<Cooldown>(abilities.Ability1, Cooldown.Reset(fireballCooldown));
+            EntityManager.SetSharedComponentData<SharedCooldownStatus>(abilities.Ability1, SharedCooldownStatus.JustActive);
+          } else {
+            var speculativeEntity = EntityManager.Instantiate(speculativeTestPrefabEntity);
+            // var playAudio = new PlayAudio { NameHash = FireballNameHash, Volume = 1 };
+            var speculativeSpawn = new SpeculativeSpawn { SpawnTick = (int)input.Tick, Identifier = 0 };
 
-              commandBuffer.SetComponent(nativeThreadIndex, fireball, ghostOwner);
-              commandBuffer.SetComponent(nativeThreadIndex, fireball, new Translation { Value = spawnPosition });
-              commandBuffer.SetComponent(nativeThreadIndex, fireball, rotation);
-              commandBuffer.SetComponent(nativeThreadIndex, fireball, new Heading { Value = forward(rotation.Value) });
-            }
-            // activate fireball cooldown
-            {
-              Cooldown.Activate(commandBuffer, abilities.Ability1, nativeThreadIndex, fireballCooldown);
-            }
+            // UnityEngine.Debug.Log($"Spawned Speculative Entity {speculativeEntity} from prefab {speculativeTestPrefabEntity} on PredictingTick: {predictingTick} with INPUT.TICK : {input.Tick}");
+            // EntityManager.SetComponentData<PlayAudio>(speculativeEntity, playAudio);
+            EntityManager.SetComponentData<SpeculativeSpawn>(speculativeEntity, speculativeSpawn);
           }
         }
-      }).ScheduleParallel();
+      })
+      .WithStructuralChanges()
+      .WithoutBurst() // TODO: This is a known bug where burst and shared components don't play nicely together... totally idiotic
+      .Run();
 
+      /*
       EntityQuery query = GetEntityQuery(typeof(Banner), typeof(Team));
       var banners = query.ToEntityArray(Allocator.TempJob);
       var bannerTeams = query.ToComponentDataArray<Team>(Allocator.TempJob);
 
       Entities
       .WithName("Predict_Player_Input_Banner")
-      .WithBurst()
       .WithAll<NetworkPlayer, PlayerInput>()
-      .WithDisposeOnCompletion(banners)
-      .WithDisposeOnCompletion(bannerTeams)
       .ForEach((Entity entity, int nativeThreadIndex, ref Translation position, in Team team, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost) => {
         if (!GhostPredictionSystemGroup.ShouldPredict(predictingTick, predictedGhost))
           return;
@@ -136,13 +149,24 @@ namespace ECSFrenzy {
           float3 playerPos = position.Value;
           for (int i = 0; i < bannerTeams.Length; i++) {
             if (bannerTeams[i].Value == playerTeam) {
-              commandBuffer.SetComponent(nativeThreadIndex, banners[i], new Translation { Value = playerPos });
+              EntityManager.SetComponentData(banners[i], playerPos.ToTranslation());
             }
           }
         }
-      }).ScheduleParallel();
+      })
+      // .WithDisposeOnCompletion(banners)
+      // .WithDisposeOnCompletion(bannerTeams)
+      .WithStructuralChanges()
+      .WithoutBurst()
+      .Run();
 
-      CommandBufferSystem.AddJobHandleForProducer(Dependency);
+      banners.Dispose();
+      bannerTeams.Dispose();
+      */
+
+      // if (!isServer) {
+      //   UnityEngine.Debug.Log($"ECB Playback for PredictingTick : {predictingTick}");
+      // }
     }
   }
 }
