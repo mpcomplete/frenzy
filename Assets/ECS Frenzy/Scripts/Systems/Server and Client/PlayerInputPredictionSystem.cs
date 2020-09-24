@@ -15,7 +15,6 @@ namespace ECSFrenzy {
     Entity TestSpeculativePrefabEntity;
     BeginSimulationEntityCommandBufferSystem CommandBufferSystem;
     GhostPredictionSystemGroup GhostPredictionSystemGroup;
-    int FireballNameHash;
 
     static Entity PredictedClientPrefab<T>(EntityManager entityManager, GhostPrefabCollectionComponent ghostPrefabs) where T : IComponentData {
       bool matches(Entity e) => entityManager.HasComponent<T>(e) && entityManager.HasComponent<PredictedGhostSpawnRequestComponent>(e);
@@ -41,70 +40,6 @@ namespace ECSFrenzy {
       return entity;
     }
 
-    /*
-    What is a speculative-spawn?
-
-    Speculative-spawns are client-side-only entities that are spawned based on player input in anticipation
-    that the server will agree with the client eventually that these entities should indeed have been spawned.
-
-    Client-side ghost prediction works by rolling back to previous frames and then re-simulating frames back
-    to the currently-predicted frame. As such, entities that have been spawned during a frame would be spawned
-    multiple times ( each time that frame is re-simulated ). This WOULD be completely fine for some/all entities
-    as you can simply re-calculate their current state by continuing to simulate frames. However, when an entity
-    wraps some gameobject that is playing an effect ( audio, particles, etc ) it would be simpler if that object
-    actually remains unperturbed if it was spawned on the same frame.
-
-    The system generically should work as follows:
-
-    // Maps each tracked speculative spawn identifier to an entity
-    SpeculativeSpawnMap<Identifier, Entity> 
-
-    // We want to know which entities should be ACTUALLY Instantiated and which should be destroyed after prediction playback
-    // Store a list of all speculatively-spawned entities created during predictionPlayback
-    // Loop through the list of created entities. If that entity does not exist, then add it to the world
-    // If it does already exist and its values match ( same SpawnTick for now ) then delete it and keep the existing entity
-    // If an entity exists in the world but was NOT speculatively spawned during predictionplayback AND has a SpawnTick within
-    // the tick playback window for this frame then it should be deleted because its speculative spawn apparently did not pan out
-    PredictionPlayback(predictingTick)
-
-    Resolving is done in two phases:
-      Loop over existing entities checking if they exist 
-
-    Here is an example where we simply ignore the second fireball because its redundant with an already-spawned fireball
-
-      Existing = []
-      Speculative = []
-
-    Predict(5)
-    Spawn Fireball(5)
-
-      Existing = []
-      Speculative = [ Fireball(5) ]
-
-    Resolve(Speculative, Existing)
-  
-      Existing = [ Fireball(5) ]
-      Speculative = []
-    
-
-    
-    Predict(4..5)
-    Spawn Fireball(5)
-
-      Existing = [ Fireball(5) ]
-      Speculative = [ Fireball(5) ]
-      
-    Resolve(Speculative, Existing)
-
-      Existing = [ Fireball(5) ]
-      Speculative = []
-
-    */
-
-    static Entity SpeculativelySpawn() {
-      return Entity.Null;
-    }
-
     static float MoveSpeedFromInput(in PlayerInput input) => (input.horizontal == 0 && input.vertical == 0) ? 0 : 1;
 
     static float3 DirectionFromInput(in PlayerInput input) => float3(input.horizontal, 0, input.vertical);
@@ -114,7 +49,6 @@ namespace ECSFrenzy {
     protected override void OnCreate() {
       CommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
       GhostPredictionSystemGroup = World.GetExistingSystem<GhostPredictionSystemGroup>();
-      FireballNameHash = Animator.StringToHash("Fireball");
     }
 
     protected override void OnUpdate() {
