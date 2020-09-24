@@ -137,7 +137,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2833741694989170125}
   - component: {fileID: 2355069000609512545}
-  - component: {fileID: 8577561187420712389}
   m_Layer: 0
   m_Name: Speculative Test Prefab
   m_TagString: Untagged
@@ -174,16 +173,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Identifier: 0
   SpawnTick: 0
---- !u!114 &8577561187420712389
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6612991975770164088}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a6fe2f635f914114ca4d024a9f38bd00, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Source: {fileID: 7837829253169342384}

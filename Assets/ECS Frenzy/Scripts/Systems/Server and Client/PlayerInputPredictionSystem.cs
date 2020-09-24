@@ -9,7 +9,6 @@ using Unity.Collections;
 
 namespace ECSFrenzy {
   [UpdateInGroup(typeof(GhostPredictionSystemGroup))]
-  [UpdateAfter(typeof(SpeculativeSpawnSystem))]
   public class PlayerInputPredictionSystem : SystemBase {
     Entity FireballPrefabEntity;
     Entity FireballAbilityPrefabEntity;
@@ -40,6 +39,70 @@ namespace ECSFrenzy {
 
       blobAssetStore.Dispose();
       return entity;
+    }
+
+    /*
+    What is a speculative-spawn?
+
+    Speculative-spawns are client-side-only entities that are spawned based on player input in anticipation
+    that the server will agree with the client eventually that these entities should indeed have been spawned.
+
+    Client-side ghost prediction works by rolling back to previous frames and then re-simulating frames back
+    to the currently-predicted frame. As such, entities that have been spawned during a frame would be spawned
+    multiple times ( each time that frame is re-simulated ). This WOULD be completely fine for some/all entities
+    as you can simply re-calculate their current state by continuing to simulate frames. However, when an entity
+    wraps some gameobject that is playing an effect ( audio, particles, etc ) it would be simpler if that object
+    actually remains unperturbed if it was spawned on the same frame.
+
+    The system generically should work as follows:
+
+    // Maps each tracked speculative spawn identifier to an entity
+    SpeculativeSpawnMap<Identifier, Entity> 
+
+    // We want to know which entities should be ACTUALLY Instantiated and which should be destroyed after prediction playback
+    // Store a list of all speculatively-spawned entities created during predictionPlayback
+    // Loop through the list of created entities. If that entity does not exist, then add it to the world
+    // If it does already exist and its values match ( same SpawnTick for now ) then delete it and keep the existing entity
+    // If an entity exists in the world but was NOT speculatively spawned during predictionplayback AND has a SpawnTick within
+    // the tick playback window for this frame then it should be deleted because its speculative spawn apparently did not pan out
+    PredictionPlayback(predictingTick)
+
+    Resolving is done in two phases:
+      Loop over existing entities checking if they exist 
+
+    Here is an example where we simply ignore the second fireball because its redundant with an already-spawned fireball
+
+      Existing = []
+      Speculative = []
+
+    Predict(5)
+    Spawn Fireball(5)
+
+      Existing = []
+      Speculative = [ Fireball(5) ]
+
+    Resolve(Speculative, Existing)
+  
+      Existing = [ Fireball(5) ]
+      Speculative = []
+    
+
+    
+    Predict(4..5)
+    Spawn Fireball(5)
+
+      Existing = [ Fireball(5) ]
+      Speculative = [ Fireball(5) ]
+      
+    Resolve(Speculative, Existing)
+
+      Existing = [ Fireball(5) ]
+      Speculative = []
+
+    */
+
+    static Entity SpeculativelySpawn() {
+      return Entity.Null;
     }
 
     static float MoveSpeedFromInput(in PlayerInput input) => (input.horizontal == 0 && input.vertical == 0) ? 0 : 1;
@@ -81,6 +144,22 @@ namespace ECSFrenzy {
       var query = GetEntityQuery(typeof(Banner), typeof(Team));
       var banners = query.ToEntityArray(Allocator.TempJob);
       var bannerTeams = query.ToComponentDataArray<Team>(Allocator.TempJob);
+      var speculativeSpawnEntity = GetSingletonEntity<SpeculativeBuffers>();
+      var speculativeBuffers = GetComponentDataFromEntity<SpeculativeBuffers>();
+      var speculativeSpawnBuffers = GetBufferFromEntity<SpeculativeSpawnBufferEntry>(false);
+      var ecb = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
+
+      // May be a better way to do this but this SHOULD record the oldest predicted tick each frame for use in SpeculativeSpawnSystem
+      Job
+      .WithCode(() => {
+        var specBuffers = speculativeBuffers[speculativeSpawnEntity];
+        var oldestTickSimulated = min(specBuffers.OldestTickSimulated, predictingTick);
+        var newestTickSimulated = max(specBuffers.NewestTickSimulated, predictingTick);
+
+        ecb.SetComponent(speculativeSpawnEntity, new SpeculativeBuffers(oldestTickSimulated, newestTickSimulated));
+      })
+      .WithoutBurst()
+      .Run();
 
       Entities
       .WithName("Predict_Player_Input")
@@ -96,6 +175,7 @@ namespace ECSFrenzy {
         var speed = MoveSpeedFromInput(input);
         var direction = DirectionFromInput(input);
         var velocity = Velocity(direction, maxMoveSpeed, dt);
+        var speculativeSpawnBuffer = speculativeSpawnBuffers[speculativeSpawnEntity];
 
         moveSpeed.Value = speed;
         position.Value += velocity;
@@ -107,21 +187,21 @@ namespace ECSFrenzy {
         if (input.didFire != 0 && fireballCooldown.TimeRemaining <= 0) {
           if (isServer) {
             var spawnPosition = position.Value + forward(rotation.Value) + float3(0,1,0);
-            var fireball = EntityManager.Instantiate(fireballPrefabEntity);
+            var fireball = ecb.Instantiate(fireballPrefabEntity);
 
-            EntityManager.SetComponentData(fireball, ghostOwner);
-            EntityManager.SetComponentData(fireball, rotation);
-            EntityManager.SetComponentData(fireball, (Heading)rotation.Value);
-            EntityManager.SetComponentData(fireball, spawnPosition.ToTranslation());
-            EntityManager.SetComponentData<Cooldown>(abilities.Ability1, Cooldown.Reset(fireballCooldown));
-            EntityManager.SetSharedComponentData<SharedCooldownStatus>(abilities.Ability1, SharedCooldownStatus.JustActive);
+            ecb.SetComponent(fireball, ghostOwner);
+            ecb.SetComponent(fireball, rotation);
+            ecb.SetComponent(fireball, (Heading)rotation.Value);
+            ecb.SetComponent(fireball, spawnPosition.ToTranslation());
+            ecb.SetComponent<Cooldown>(abilities.Ability1, Cooldown.Reset(fireballCooldown));
+            ecb.SetSharedComponent<SharedCooldownStatus>(abilities.Ability1, SharedCooldownStatus.JustActive);
           } else {
-            var speculativeEntity = EntityManager.Instantiate(speculativeTestPrefabEntity);
-            var speculativeSpawn = new SpeculativeSpawn { SpawnTick = (int)input.Tick, Identifier = 0 };
-            var prefabAudioSourceShit = EntityManager.GetComponentData<AudioSourceWrapper>(speculativeEntity);
+            var speculativeEntity = ecb.Instantiate(speculativeTestPrefabEntity);
+            var speculativeSpawn = new SpeculativeSpawn { SpawnTick = (int)input.Tick, Identifier = 0 }; // TODO: possibly will not need this moving forward w/ the buffers?
+            var speculativeSpawnBufferEntry = new SpeculativeSpawnBufferEntry { Entity = speculativeEntity, SpawnTick = input.Tick, Identifier = 0 };
 
-            EntityManager.SetComponentData(speculativeEntity, new AudioSourceWrapper { Source = AudioSource.Instantiate(prefabAudioSourceShit.Source) });
-            EntityManager.SetComponentData<SpeculativeSpawn>(speculativeEntity, speculativeSpawn);
+            ecb.SetComponent<SpeculativeSpawn>(speculativeEntity, speculativeSpawn);
+            ecb.AppendToBuffer(speculativeSpawnEntity, speculativeSpawnBufferEntry);
           }
         }
         if (input.didBanner != 0) {
@@ -134,10 +214,11 @@ namespace ECSFrenzy {
           }
         }
       })
-      .WithStructuralChanges()
       .WithoutBurst() // TODO: This is a known bug where burst and shared components don't play nicely together... totally idiotic
       .Run();
 
+      ecb.Playback(EntityManager);
+      ecb.Dispose();
       banners.Dispose();
       bannerTeams.Dispose();
     }
