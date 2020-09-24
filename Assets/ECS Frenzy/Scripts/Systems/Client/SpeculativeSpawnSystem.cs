@@ -66,7 +66,7 @@ namespace ECSFrenzy {
         // Remove existing entities that are old enough to not be re-simulated
         for (int i = existing.Length - 1; i >= 0; i--) {
           if (existing[i].SpawnTick < oldestTickSimulated) {
-            UnityEngine.Debug.Log("Removed existing entity from tracking");
+            // UnityEngine.Debug.Log("Removed existing entity from tracking");
             existing.RemoveAt(i);
           }
         }
@@ -79,7 +79,7 @@ namespace ECSFrenzy {
           }
 
           if (!foundMatch) {
-            UnityEngine.Debug.Log("Destroyed erroneous existing entity");
+            // UnityEngine.Debug.Log("Destroyed erroneous existing entity");
             ecb.DestroyEntity(existing[i].Entity);
             existing.RemoveAt(i);
           }
@@ -92,11 +92,11 @@ namespace ECSFrenzy {
             foundMatch = foundMatch || SpeculativeBuffers.Matches(speculative[i], existing[j]);
           }
           if (foundMatch) {
-            UnityEngine.Debug.Log("Removed redundant speculative entity");
+            // UnityEngine.Debug.Log("Removed redundant speculative entity");
             ecb.DestroyEntity(speculative[i].Entity);
             speculative.RemoveAt(i);
           } else {
-            UnityEngine.Debug.Log("Converted speculative to existing entity");
+            // UnityEngine.Debug.Log("Converted speculative to existing entity");
             existing.Add(speculative[i]);
             speculative.RemoveAt(i);
           }

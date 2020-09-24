@@ -118,7 +118,7 @@ namespace ECSFrenzy {
         var abilities = playerAbilities[entity];
         var fireballCooldown = cooldowns[abilities.Ability1];
 
-        if (input.didFire != 0 && fireballCooldown.TimeRemaining <= 0) {
+        if (input.didFire != 0/* && fireballCooldown.TimeRemaining <= 0*/) {
           if (isServer) {
             var spawnPosition = position.Value + forward(rotation.Value) + float3(0,1,0);
             var fireball = ecb.Instantiate(fireballPrefabEntity);
@@ -127,14 +127,14 @@ namespace ECSFrenzy {
             ecb.SetComponent(fireball, rotation);
             ecb.SetComponent(fireball, (Heading)rotation.Value);
             ecb.SetComponent(fireball, spawnPosition.ToTranslation());
+            /*
             ecb.SetComponent<Cooldown>(abilities.Ability1, Cooldown.Reset(fireballCooldown));
             ecb.SetSharedComponent<SharedCooldownStatus>(abilities.Ability1, SharedCooldownStatus.JustActive);
+            */
           } else {
             var speculativeEntity = ecb.Instantiate(speculativeTestPrefabEntity);
-            var speculativeSpawn = new SpeculativeSpawn { SpawnTick = (int)input.Tick, Identifier = 0 }; // TODO: possibly will not need this moving forward w/ the buffers?
             var speculativeSpawnBufferEntry = new SpeculativeSpawnBufferEntry { Entity = speculativeEntity, SpawnTick = input.Tick, Identifier = 0 };
 
-            ecb.SetComponent<SpeculativeSpawn>(speculativeEntity, speculativeSpawn);
             ecb.AppendToBuffer(speculativeSpawnEntity, speculativeSpawnBufferEntry);
           }
         }
