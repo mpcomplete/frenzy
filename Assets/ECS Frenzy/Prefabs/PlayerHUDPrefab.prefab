@@ -45,6 +45,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Camera: {fileID: 0}
   PlayerPosition: {x: 0, y: 0, z: 0}
-  TimeRemaining: 0
-  LabelWidth: 100
-  LabelHeight: 24
+  Ability1:
+    Name: Fireball
+    TimeRemaining: 0
+    Duration: 0
+  AbilityScreenOffsetX: {x: 0, y: -20}
+  AbilityLabelWidth: 20
+  AbilityLabelHeight: 100
+  NotificationWidth: 200
+  NotificationHeight: 24
+  NotificationDuration: 1
+  NotificationDriftHeight: 100
+  Notifications: []
