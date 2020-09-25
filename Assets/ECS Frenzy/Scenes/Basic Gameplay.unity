@@ -3696,6 +3696,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SpeculativeSpawnTestPrefab: {fileID: 6612991975770164088, guid: 48bc4edfc91331548826a328d24ec5f8, type: 3}
+  PlayerHUDPrefab: {fileID: 8428763260966778896, guid: 9463341f355788b4c91df2a42997586f, type: 3}
   RenderedPlayerPrefab: {fileID: 7397049788785989640, guid: b0751c95da29cbd4a93ab8b273e57282, type: 3}
   RenderedFireballPrefab: {fileID: 5229814469993547117, guid: d408c96b1c8ba3c478a626c1a03c5ed9, type: 3}
   NavAgentBridgePrefab: {fileID: -6526023300986269157, guid: 081516d6ff4c7a84cbf69debb2f80e55, type: 3}

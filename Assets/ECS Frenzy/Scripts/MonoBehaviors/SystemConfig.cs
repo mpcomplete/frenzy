@@ -5,6 +5,7 @@ namespace ECSFrenzy {
   public class SystemConfig : MonoBehaviour {
     public static SystemConfig Instance;
     public GameObject SpeculativeSpawnTestPrefab; 
+    public PlayerHUD PlayerHUDPrefab;
     public RenderedPlayer RenderedPlayerPrefab;
     public RenderedFireball RenderedFireballPrefab;
     public NavMeshAgent NavAgentBridgePrefab;
