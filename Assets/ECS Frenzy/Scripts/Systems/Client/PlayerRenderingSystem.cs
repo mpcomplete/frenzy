@@ -5,36 +5,40 @@ using Unity.NetCode;
 namespace ECSFrenzy {
   [UpdateInGroup(typeof(ClientPresentationSystemGroup))]
   public class PlayerRenderingSystem : ComponentSystem {
-    public class PlayerState : ISystemStateComponentData {
+    public class RenderedPlayerInstance : ISystemStateComponentData {
       public RenderedPlayer Value;
+
+      public static RenderedPlayerInstance Instanced(RenderedPlayer prefab) {
+        return new RenderedPlayerInstance { Value = RenderedPlayer.Instantiate(prefab) };
+      }
     }
 
     protected override void OnUpdate() {
       Entities
-      .WithNone<PlayerState>()
+      .WithNone<RenderedPlayerInstance>()
       .ForEach((Entity e, ref NetworkPlayer np) => {
-        RenderedPlayer rp = RenderedPlayer.Instantiate(SystemConfig.Instance.RenderedPlayerPrefab);
-
-        EntityManager.AddComponentData(e, new PlayerState { Value = rp });
+        EntityManager.AddComponentData(e, RenderedPlayerInstance.Instanced(SystemConfig.Instance.RenderedPlayerPrefab));
       });
 
       Entities
       .WithAll<PlayerState>()
       .WithNone<NetworkPlayer>()
       .ForEach((Entity e) => {
-        RenderedPlayer rp = EntityManager.GetComponentData<PlayerState>(e).Value;
+        RenderedPlayer rp = EntityManager.GetComponentData<RenderedPlayerInstance>(e).Value;
 
         RenderedPlayer.Destroy(rp.gameObject);
-        EntityManager.RemoveComponent<PlayerState>(e);
+        EntityManager.RemoveComponent<RenderedPlayerInstance>(e);
       });
 
       Entities
-      .WithAll<PlayerState>()
-      .ForEach((Entity e, ref NetworkPlayer np, ref Translation translation, ref Rotation rotation, ref MoveSpeed moveSpeed) => {
-        RenderedPlayer rp = EntityManager.GetComponentData<PlayerState>(e).Value;
+      .WithAll<RenderedPlayerInstance>()
+      .ForEach((Entity e, ref NetworkPlayer np, ref Translation translation, ref Rotation rotation, ref PlayerState playerState) => {
+        RenderedPlayer rp = EntityManager.GetComponentData<RenderedPlayerInstance>(e).Value;
 
         rp.transform.SetPositionAndRotation(translation.Value, rotation.Value);
-        rp.Animator.SetFloat("Speed", moveSpeed.Value);
+        rp.Animator.SetFloat("Speed", playerState.IsMoving ? 1 : 0);
+        if (playerState.DidFireball) 
+          rp.Animator.SetTrigger("Fireball");
       });
     }
   }

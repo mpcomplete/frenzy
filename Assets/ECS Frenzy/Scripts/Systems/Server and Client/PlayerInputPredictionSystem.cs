@@ -40,11 +40,9 @@ namespace ECSFrenzy {
       return entity;
     }
 
-    static float MoveSpeedFromInput(in PlayerInput input) => (input.horizontal == 0 && input.vertical == 0) ? 0 : 1;
-
     static float3 DirectionFromInput(in PlayerInput input) => float3(input.horizontal, 0, input.vertical);
 
-    static float3 Velocity(in float3 direction, in float3 speed, in float dt) => dt * speed * direction;
+    static float3 PositionDelta(in float3 direction, in float3 speed, in float dt) => dt * speed * direction;
 
     protected override void OnCreate() {
       CommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
@@ -100,25 +98,28 @@ namespace ECSFrenzy {
       .WithReadOnly(playerAbilities)
       .WithReadOnly(cooldowns)
       .WithAll<NetworkPlayer, PlayerInput>()
-      .ForEach((Entity entity, ref Translation position, ref Rotation rotation, ref MoveSpeed moveSpeed, in Team team, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost, in GhostOwnerComponent ghostOwner) => {
+      .ForEach((Entity playerEntity, in Translation position, in Rotation rotation, in PlayerState playerState, in Team team, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost, in GhostOwnerComponent ghostOwner) => {
         if (!GhostPredictionSystemGroup.ShouldPredict(predictingTick, predictedGhost))
           return;
 
         inputBuffer.GetDataAtTick(predictingTick, out PlayerInput input);
 
-        var speed = MoveSpeedFromInput(input);
+        var isMoving = input.horizontal != 0 || input.vertical != 0;
+        var didFireball = false;
+        var didBanner = false;
         var direction = DirectionFromInput(input);
-        var velocity = Velocity(direction, maxMoveSpeed, dt);
         var speculativeSpawnBuffer = speculativeSpawnBuffers[speculativeSpawnEntity];
 
-        moveSpeed.Value = speed;
-        position.Value += velocity;
-        rotation.Value = (speed > 0) ? (quaternion)Quaternion.LookRotation(direction, float3(0, 1, 0)) : rotation.Value;
+        ecb.SetComponent(playerEntity, (position.Value + PositionDelta(direction, maxMoveSpeed, dt)).ToTranslation());
+        ecb.SetComponent(playerEntity, new Rotation { Value = isMoving ? (quaternion)Quaternion.LookRotation(direction, float3(0,1,0)) : rotation.Value });
 
-        var abilities = playerAbilities[entity];
+        var abilities = playerAbilities[playerEntity];
         var fireballCooldown = cooldowns[abilities.Ability1];
 
-        if (input.didFire != 0/* && fireballCooldown.TimeRemaining <= 0*/) {
+        if (input.didFire > 0 && fireballCooldown.TimeRemaining <= 0) {
+          ecb.SetComponent<Cooldown>(abilities.Ability1, Cooldown.Reset(fireballCooldown));
+          ecb.SetComponent<CooldownStatus>(abilities.Ability1, CooldownStatus.JustActive);
+          didFireball = true;
           if (isServer) {
             var spawnPosition = position.Value + forward(rotation.Value) + float3(0,1,0);
             var fireball = ecb.Instantiate(fireballPrefabEntity);
@@ -127,13 +128,9 @@ namespace ECSFrenzy {
             ecb.SetComponent(fireball, rotation);
             ecb.SetComponent(fireball, (Heading)rotation.Value);
             ecb.SetComponent(fireball, spawnPosition.ToTranslation());
-            /*
-            ecb.SetComponent<Cooldown>(abilities.Ability1, Cooldown.Reset(fireballCooldown));
-            ecb.SetSharedComponent<SharedCooldownStatus>(abilities.Ability1, SharedCooldownStatus.JustActive);
-            */
           } else {
             var speculativeEntity = ecb.Instantiate(speculativeTestPrefabEntity);
-            var speculativeSpawnBufferEntry = new SpeculativeSpawnBufferEntry { Entity = speculativeEntity, SpawnTick = input.Tick, Identifier = 0 };
+            var speculativeSpawnBufferEntry = new SpeculativeSpawnBufferEntry { Entity = speculativeEntity, SpawnTick = input.Tick, Identifier = input.Tick };
 
             ecb.AppendToBuffer(speculativeSpawnEntity, speculativeSpawnBufferEntry);
           }
@@ -144,11 +141,13 @@ namespace ECSFrenzy {
           for (int i = 0; i < bannerTeams.Length; i++) {
             if (bannerTeams[i].Value == playerTeam) {
               EntityManager.SetComponentData(banners[i], playerPos.ToTranslation());
+              didBanner = true;
             }
           }
         }
+        ecb.SetComponent(playerEntity, new PlayerState { IsMoving = isMoving, DidFireball = didFireball, DidBanner = didBanner });
       })
-      .WithoutBurst() // TODO: This is a known bug where burst and shared components don't play nicely together... totally idiotic
+      .WithoutBurst()
       .Run();
 
       ecb.Playback(EntityManager);

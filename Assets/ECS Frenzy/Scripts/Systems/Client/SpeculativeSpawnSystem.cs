@@ -48,6 +48,7 @@ namespace ECSFrenzy {
     }
 
     protected override void OnUpdate() {
+      // TODO: It would be nice to truly run this only on the client but there are a few odd details that would need to get cleaned up in the InputPredictionSystem to do that
       if (World.GetExistingSystem<ServerSimulationSystemGroup>() != null)
         return;
 

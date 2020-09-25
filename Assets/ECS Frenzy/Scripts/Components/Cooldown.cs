@@ -1,9 +1,9 @@
-﻿using System;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.NetCode;
 
 namespace ECSFrenzy {
-  [Serializable]
+  [GenerateAuthoringComponent]
+  [GhostComponent(PrefabType=GhostPrefabType.All)]
   public struct Cooldown : IComponentData {
     [GhostField] public float Duration;
     [GhostField] public float TimeRemaining;
