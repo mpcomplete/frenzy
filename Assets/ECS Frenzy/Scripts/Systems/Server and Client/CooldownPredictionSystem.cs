@@ -1,19 +1,14 @@
 ﻿using Unity.Entities;
 using Unity.Jobs;
+using Unity.NetCode;
 using static Unity.Mathematics.math;
 
 namespace ECSFrenzy {
-  [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst=true)]
-  public class CooldownSystem : SystemBase {
-    BeginSimulationEntityCommandBufferSystem entityCommandBufferSystem;
-
-    protected override void OnCreate() {
-      entityCommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
-    }
-
+  [UpdateInGroup(typeof(GhostPredictionSystemGroup))]
+  [UpdateBefore(typeof(PlayerInputPredictionSystem))]
+  public class CooldownPredictionSystem : SystemBase {
     protected override void OnUpdate() {
       var dt = Time.DeltaTime;
-      var ecb = entityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
 
       Entities
       .WithName("Update_Cooldowns")
@@ -37,9 +32,8 @@ namespace ECSFrenzy {
         break;
         }
       })
-      .WithBurst()
-      .ScheduleParallel();
-      entityCommandBufferSystem.AddJobHandleForProducer(Dependency);
+      .WithoutBurst()
+      .Run();
     }
   }
 }

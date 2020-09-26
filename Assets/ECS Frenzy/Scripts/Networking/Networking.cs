@@ -170,13 +170,17 @@ namespace ECSFrenzy {
   [UpdateBefore(typeof(SendPlayerInputCommandSystem))]
   [UpdateBefore(typeof(GhostSimulationSystemGroup))]
   public class SamplePlayerInput : SystemBase {
+    ClientSimulationSystemGroup ClientSimulationSystemGroup;
+
     protected override void OnCreate() {
+      ClientSimulationSystemGroup = World.GetExistingSystem<ClientSimulationSystemGroup>();
       RequireSingletonForUpdate<NetworkIdComponent>();
     }
 
     protected override void OnUpdate() {
       Entity localInputEntity = GetSingleton<CommandTargetComponent>().targetEntity;
       BeginSimulationEntityCommandBufferSystem barrier = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
+      uint tick = ClientSimulationSystemGroup.ServerTick;
 
       if (localInputEntity == Entity.Null) {
         int localPlayerId = GetSingleton<NetworkIdComponent>().Value;
@@ -207,8 +211,6 @@ namespace ECSFrenzy {
         } else {
           stickInput = normalize(stickInput);
         }
-
-        uint tick = World.GetExistingSystem<ClientSimulationSystemGroup>().ServerTick;
 
         PlayerInput input = new PlayerInput {
           tick = tick,

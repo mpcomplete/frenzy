@@ -7,6 +7,7 @@ namespace ECSFrenzy {
   [GenerateAuthoringComponent]
   [GhostComponent(PrefabType = GhostPrefabType.All)]
   public struct PlayerState : IComponentData {
+    [GhostField] public float FireballCooldown;
     [GhostField] public bool IsMoving;
     [GhostField] public bool DidFireball;
     [GhostField] public bool DidBanner;

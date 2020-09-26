@@ -1,4 +1,6 @@
-﻿using Unity.Collections;
+﻿#define SHOW_SPECULATIVE_DEBUGGING
+
+using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 
@@ -35,6 +37,7 @@ namespace ECSFrenzy {
   [UpdateAfter(typeof(GhostPredictionSystemGroup))]
   public class SpeculativeSpawnSystem : SystemBase {
     GhostPredictionSystemGroup PredictionSystemGroup;
+    ClientSimulationSystemGroup ClientSimulationSystemGroup;
 
     protected override void OnCreate() {
       var e = EntityManager.CreateEntity();
@@ -45,14 +48,19 @@ namespace ECSFrenzy {
       EntityManager.AddBuffer<SpeculativeSpawnBufferEntry>(e);
       EntityManager.AddBuffer<ExistingSpeculativeSpawnBufferEntry>(e);
       PredictionSystemGroup = World.GetExistingSystem<GhostPredictionSystemGroup>();
+      ClientSimulationSystemGroup = World.GetExistingSystem<ClientSimulationSystemGroup>();
     }
 
     protected override void OnUpdate() {
       // TODO: It would be nice to truly run this only on the client but there are a few odd details that would need to get cleaned up in the InputPredictionSystem to do that
+      // To do this would require changing the way speculative spawns work to include a SpeculativelySpawnedTagComponent which then would get queried for in this system and 
+      // ultimately added to the bookkeeping already defined here. This would allow the Prefab for any speculatively-spawned thing to simply include the tag and then all the rest
+      // of the magic would just happen...
       if (World.GetExistingSystem<ServerSimulationSystemGroup>() != null)
         return;
 
       var predictingTick = PredictionSystemGroup.PredictingTick;  
+      var serverTick = ClientSimulationSystemGroup.ServerTick;
       var singletonEntity = GetSingletonEntity<SpeculativeBuffers>();
       var speculativeBuffers = GetComponent<SpeculativeBuffers>(singletonEntity);
       var existing = GetBuffer<ExistingSpeculativeSpawnBufferEntry>(singletonEntity);
@@ -61,26 +69,26 @@ namespace ECSFrenzy {
       var newestTickSimulated = speculativeBuffers.NewestTickSimulated;
       var ecb = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
 
-      // UnityEngine.Debug.Log($"{ oldestTickSimulated }..{newestTickSimulated}");
+      #if SHOW_SPECULATIVE_DEBUGGING
+      UnityEngine.Debug.Log($"{ oldestTickSimulated }..{newestTickSimulated}");
+      #endif
+
       Job
       .WithCode(()=> {
-        // Remove existing entities that are old enough to not be re-simulated
-        for (int i = existing.Length - 1; i >= 0; i--) {
-          if (existing[i].SpawnTick < oldestTickSimulated) {
-            // UnityEngine.Debug.Log("Removed existing entity from tracking");
-            existing.RemoveAt(i);
-          }
-        }
-
         // Loop over existing entities and remove/destroy them if they are not found in the speculative spawns
+        // AND the frame they were spawned on was re-simulated during this frame!
         for (int i = existing.Length - 1; i >= 0; i--) {
           bool foundMatch = false;
+          bool resimulatedThisFrame = existing[i].SpawnTick >= oldestTickSimulated && existing[i].SpawnTick <= newestTickSimulated;
+
           for (int j = 0; j < speculative.Length; j++) {
             foundMatch = foundMatch || SpeculativeBuffers.Matches(speculative[j], existing[i]);
           }
 
-          if (!foundMatch) {
-            // UnityEngine.Debug.Log("Destroyed erroneous existing entity");
+          if (resimulatedThisFrame && !foundMatch) {
+            #if SHOW_SPECULATIVE_DEBUGGING
+            UnityEngine.Debug.Log($"Destroyed erroneous existing entity {existing[i].Identifier}. {speculative.Length} Speculated entities were in the buffer.");
+            #endif
             ecb.DestroyEntity(existing[i].Entity);
             existing.RemoveAt(i);
           }
@@ -89,15 +97,20 @@ namespace ECSFrenzy {
         // Loop over speculativeSpawns and move to existing if they are not already there otherwise destroy
         for (int i = speculative.Length - 1; i >= 0; i--) {
           bool foundMatch = false;
+
           for (int j = 0; j < existing.Length; j++) {
             foundMatch = foundMatch || SpeculativeBuffers.Matches(speculative[i], existing[j]);
           }
           if (foundMatch) {
-            // UnityEngine.Debug.Log("Removed redundant speculative entity");
+            #if SHOW_SPECULATIVE_DEBUGGING
+            UnityEngine.Debug.Log($"Removed redundant speculative entity {speculative[i].Identifier} on estimated server tick {serverTick} with {speculative.Length} elements in speculativeSpawnBuffer");
+            #endif
             ecb.DestroyEntity(speculative[i].Entity);
             speculative.RemoveAt(i);
           } else {
-            // UnityEngine.Debug.Log("Converted speculative to existing entity");
+            #if SHOW_SPECULATIVE_DEBUGGING
+            UnityEngine.Debug.Log($"Converted speculative to existing entity {speculative[i].Identifier}");
+            #endif
             existing.Add(speculative[i]);
             speculative.RemoveAt(i);
           }
