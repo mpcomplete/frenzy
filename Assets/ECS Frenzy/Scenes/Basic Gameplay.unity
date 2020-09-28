@@ -1081,11 +1081,7 @@ MonoBehaviour:
     enabled: 1
   - prefab: {fileID: 4762118607386222133, guid: e5bd4880f4c86c3489c909d4145da22f, type: 3}
     enabled: 1
-  - prefab: {fileID: 924912124691510099, guid: f627a587adea7834ca64b16a09552db1, type: 3}
-    enabled: 1
   - prefab: {fileID: 3375929130029482782, guid: 1b92d51253d5a944e9bbca447d4207e0, type: 3}
-    enabled: 1
-  - prefab: {fileID: 6962904195207784889, guid: 7c5cb00cca857c74e9a6edc0b1244e93, type: 3}
     enabled: 1
   - prefab: {fileID: 7032664890655128123, guid: 89502ac4cfb941843b0fe12488b36489, type: 3}
     enabled: 1

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4762118607386222132}
   - component: {fileID: 709981296335326984}
+  - component: {fileID: 5634254628308474694}
   - component: {fileID: 4762118607386222133}
   - component: {fileID: -5730477410156477422}
   - component: {fileID: 4762118607386222130}
@@ -48,6 +49,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f95e255fbb5cb394b8bde647bb8f2361, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &5634254628308474694
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4762118607386222128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30cdb551a8713a647906d57132c7f70d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SimulatedSpawnTick: 0
+  Identifier: 0
 --- !u!114 &4762118607386222133
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -60,13 +75,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c79d771cedb4794bf100ce60df5f764, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ForcePrefabConversion: 0
   DefaultGhostMode: 2
   SupportedGhostModes: 3
   OptimizationMode: 0
   Importance: 1
   prefabId: e5bd4880f4c86c3489c909d4145da22f
   Name: Fireball
-  doNotStrip: 0
 --- !u!114 &-5730477410156477422
 MonoBehaviour:
   m_ObjectHideFlags: 0

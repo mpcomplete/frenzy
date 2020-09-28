@@ -1,4 +1,4 @@
-﻿#define SHOW_SPECULATIVE_DEBUGGING
+﻿// #define SHOW_SPECULATIVE_DEBUGGING
 
 using Unity.Collections;
 using Unity.Entities;
@@ -32,7 +32,8 @@ namespace ECSFrenzy {
     }
   }
 
-  // TODO: This really only should run on a server... goddamn Ghosts are annoying
+  // TODO: This really only should run on a client... goddamn Ghosts are annoying
+  // [UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
   [UpdateInGroup(typeof(GhostSimulationSystemGroup))]
   [UpdateAfter(typeof(GhostPredictionSystemGroup))]
   public class SpeculativeSpawnSystem : SystemBase {

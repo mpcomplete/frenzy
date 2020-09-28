@@ -38,5 +38,19 @@ namespace ECSFrenzy.Generated
     }
     class ECSFrenzyJoinGameRequestRpcCommandRequestSystem : RpcCommandRequestSystem<ECSFrenzyJoinGameRequestSerializer, ECSFrenzy.JoinGameRequest>
     {
+        [BurstCompile]
+        protected struct SendRpc : IJobEntityBatch
+        {
+            public SendRpcData data;
+            public void Execute(ArchetypeChunk chunk, int orderIndex)
+            {
+                data.Execute(chunk, orderIndex);
+            }
+        }
+        protected override void OnUpdate()
+        {
+            var sendJob = new SendRpc{data = InitJobData()};
+            ScheduleJobData(sendJob);
+        }
     }
 }

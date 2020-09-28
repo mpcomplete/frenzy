@@ -4,6 +4,7 @@ using Unity.NetCode;
 using static Unity.Mathematics.math;
 
 namespace ECSFrenzy {
+  /*
   [UpdateInGroup(typeof(GhostPredictionSystemGroup))]
   [UpdateBefore(typeof(PlayerInputPredictionSystem))]
   public class CooldownPredictionSystem : SystemBase {
@@ -36,4 +37,5 @@ namespace ECSFrenzy {
       .Run();
     }
   }
+  */
 }

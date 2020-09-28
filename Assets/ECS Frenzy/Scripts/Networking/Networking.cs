@@ -1,4 +1,5 @@
-﻿using Unity.Collections;
+﻿using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
@@ -27,38 +28,13 @@ namespace ECSFrenzy {
   public struct JoinGameRequest : IRpcCommand {}
 
   [GhostComponent(PrefabType=GhostPrefabType.AllPredicted)]
-  public struct PlayerInput : ICommandData<PlayerInput> {
-    public uint Tick => tick;
-    public uint tick;
+  public struct PlayerInput : ICommandData {
+    public uint Tick {get; set;}
     public float horizontal;
     public float vertical;
     public int didFire;
     public int didBanner;
-
-    public void Deserialize(uint tick, ref DataStreamReader reader) {
-      this.tick = tick;
-      horizontal = reader.ReadFloat();
-      vertical = reader.ReadFloat();
-      didFire = reader.ReadInt();
-      didBanner = reader.ReadInt();
-    }
-
-    public void Serialize(ref DataStreamWriter writer) {
-      writer.WriteFloat(horizontal);
-      writer.WriteFloat(vertical);
-      writer.WriteInt(didFire);
-      writer.WriteInt(didBanner);
-    }
-
-    public void Deserialize(uint tick, ref DataStreamReader reader, PlayerInput baseline, NetworkCompressionModel compressionModel) {
-      Deserialize(tick, ref reader);
-    }
-
-    public void Serialize(ref DataStreamWriter writer, PlayerInput baseline, NetworkCompressionModel compressionModel) {
-      Serialize(ref writer);
-    }
   }
-
 
   public class FrenzyNetCodeBootstrap : ClientServerBootstrap {
     public override bool Initialize(string defaultWorldName) {
@@ -66,7 +42,6 @@ namespace ECSFrenzy {
       return base.Initialize(defaultWorldName);
     }
   }
-
 
   [UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
   public class EstablishConnection : ComponentSystem {
@@ -144,7 +119,8 @@ namespace ECSFrenzy {
       .WithNone<SendRpcCommandRequestComponent>()
       .ForEach((Entity requestEntity, ref JoinGameRequest joinGameRequest, ref ReceiveRpcCommandRequestComponent reqSrc) => {
         int networkId = EntityManager.GetComponentData<NetworkIdComponent>(reqSrc.SourceConnection).Value;
-        DynamicBuffer<GhostPrefabBuffer> serverPrefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(GetSingleton<GhostPrefabCollectionComponent>().serverPrefabs);
+        Entity ghostPrefabCollectionEntity = GetSingletonEntity<GhostPrefabCollectionComponent>();
+        DynamicBuffer<GhostPrefabBuffer> serverPrefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(ghostPrefabCollectionEntity);
         Entity playerPrefab = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<NetworkPlayer>(e));
         Entity bannerPrefab = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<Banner>(e));
         Entity player = EntityManager.Instantiate(playerPrefab);
@@ -162,30 +138,27 @@ namespace ECSFrenzy {
     }
   }
 
-  public class SendPlayerInputCommandSystem : CommandSendSystem<PlayerInput> {}
-
-  public class ReceivePlayerInputCommandSystem : CommandReceiveSystem<PlayerInput> {}
-
   [UpdateInGroup(typeof(ClientSimulationSystemGroup))]
-  [UpdateBefore(typeof(SendPlayerInputCommandSystem))]
+  [UpdateBefore(typeof(CommandSendSystemGroup))]
   [UpdateBefore(typeof(GhostSimulationSystemGroup))]
   public class SamplePlayerInput : SystemBase {
     ClientSimulationSystemGroup ClientSimulationSystemGroup;
+    BeginSimulationEntityCommandBufferSystem BeginSimulationEntityCommandBufferSystem;
 
     protected override void OnCreate() {
       ClientSimulationSystemGroup = World.GetExistingSystem<ClientSimulationSystemGroup>();
+      BeginSimulationEntityCommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
       RequireSingletonForUpdate<NetworkIdComponent>();
     }
 
     protected override void OnUpdate() {
-      Entity localInputEntity = GetSingleton<CommandTargetComponent>().targetEntity;
-      BeginSimulationEntityCommandBufferSystem barrier = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
-      uint tick = ClientSimulationSystemGroup.ServerTick;
+      var localInputEntity = GetSingleton<CommandTargetComponent>().targetEntity;
+      var estimatedServerTick = ClientSimulationSystemGroup.ServerTick;
 
       if (localInputEntity == Entity.Null) {
-        int localPlayerId = GetSingleton<NetworkIdComponent>().Value;
-        EntityCommandBuffer.ParallelWriter ecb = barrier.CreateCommandBuffer().AsParallelWriter();
-        Entity commandTargetEntity = GetSingletonEntity<CommandTargetComponent>();
+        var localPlayerId = GetSingleton<NetworkIdComponent>().Value;
+        var commandTargetEntity = GetSingletonEntity<CommandTargetComponent>();
+        var ecb = BeginSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
 
         Entities
         .WithAll<NetworkPlayer>()
@@ -199,10 +172,10 @@ namespace ECSFrenzy {
           }
         })
         .ScheduleParallel();
-        barrier.AddJobHandleForProducer(Dependency);
+        BeginSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
       } else {
-        DynamicBuffer<PlayerInput> playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
-        float2 stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        var playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
+        var stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         int didFire = Input.GetButtonDown("Fire1") ? 1 : 0;
         int didBanner = Input.GetButtonDown("Jump") ? 1 : 0;
 
@@ -212,17 +185,17 @@ namespace ECSFrenzy {
           stickInput = normalize(stickInput);
         }
 
-        PlayerInput input = new PlayerInput {
-          tick = tick,
-          horizontal = stickInput.x,
-          vertical = stickInput.y,
-          didFire = didFire,
-          didBanner = didBanner
-        };
-
         Entities
         .WithAll<NetworkPlayer, PlayerInput>()
         .ForEach((Entity e, ref GhostOwnerComponent ghostOwner) => {
+          PlayerInput input = new PlayerInput {
+            Tick = estimatedServerTick,
+            horizontal = stickInput.x,
+            vertical = stickInput.y,
+            didFire = didFire,
+            didBanner = didBanner
+          };
+
           playerInputs.AddCommandData(input);
         })
         .WithoutBurst()

@@ -3,6 +3,8 @@ using Unity.Transforms;
 using Unity.NetCode;
 
 namespace ECSFrenzy {
+  [UpdateInGroup(typeof(GhostPredictionSystemGroup))]
+  [UpdateAfter(typeof(PlayerInputPredictionSystem))]
   public class FireballPredictionSystem : SystemBase {
     BeginSimulationEntityCommandBufferSystem CommandBufferSystem;
     GhostPredictionSystemGroup PredictionSystemGroup;
