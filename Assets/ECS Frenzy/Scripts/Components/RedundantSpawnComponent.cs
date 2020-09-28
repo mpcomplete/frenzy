@@ -15,6 +15,11 @@ namespace ECSFrenzy {
       Identifier = identifier;
     }
 
+    public RedundantSpawnComponent(uint simulatedSpawnTick) {
+      SimulatedSpawnTick = simulatedSpawnTick;
+      Identifier = simulatedSpawnTick;
+    }
+
     public bool Equals(RedundantSpawnComponent rc) {
       return SimulatedSpawnTick == rc.SimulatedSpawnTick && Identifier == rc.Identifier;
     }

@@ -71,86 +71,63 @@ namespace ECSFrenzy {
       .WithAll<NetworkPlayer, PlayerInput>()
       .ForEach((Entity playerEntity, in Translation position, in Rotation rotation, in PlayerState playerState, in Team team, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost, in GhostOwnerComponent ghostOwner) => {
         if (!GhostPredictionSystemGroup.ShouldPredict(predictingTick, predictedGhost)) {
-          // Debug.Log($"Did not predict {predictingTick}");
           return;
         }
         
-        // Only run this code for predictionTicks that are actually predicted! ShouldPredict clause returning false means this tick was not actually re-simulated!
-        // May be a better way to do this but this SHOULD record the oldest predicted tick each frame for use in SpeculativeSpawnSystem
-        // NOTE: It's worth noting that this data is really capturing which ticks were re-simulated for THIS player ghost. there could have been
-        // other ticks simulated for other ghost entities that are predicted by other systems. As such, it's not clear if this is the correct
-        // place for this to be recorded... maybe this should be a component on the actual player prefab?
-
-        if (!isServer) {
-          var specBuffers = speculativeBuffers[speculativeSpawnEntity];
-          var oldestTickSimulated = min(specBuffers.OldestTickSimulated, predictingTick);
-          var newestTickSimulated = max(specBuffers.NewestTickSimulated, predictingTick);
-
-          ecb.SetComponent(speculativeSpawnEntity, new SpeculativeBuffers(oldestTickSimulated, newestTickSimulated));
-        }
-
-        // Important: We are willing to use data related to some button presses to predict motion that is continuous even when we do not have
-        // any Input data for EXACTLY the current tick we are predicting. However, we do not want to process discrete events if no input data
-        // actually existed for the exact predicting tick we are currently simulating. Thus, we check to see if we foundInputForExactlyThisTick
-        // when considering whether to process inputs associated with discrete events... This feels like a giant can of fuck.
-        // Additionally, this raises a NEW question: When we "AddCommandData" to the inputs list and the targeted ServerTick happens
-        // to already exist in the command data is it possible that their helper method "AddCommandData" could potentially overrite
-        // an input action of pushing a button with a "newer" InputData that does not have that button pushed. This would extremely suck
-        // because it would mean that the client would appear to swallow input actions occasionally which would drive players and myself 
-        // crazy and lead to Armageddon.
-
         var foundAnyInputForThisTick = inputBuffer.GetDataAtTick(predictingTick, out PlayerInput input);
-        var foundInputForExactlyThisTick = foundAnyInputForThisTick && input.Tick == predictingTick;
-        var isMoving = input.horizontal != 0 || input.vertical != 0;
-        var didFireball = false;
-        var didBanner = false;
-        var fireballCooldown = max(playerState.FireballCooldown - dt, 0);
+        var foundInputForExactlyThisTick = foundAnyInputForThisTick && input.Tick == predictingTick; // InputBuffer not guaranteed to actually have PlayerInput for exactly this tick
+        var newPlayerState = new PlayerState();
         var direction = DirectionFromInput(input);
         var speculativeSpawnBuffer = speculativeSpawnBuffers[speculativeSpawnEntity];
         var abilities = playerAbilities[playerEntity];
 
+        newPlayerState.IsMoving = input.horizontal != 0 || input.vertical != 0;
+        newPlayerState.FireballCooldown = max(playerState.FireballCooldown - dt, 0);
+
         // Discrete actions so insist on having exact data for the predictedTick
         if (foundInputForExactlyThisTick) {
-          if (input.didFire > 0 && fireballCooldown <= 0) {
-            didFireball = true;
-            fireballCooldown = 1f; // TODO: hard-coded here for a moment because I am tired. This should either go back to the generic cooldown system or be a parameter
+          if (input.didFire > 0 && newPlayerState.FireballCooldown <= 0) {
             var spawnPosition = position.Value + forward(rotation.Value) + float3(0,1,0);
             var fireball = delayedECB.Instantiate(fireballPrefabEntity);
 
-            if (!isServer) {
-              delayedECB.SetComponent(fireball, new RedundantSpawnComponent { SimulatedSpawnTick = input.Tick, Identifier = input.Tick });
-            }
+            newPlayerState.DidFireball = true;
+            newPlayerState.FireballCooldown = 1f; // TODO: hard-coded here for a moment because I am tired. This should either go back to the generic cooldown system or be a parameter
             delayedECB.SetComponent(fireball, ghostOwner);
             delayedECB.SetComponent(fireball, rotation);
             delayedECB.SetComponent(fireball, (Heading)rotation.Value);
             delayedECB.SetComponent(fireball, spawnPosition.ToTranslation());
+
+            if (!isServer) {
+              delayedECB.SetComponent(fireball, new RedundantSpawnComponent(input.Tick));
+            }
+
             if (!isServer) {
               var speculativeEntity = ecb.Instantiate(speculativeTestPrefabEntity);
-              var speculativeSpawnBufferEntry = new SpeculativeSpawnBufferEntry { Entity = speculativeEntity, SpawnTick = input.Tick, Identifier = input.Tick };
+              var speculativeSpawnBufferEntry = new SpeculativeSpawnBufferEntry { 
+                OwnerEntity = playerEntity,
+                Entity = speculativeEntity, 
+                SpawnTick = input.Tick, 
+                Identifier = input.Tick 
+              };
 
               ecb.AppendToBuffer(speculativeSpawnEntity, speculativeSpawnBufferEntry);
             }
+          } else if (input.didBanner != 0) {
+            var playerTeam = team.Value;
+            var playerPos = position.Value;
+
+            for (int i = 0; i < bannerTeams.Length; i++) {
+              if (bannerTeams[i].Value == playerTeam) {
+                newPlayerState.DidBanner = true;
+                ecb.SetComponent(banners[i], playerPos.ToTranslation());
+              }
+            }
           }
-          //} else if (input.didBanner != 0) {
-          //  var playerTeam = team.Value;
-          //  var playerPos = position.Value;
-          //  for (int i = 0; i < bannerTeams.Length; i++) {
-          //    if (bannerTeams[i].Value == playerTeam) {
-          //      EntityManager.SetComponentData(banners[i], playerPos.ToTranslation());
-          //      didBanner = true;
-          //    }
-          //  }
-          //}
         }
+        ecb.SetComponent(playerEntity, newPlayerState);
         ecb.SetComponent(playerEntity, (position.Value + PositionDelta(direction, maxMoveSpeed, dt)).ToTranslation());
         ecb.SetComponent(playerEntity, new Rotation { 
-          Value = isMoving ? (quaternion)Quaternion.LookRotation(direction, float3(0,1,0)) : rotation.Value 
-        });
-        ecb.SetComponent(playerEntity, new PlayerState { 
-          FireballCooldown = fireballCooldown,
-          IsMoving = isMoving, 
-          DidFireball = didFireball, 
-          DidBanner = didBanner 
+          Value = newPlayerState.IsMoving ? (quaternion)Quaternion.LookRotation(direction, float3(0,1,0)) : rotation.Value 
         });
       })
       .WithoutBurst()

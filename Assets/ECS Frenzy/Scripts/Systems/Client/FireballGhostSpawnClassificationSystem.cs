@@ -22,24 +22,19 @@ namespace ECSFrenzy {
         DynamicBuffer<PredictedGhostSpawn> predictedGhostSpawnBuffer = spawnListFromEntity[spawnListEntity];
 
         for (int i = 0; i < ghosts.Length; i++) {
-          GhostSpawnBuffer ghost = ghosts[i];
+          var ghost = ghosts[i];
 
-          UnityEngine.Debug.Log($"New ghost from server of spawnType {ghost.SpawnType}");
           if (ghost.SpawnType == GhostSpawnBuffer.Type.Predicted) {
             for (int j = 0; j < predictedGhostSpawnBuffer.Length; j++) {
               const int TICK_DELTA = 5;
-              PredictedGhostSpawn predictedGhostSpawn = predictedGhostSpawnBuffer[j];
-              bool sameGhostType = ghost.GhostType == predictedGhostSpawn.ghostType;
-              UnityEngine.Debug.Log("New predictively-spawned ghost from server");
-              // bool clause1 = !SequenceHelpers.IsNewer(predictedGhostSpawn.spawnTick, ghost.ServerSpawnTick + TICK_DELTA);
-              // bool clause2 = SequenceHelpers.IsNewer(predictedGhostSpawn.spawnTick + TICK_DELTA, ghost.ServerSpawnTick);
+              var predictedGhostSpawn = predictedGhostSpawnBuffer[j];
+              var sameGhostType = ghost.GhostType == predictedGhostSpawn.ghostType;
+              var clause1 = !SequenceHelpers.IsNewer(predictedGhostSpawn.spawnTick, ghost.ServerSpawnTick + TICK_DELTA);
+              var clause2 = SequenceHelpers.IsNewer(predictedGhostSpawn.spawnTick + TICK_DELTA, ghost.ServerSpawnTick);
 
-              if (sameGhostType/* && clause1 && clause2*/) {
-                UnityEngine.Debug.Log("it happened");
+              if (sameGhostType && clause1 && clause2) {
                 ghost.PredictedSpawnEntity = predictedGhostSpawn.entity;
-                // predictedGhostSpawnBuffer.RemoveAtSwapBack(j);
-                predictedGhostSpawnBuffer[j] = predictedGhostSpawnBuffer[predictedGhostSpawnBuffer.Length-1];
-                predictedGhostSpawnBuffer.RemoveAt(predictedGhostSpawnBuffer.Length-1);
+                predictedGhostSpawnBuffer.RemoveAtSwapBack(j);
                 break;
               }
             }

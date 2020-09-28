@@ -22,6 +22,7 @@ namespace ECSFrenzy {
       var spawnListFromEntity = GetBufferFromEntity<PredictedGhostSpawn>();
       var redundantSpawnFromEntity = GetComponentDataFromEntity<RedundantSpawnComponent>(true);
 
+      // Loop over all predictively-spawned ghosts and destroy redundant ones ( from re-simulation )
       Job
       .WithCode(() => {
         var spawnList = spawnListFromEntity[spawnListEntity];
@@ -31,12 +32,10 @@ namespace ECSFrenzy {
           var redundantSpawn = redundantSpawnFromEntity[spawn.entity];
 
           if (unique.Contains(redundantSpawn)) {
-            // UnityEngine.Debug.Log($"REDUNDANT: {redundantSpawn.SimulatedSpawnTick}/{redundantSpawn.Identifier}");
             commandBuffer.DestroyEntity(spawn.entity);
             spawnList.RemoveAtSwapBack(i);
             --i;
           } else {
-            // UnityEngine.Debug.Log($"UNIQUE: {redundantSpawn.SimulatedSpawnTick}/{redundantSpawn.Identifier}");
             unique.Add(redundantSpawn);
           }
         }

@@ -1,34 +1,21 @@
-﻿// #define SHOW_SPECULATIVE_DEBUGGING
-
+﻿using System;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 
 namespace ECSFrenzy {
-  public struct SpeculativeBuffers : IComponentData {
-    public uint OldestTickSimulated;
-    public uint NewestTickSimulated;
-    public SpeculativeBuffers (uint oldest, uint newest) {
-      OldestTickSimulated = oldest;
-      NewestTickSimulated = newest;
-    }
-    public static bool Matches(in SpeculativeSpawnBufferEntry spawn, in ExistingSpeculativeSpawnBufferEntry existing) {
-      return spawn.SpawnTick == existing.SpawnTick && spawn.Identifier == existing.Identifier;
-    }
-  }
+  public struct SpeculativeBuffers : IComponentData {}
+
+  public struct ExistingSpeculativeBuffers : IComponentData {}
 
   public struct SpeculativeSpawnBufferEntry : IBufferElementData {
+    public Entity OwnerEntity;
     public Entity Entity;
     public uint SpawnTick;
     public uint Identifier;
-  }
 
-  public struct ExistingSpeculativeSpawnBufferEntry : IBufferElementData {
-    public Entity Entity;
-    public uint SpawnTick;
-    public uint Identifier;
-    public static implicit operator ExistingSpeculativeSpawnBufferEntry(SpeculativeSpawnBufferEntry spec) {
-      return new ExistingSpeculativeSpawnBufferEntry { SpawnTick = spec.SpawnTick, Identifier = spec.Identifier, Entity = spec.Entity };
+    public bool SameAs(SpeculativeSpawnBufferEntry ssbe) {
+      return OwnerEntity == ssbe.OwnerEntity && SpawnTick == ssbe.SpawnTick && Identifier == ssbe.Identifier;
     }
   }
 
@@ -41,15 +28,19 @@ namespace ECSFrenzy {
     ClientSimulationSystemGroup ClientSimulationSystemGroup;
 
     protected override void OnCreate() {
-      var e = EntityManager.CreateEntity();
+      var speculativeBuffersEntity = EntityManager.CreateEntity();
+      var existingSpeculativeBuffersEntity = EntityManager.CreateEntity();
 
-      EntityManager.SetName(e, "SPECULATIVE BUFFER SINGLETON");
-      EntityManager.AddComponent<SpeculativeBuffers>(e);
-      EntityManager.SetComponentData(e, new SpeculativeBuffers(uint.MaxValue, 0)); // initial value since we use min function each frame
-      EntityManager.AddBuffer<SpeculativeSpawnBufferEntry>(e);
-      EntityManager.AddBuffer<ExistingSpeculativeSpawnBufferEntry>(e);
+      EntityManager.SetName(speculativeBuffersEntity, "Speculative Buffers Singleton");
+      EntityManager.AddComponent<SpeculativeBuffers>(speculativeBuffersEntity);
+      EntityManager.AddBuffer<SpeculativeSpawnBufferEntry>(speculativeBuffersEntity);
+      EntityManager.SetName(existingSpeculativeBuffersEntity, "Existing Speculative Buffers Singleton");
+      EntityManager.AddComponent<ExistingSpeculativeBuffers>(existingSpeculativeBuffersEntity);
+      EntityManager.AddBuffer<SpeculativeSpawnBufferEntry>(existingSpeculativeBuffersEntity);
       PredictionSystemGroup = World.GetExistingSystem<GhostPredictionSystemGroup>();
       ClientSimulationSystemGroup = World.GetExistingSystem<ClientSimulationSystemGroup>();
+      RequireSingletonForUpdate<SpeculativeBuffers>();
+      RequireSingletonForUpdate<ExistingSpeculativeBuffers>();
     }
 
     protected override void OnUpdate() {
@@ -62,64 +53,49 @@ namespace ECSFrenzy {
 
       var predictingTick = PredictionSystemGroup.PredictingTick;  
       var serverTick = ClientSimulationSystemGroup.ServerTick;
-      var singletonEntity = GetSingletonEntity<SpeculativeBuffers>();
-      var speculativeBuffers = GetComponent<SpeculativeBuffers>(singletonEntity);
-      var existing = GetBuffer<ExistingSpeculativeSpawnBufferEntry>(singletonEntity);
-      var speculative = GetBuffer<SpeculativeSpawnBufferEntry>(singletonEntity);
-      var oldestTickSimulated = speculativeBuffers.OldestTickSimulated;
-      var newestTickSimulated = speculativeBuffers.NewestTickSimulated;
+      var speculativeBuffersEntity = GetSingletonEntity<SpeculativeBuffers>();
+      var existingSpeculativeBuffersEntity = GetSingletonEntity<ExistingSpeculativeBuffers>();
+      var speculative = GetBuffer<SpeculativeSpawnBufferEntry>(speculativeBuffersEntity);
+      var existing = GetBuffer<SpeculativeSpawnBufferEntry>(existingSpeculativeBuffersEntity);
+      var predictedGhosts = GetComponentDataFromEntity<PredictedGhostComponent>(true);
       var ecb = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
-
-      #if SHOW_SPECULATIVE_DEBUGGING
-      UnityEngine.Debug.Log($"{ oldestTickSimulated }..{newestTickSimulated}");
-      #endif
 
       Job
       .WithCode(()=> {
-        // Loop over existing entities and remove/destroy them if they are not found in the speculative spawns
-        // AND the frame they were spawned on was re-simulated during this frame!
+        // Loop over existing entities and remove/destroy them if they are not found in the speculative spawns and were re-simulated
         for (int i = existing.Length - 1; i >= 0; i--) {
-          bool foundMatch = false;
-          bool resimulatedThisFrame = existing[i].SpawnTick >= oldestTickSimulated && existing[i].SpawnTick <= newestTickSimulated;
+          var e = existing[i];
+          var predictedGhost = predictedGhosts[e.OwnerEntity];
+          var foundMatch = false;
+          var resimulatedThisFrame = e.SpawnTick > predictedGhost.PredictionStartTick;
 
           for (int j = 0; j < speculative.Length; j++) {
-            foundMatch = foundMatch || SpeculativeBuffers.Matches(speculative[j], existing[i]);
+            foundMatch = foundMatch || speculative[j].SameAs(e);
           }
 
           if (resimulatedThisFrame && !foundMatch) {
-            #if SHOW_SPECULATIVE_DEBUGGING
-            UnityEngine.Debug.Log($"Destroyed erroneous existing entity {existing[i].Identifier}. {speculative.Length} Speculated entities were in the buffer.");
-            #endif
-            ecb.DestroyEntity(existing[i].Entity);
+            ecb.DestroyEntity(e.Entity);
             existing.RemoveAt(i);
           }
         }
 
         // Loop over speculativeSpawns and move to existing if they are not already there otherwise destroy
         for (int i = speculative.Length - 1; i >= 0; i--) {
-          bool foundMatch = false;
+          var foundMatch = false;
 
           for (int j = 0; j < existing.Length; j++) {
-            foundMatch = foundMatch || SpeculativeBuffers.Matches(speculative[i], existing[j]);
+            foundMatch = foundMatch || speculative[i].SameAs(existing[j]);
           }
           if (foundMatch) {
-            #if SHOW_SPECULATIVE_DEBUGGING
-            UnityEngine.Debug.Log($"Removed redundant speculative entity {speculative[i].Identifier} on estimated server tick {serverTick} with {speculative.Length} elements in speculativeSpawnBuffer");
-            #endif
             ecb.DestroyEntity(speculative[i].Entity);
             speculative.RemoveAt(i);
           } else {
-            #if SHOW_SPECULATIVE_DEBUGGING
-            UnityEngine.Debug.Log($"Converted speculative to existing entity {speculative[i].Identifier}");
-            #endif
             existing.Add(speculative[i]);
             speculative.RemoveAt(i);
           }
         }
-
-        // reset the oldest tick each frame ... maybe a better way to do this?
-        ecb.SetComponent(singletonEntity, new SpeculativeBuffers(uint.MaxValue, 0));
       })
+      .WithReadOnly(predictedGhosts)
       .WithoutBurst()
       .Run();
 
