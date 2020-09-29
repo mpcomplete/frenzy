@@ -15,14 +15,21 @@ namespace ECSFrenzy {
     BeginSimulationEntityCommandBufferSystem CommandBufferSystem;
     GhostPredictionSystemGroup GhostPredictionSystemGroup;
 
-    static Entity SpeculativeTestPrefab(World world, GameObject prefab) {
-      var blobAssetStore = new BlobAssetStore(); 
-      var conversionFlags = GameObjectConversionUtility.ConversionFlags.AssignName;
-      var conversionSettings = new GameObjectConversionSettings(world, conversionFlags, blobAssetStore);
-      var entity = GameObjectConversionUtility.ConvertGameObjectHierarchy(prefab, conversionSettings);
+    static Entity CreateSpeculativeSpawnPrefab(GameObject prefab, EntityManager entityManager, bool onServer) {
+      if (!onServer) {
+        var blobAssetStore = new BlobAssetStore(); 
+        var conversionFlags = GameObjectConversionUtility.ConversionFlags.AssignName;
+        var conversionSettings = new GameObjectConversionSettings(entityManager.World, conversionFlags, blobAssetStore);
+        var entity = GameObjectConversionUtility.ConvertGameObjectHierarchy(prefab, conversionSettings);
 
-      blobAssetStore.Dispose();
-      return entity;
+        entityManager.AddComponent<SpeculativeSpawn>(entity);
+        entityManager.AddComponent<NewSpeculativeSpawnTag>(entity);
+        entityManager.AddComponent<Prefab>(entity);
+        blobAssetStore.Dispose();
+        return entity;
+      } else {
+        return Entity.Null;
+      }
     }
 
     static Entity SpawnGhostEntity(Entity prefab, EntityCommandBuffer entityCommandBuffer, bool onServer, in GhostOwnerComponent ghostOwnerComponent, uint tick, uint identifier) {
@@ -36,15 +43,13 @@ namespace ECSFrenzy {
       return entity;
     }
 
-    static Entity SpawnSpeculativeEntity(Entity prefab, EntityCommandBuffer entityCommandBuffer, bool onServer, Entity speculativeSpawnEntity, Entity owner, uint tick, uint identifier) {
-      if (!onServer) {
-        var entity = entityCommandBuffer.Instantiate(prefab);
+    static Entity SpawnSpeculativeEntity(Entity prefab, EntityCommandBuffer entityCommandBuffer, Entity owner, uint tick, uint identifier) {
+      var entity = entityCommandBuffer.Instantiate(prefab);
+      var speculativeEntity = entityCommandBuffer.CreateEntity();
 
-        entityCommandBuffer.AppendToBuffer(speculativeSpawnEntity, new SpeculativeSpawnBufferEntry(owner, entity, tick, identifier));
-        return entity;
-      } else {
-        return Entity.Null;
-      }
+      entityCommandBuffer.SetComponent(entity, new SpeculativeSpawn(owner, entity, tick, identifier));
+      entityCommandBuffer.SetComponent<NewSpeculativeSpawnTag>(entity, new NewSpeculativeSpawnTag());
+      return entity;
     }
 
     protected override void OnCreate() {
@@ -61,7 +66,7 @@ namespace ECSFrenzy {
         var ghostPrefab = FindGhostPrefab(ghostPrefabs, e => EntityManager.HasComponent<NetworkFireball>(e));
 
         FireballPrefabEntity = GhostCollectionSystem.CreatePredictedSpawnPrefab(EntityManager, ghostPrefab);
-        TestSpeculativePrefabEntity = SpeculativeTestPrefab(World, SystemConfig.Instance.SpeculativeSpawnTestPrefab);
+        TestSpeculativePrefabEntity = CreateSpeculativeSpawnPrefab(SystemConfig.Instance.SpeculativeSpawnTestPrefab, EntityManager, isServer);
       }
 
       var dt = Time.DeltaTime;
@@ -74,7 +79,6 @@ namespace ECSFrenzy {
       var bannerQuery = GetEntityQuery(typeof(Banner), typeof(Team));
       var banners = bannerQuery.ToEntityArray(Allocator.TempJob);
       var bannerTeams = bannerQuery.ToComponentDataArray<Team>(Allocator.TempJob);
-      var speculativeSpawnEntity = GetSingletonEntity<SpeculativeBuffers>();
       var ecb = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
       var delayedECB = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>().CreateCommandBuffer();
 
@@ -104,11 +108,15 @@ namespace ECSFrenzy {
         if (foundInputForExactlyThisTick) {
           if (input.didFire > 0 && newPlayerState.FireballCooldown <= 0) {
             var fireball = SpawnGhostEntity(fireballPrefabEntity, delayedECB, isServer, ghostOwner, input.Tick, input.Tick);
-            var spawnSoundEntity = SpawnSpeculativeEntity(speculativeTestPrefabEntity, ecb, isServer, speculativeSpawnEntity, playerEntity, input.Tick, input.Tick);
 
             delayedECB.SetComponent(fireball, rotation);
             delayedECB.SetComponent(fireball, (Heading)rotation.Value);
             delayedECB.SetComponent(fireball, (position.Value + forward(rotation.Value) + up).ToTranslation());
+
+            if (!isServer) {
+              var spawnSoundEntity = SpawnSpeculativeEntity(speculativeTestPrefabEntity, ecb, playerEntity, input.Tick, input.Tick);
+            }
+
             newPlayerState.DidFireball = true;
             newPlayerState.FireballCooldown = 1f; // TODO: hard-coded here for a moment because I am tired. This should either go back to the generic cooldown system or be a parameter
           } else if (input.didBanner != 0) {
