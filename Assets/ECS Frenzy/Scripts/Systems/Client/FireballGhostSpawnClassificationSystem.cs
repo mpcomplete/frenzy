@@ -17,6 +17,7 @@ namespace ECSFrenzy {
       BufferFromEntity<PredictedGhostSpawn> spawnListFromEntity = GetBufferFromEntity<PredictedGhostSpawn>();
 
       Entities
+      .WithName("Predicted_Ghost_Classifier")
       .WithAll<GhostSpawnQueueComponent>()
       .ForEach((DynamicBuffer<GhostSpawnBuffer> ghosts, DynamicBuffer<SnapshotDataBuffer> data) => {
         DynamicBuffer<PredictedGhostSpawn> predictedGhostSpawnBuffer = spawnListFromEntity[spawnListEntity];

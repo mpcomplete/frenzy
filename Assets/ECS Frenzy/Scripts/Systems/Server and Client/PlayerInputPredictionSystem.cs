@@ -25,9 +25,27 @@ namespace ECSFrenzy {
       return entity;
     }
 
-    static float3 DirectionFromInput(in PlayerInput input) => float3(input.horizontal, 0, input.vertical);
+    static Entity SpawnGhostEntity(Entity prefab, EntityCommandBuffer entityCommandBuffer, bool onServer, in GhostOwnerComponent ghostOwnerComponent, uint tick, uint identifier) {
+      var entity = entityCommandBuffer.Instantiate(prefab);
+      
+      entityCommandBuffer.SetComponent(entity, ghostOwnerComponent);
+      if (!onServer) {
+        entityCommandBuffer.SetComponent(entity, new RedundantSpawnComponent(tick, identifier));
+        entityCommandBuffer.SetComponent(entity, new PredictedGhostSpawnRequestComponent());
+      }
+      return entity;
+    }
 
-    static float3 PositionDelta(in float3 direction, in float3 speed, in float dt) => dt * speed * direction;
+    static Entity SpawnSpeculativeEntity(Entity prefab, EntityCommandBuffer entityCommandBuffer, bool onServer, Entity speculativeSpawnEntity, Entity owner, uint tick, uint identifier) {
+      if (!onServer) {
+        var entity = entityCommandBuffer.Instantiate(prefab);
+
+        entityCommandBuffer.AppendToBuffer(speculativeSpawnEntity, new SpeculativeSpawnBufferEntry(owner, entity, tick, identifier));
+        return entity;
+      } else {
+        return Entity.Null;
+      }
+    }
 
     protected override void OnCreate() {
       CommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
@@ -40,12 +58,10 @@ namespace ECSFrenzy {
       if (FireballPrefabEntity == Entity.Null) {
         var ghostPrefabCollectionEntity = GetSingletonEntity<GhostPrefabCollectionComponent>();
         var ghostPrefabs = GetBuffer<GhostPrefabBuffer>(ghostPrefabCollectionEntity);
+        var ghostPrefab = FindGhostPrefab(ghostPrefabs, e => EntityManager.HasComponent<NetworkFireball>(e));
 
-        FireballPrefabEntity = GhostCollectionSystem.CreatePredictedSpawnPrefab(EntityManager, FindGhostPrefab(ghostPrefabs, e => EntityManager.HasComponent<NetworkFireball>(e)));
-
-        if (!isServer) {
-          TestSpeculativePrefabEntity = SpeculativeTestPrefab(World, SystemConfig.Instance.SpeculativeSpawnTestPrefab);
-        }
+        FireballPrefabEntity = GhostCollectionSystem.CreatePredictedSpawnPrefab(EntityManager, ghostPrefab);
+        TestSpeculativePrefabEntity = SpeculativeTestPrefab(World, SystemConfig.Instance.SpeculativeSpawnTestPrefab);
       }
 
       var dt = Time.DeltaTime;
@@ -55,19 +71,19 @@ namespace ECSFrenzy {
       var speculativeTestPrefabEntity = TestSpeculativePrefabEntity;
       var playerAbilities = GetComponentDataFromEntity<PlayerAbilites>(true);
       var cooldowns = GetComponentDataFromEntity<Cooldown>(true);
-      var query = GetEntityQuery(typeof(Banner), typeof(Team));
-      var banners = query.ToEntityArray(Allocator.TempJob);
-      var bannerTeams = query.ToComponentDataArray<Team>(Allocator.TempJob);
+      var bannerQuery = GetEntityQuery(typeof(Banner), typeof(Team));
+      var banners = bannerQuery.ToEntityArray(Allocator.TempJob);
+      var bannerTeams = bannerQuery.ToComponentDataArray<Team>(Allocator.TempJob);
       var speculativeSpawnEntity = GetSingletonEntity<SpeculativeBuffers>();
-      var speculativeBuffers = GetComponentDataFromEntity<SpeculativeBuffers>();
-      var speculativeSpawnBuffers = GetBufferFromEntity<SpeculativeSpawnBufferEntry>(false);
       var ecb = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
       var delayedECB = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>().CreateCommandBuffer();
 
+      // NOTE: The only reason two different ECBs are used here is the development process of trying to limit parallelism when implementing some new systems
+      // What needs to happen here is that both should be combined and a final requirement should be settled on for when exactly these commands should be played
+      // back in order to guarantee that subsequent systems such as the SpeculativeSpawnSystem and the RedundantSpawnCleanupSystem see them when next running
+
       Entities
       .WithName("Predict_Player_Input")
-      .WithReadOnly(playerAbilities)
-      .WithReadOnly(cooldowns)
       .WithAll<NetworkPlayer, PlayerInput>()
       .ForEach((Entity playerEntity, in Translation position, in Rotation rotation, in PlayerState playerState, in Team team, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost, in GhostOwnerComponent ghostOwner) => {
         if (!GhostPredictionSystemGroup.ShouldPredict(predictingTick, predictedGhost)) {
@@ -76,10 +92,10 @@ namespace ECSFrenzy {
         
         var foundAnyInputForThisTick = inputBuffer.GetDataAtTick(predictingTick, out PlayerInput input);
         var foundInputForExactlyThisTick = foundAnyInputForThisTick && input.Tick == predictingTick; // InputBuffer not guaranteed to actually have PlayerInput for exactly this tick
-        var newPlayerState = new PlayerState();
-        var direction = DirectionFromInput(input);
-        var speculativeSpawnBuffer = speculativeSpawnBuffers[speculativeSpawnEntity];
+        var direction = float3(input.horizontal, 0, input.vertical);
         var abilities = playerAbilities[playerEntity];
+        var newPlayerState = new PlayerState();
+        var up = float3(0, 1, 0);
 
         newPlayerState.IsMoving = input.horizontal != 0 || input.vertical != 0;
         newPlayerState.FireballCooldown = max(playerState.FireballCooldown - dt, 0);
@@ -87,56 +103,38 @@ namespace ECSFrenzy {
         // Discrete actions so insist on having exact data for the predictedTick
         if (foundInputForExactlyThisTick) {
           if (input.didFire > 0 && newPlayerState.FireballCooldown <= 0) {
-            var spawnPosition = position.Value + forward(rotation.Value) + float3(0,1,0);
-            var fireball = delayedECB.Instantiate(fireballPrefabEntity);
+            var fireball = SpawnGhostEntity(fireballPrefabEntity, delayedECB, isServer, ghostOwner, input.Tick, input.Tick);
+            var spawnSoundEntity = SpawnSpeculativeEntity(speculativeTestPrefabEntity, ecb, isServer, speculativeSpawnEntity, playerEntity, input.Tick, input.Tick);
 
-            newPlayerState.DidFireball = true;
-            newPlayerState.FireballCooldown = 1f; // TODO: hard-coded here for a moment because I am tired. This should either go back to the generic cooldown system or be a parameter
-            delayedECB.SetComponent(fireball, ghostOwner);
             delayedECB.SetComponent(fireball, rotation);
             delayedECB.SetComponent(fireball, (Heading)rotation.Value);
-            delayedECB.SetComponent(fireball, spawnPosition.ToTranslation());
-
-            if (!isServer) {
-              delayedECB.SetComponent(fireball, new RedundantSpawnComponent(input.Tick));
-            }
-
-            if (!isServer) {
-              var speculativeEntity = ecb.Instantiate(speculativeTestPrefabEntity);
-              var speculativeSpawnBufferEntry = new SpeculativeSpawnBufferEntry { 
-                OwnerEntity = playerEntity,
-                Entity = speculativeEntity, 
-                SpawnTick = input.Tick, 
-                Identifier = input.Tick 
-              };
-
-              ecb.AppendToBuffer(speculativeSpawnEntity, speculativeSpawnBufferEntry);
-            }
+            delayedECB.SetComponent(fireball, (position.Value + forward(rotation.Value) + up).ToTranslation());
+            newPlayerState.DidFireball = true;
+            newPlayerState.FireballCooldown = 1f; // TODO: hard-coded here for a moment because I am tired. This should either go back to the generic cooldown system or be a parameter
           } else if (input.didBanner != 0) {
-            var playerTeam = team.Value;
-            var playerPos = position.Value;
-
             for (int i = 0; i < bannerTeams.Length; i++) {
-              if (bannerTeams[i].Value == playerTeam) {
+              if (bannerTeams[i].Value == team.Value) {
+                ecb.SetComponent(banners[i], position.Value.ToTranslation());
                 newPlayerState.DidBanner = true;
-                ecb.SetComponent(banners[i], playerPos.ToTranslation());
               }
             }
           }
         }
         ecb.SetComponent(playerEntity, newPlayerState);
-        ecb.SetComponent(playerEntity, (position.Value + PositionDelta(direction, maxMoveSpeed, dt)).ToTranslation());
-        ecb.SetComponent(playerEntity, new Rotation { 
-          Value = newPlayerState.IsMoving ? (quaternion)Quaternion.LookRotation(direction, float3(0,1,0)) : rotation.Value 
-        });
+        ecb.SetComponent(playerEntity, (maxMoveSpeed * dt * direction + position.Value).ToTranslation());
+        if (newPlayerState.IsMoving) {
+          ecb.SetComponent(playerEntity, new Rotation { Value = (quaternion)(Quaternion.LookRotation(direction, up)) });
+        }
       })
+      .WithReadOnly(playerAbilities)
+      .WithReadOnly(cooldowns)
+      .WithDisposeOnCompletion(banners)
+      .WithDisposeOnCompletion(bannerTeams)
       .WithoutBurst()
       .Run();
 
       ecb.Playback(EntityManager);
       ecb.Dispose();
-      banners.Dispose();
-      bannerTeams.Dispose();
     }
   }
 }

@@ -24,6 +24,7 @@ namespace ECSFrenzy {
 
       // Loop over all predictively-spawned ghosts and destroy redundant ones ( from re-simulation )
       Job
+      .WithName("Cleanup_Redundant_Predictive_Spawns")
       .WithCode(() => {
         var spawnList = spawnListFromEntity[spawnListEntity];
 

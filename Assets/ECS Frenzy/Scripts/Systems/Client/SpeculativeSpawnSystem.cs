@@ -14,6 +14,13 @@ namespace ECSFrenzy {
     public uint SpawnTick;
     public uint Identifier;
 
+    public SpeculativeSpawnBufferEntry(Entity ownerEntity, Entity entity, uint spawnTick, uint identifier) {
+      OwnerEntity = ownerEntity;
+      Entity = entity;
+      SpawnTick = spawnTick;
+      Identifier = identifier;
+    }
+
     public bool SameAs(SpeculativeSpawnBufferEntry ssbe) {
       return OwnerEntity == ssbe.OwnerEntity && SpawnTick == ssbe.SpawnTick && Identifier == ssbe.Identifier;
     }
@@ -61,6 +68,7 @@ namespace ECSFrenzy {
       var ecb = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
 
       Job
+      .WithName("Manage_Speculative_Spawns")
       .WithCode(()=> {
         // Loop over existing entities and remove/destroy them if they are not found in the speculative spawns and were re-simulated
         for (int i = existing.Length - 1; i >= 0; i--) {
