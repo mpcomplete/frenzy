@@ -34,44 +34,36 @@ namespace ECSFrenzy {
   [UpdateInGroup(typeof(SpeculativeSpawnSystemGroup))]
   public class DestroyInvalidSpeculativeSpawnSystem : SystemBase {
     protected override void OnUpdate() {
-      var newSpeculativeQuery = GetEntityQuery(typeof(SpeculativeSpawn), typeof(NewSpeculativeSpawnTag));
-      var existingSpeculativeQuery = GetEntityQuery(typeof(SpeculativeSpawn), ComponentType.Exclude<NewSpeculativeSpawnTag>());
+      var newSpeculativeQuery = GetEntityQuery(ComponentType.ReadOnly<SpeculativeSpawn>(), ComponentType.ReadOnly<NewSpeculativeSpawnTag>());
       var newSpeculativeEntities = newSpeculativeQuery.ToEntityArray(Allocator.TempJob);
-      var existingSpeculativeEntities = existingSpeculativeQuery.ToEntityArray(Allocator.TempJob);
       var speculativeSpawns = GetComponentDataFromEntity<SpeculativeSpawn>(true);
       var predictedGhosts = GetComponentDataFromEntity<PredictedGhostComponent>(true);
       var ecb = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
 
-      Job
-      .WithName("Manage_Speculative_Spawns")
-      .WithCode(() => {
-        for (int i = 0; i < existingSpeculativeEntities.Length; i++) {
-          var existingEntity = existingSpeculativeEntities[i];
-          var existingSpeculativeSpawn = speculativeSpawns[existingEntity];
-          var predictedGhost = predictedGhosts[existingSpeculativeSpawn.OwnerEntity];
-          var foundMatch = false;
-          var resimulatedThisFrame = existingSpeculativeSpawn.SpawnTick > predictedGhost.PredictionStartTick;
+      Entities
+      .WithName("Destroy_Existing_Speculative_Spawns_That_Were_Not_Resimulated")
+      .ForEach((Entity e, in SpeculativeSpawn speculativeSpawn) => {
+        var predictedGhost = predictedGhosts[speculativeSpawn.OwnerEntity];
+        var ownerWasResimulated = speculativeSpawn.SpawnTick > predictedGhost.PredictionStartTick;
+        var spawnedDuringResimulation = false;
 
-          for (int j = 0; j < newSpeculativeEntities.Length; j++) {
-            var newSpeculativeEntity = newSpeculativeEntities[j];
-            var newSpeculativeSpawn = speculativeSpawns[newSpeculativeEntity];
+        for (int i = 0; i < newSpeculativeEntities.Length; i++) {
+          var newSpeculativeEntity = newSpeculativeEntities[i];
+          var newSpeculativeSpawn = speculativeSpawns[newSpeculativeEntity];
 
-            foundMatch = foundMatch || SpeculativeSpawn.Same(newSpeculativeSpawn, existingSpeculativeSpawn);
-          }
+          spawnedDuringResimulation = spawnedDuringResimulation || SpeculativeSpawn.Same(newSpeculativeSpawn, speculativeSpawn);
+        }
 
-          if (resimulatedThisFrame && !foundMatch) {
-            ecb.DestroyEntity(existingSpeculativeSpawn.Entity);
-            ecb.DestroyEntity(existingEntity);
-          }
+        if (ownerWasResimulated && !spawnedDuringResimulation) {
+          ecb.DestroyEntity(speculativeSpawn.Entity);
+          ecb.DestroyEntity(e);
         }
       })
       .WithReadOnly(predictedGhosts)
       .WithReadOnly(speculativeSpawns)
+      .WithDisposeOnCompletion(newSpeculativeEntities)
       .WithoutBurst()
       .Run();
-
-      newSpeculativeEntities.Dispose();
-      existingSpeculativeEntities.Dispose();
       ecb.Playback(EntityManager);
       ecb.Dispose();
     }
@@ -80,43 +72,36 @@ namespace ECSFrenzy {
   [UpdateInGroup(typeof(SpeculativeSpawnSystemGroup))]
   public class DestroyOrPromoteNewSpeculativeSpawnSystem : SystemBase {
     protected override void OnUpdate() {
-      var newSpeculativeQuery = GetEntityQuery(ComponentType.ReadOnly<SpeculativeSpawn>(), ComponentType.ReadOnly<NewSpeculativeSpawnTag>());
       var existingSpeculativeQuery = GetEntityQuery(ComponentType.ReadOnly<SpeculativeSpawn>(), ComponentType.Exclude<NewSpeculativeSpawnTag>());
-      var newSpeculativeEntities = newSpeculativeQuery.ToEntityArray(Allocator.TempJob);
       var existingSpeculativeEntities = existingSpeculativeQuery.ToEntityArray(Allocator.TempJob);
       var speculativeSpawns = GetComponentDataFromEntity<SpeculativeSpawn>(true);
       var predictedGhosts = GetComponentDataFromEntity<PredictedGhostComponent>(true);
       var ecb = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
 
-      Job
+      Entities
       .WithName("Destroy_or_Promote_New_Speculative_Spawns")
-      .WithCode(() => {
-        for (int i = 0; i < newSpeculativeEntities.Length; i++) {
-          var newSpeculativeEntity = newSpeculativeEntities[i];
-          var newSpeculativeSpawn = speculativeSpawns[newSpeculativeEntity];
-          var foundMatch = false;
+      .WithAll<NewSpeculativeSpawnTag>()
+      .ForEach((Entity e, in SpeculativeSpawn speculativeSpawn) => {
+        var isRedundantSpawn = false;
 
-          for (int j = 0; j < existingSpeculativeEntities.Length; j++) {
-            var existingSpeculativeEntity = existingSpeculativeEntities[j];
-            var existingSpeculativeSpawn = speculativeSpawns[existingSpeculativeEntity];
+        for (int j = 0; j < existingSpeculativeEntities.Length; j++) {
+          var existingSpeculativeEntity = existingSpeculativeEntities[j];
+          var existingSpeculativeSpawn = speculativeSpawns[existingSpeculativeEntity];
 
-            foundMatch = foundMatch || SpeculativeSpawn.Same(newSpeculativeSpawn, existingSpeculativeSpawn);
-          }
-          if (foundMatch) {
-            ecb.DestroyEntity(newSpeculativeSpawn.Entity);
-            ecb.DestroyEntity(newSpeculativeEntity);
-          } else {
-            ecb.RemoveComponent<NewSpeculativeSpawnTag>(newSpeculativeEntity);
-          }
+          isRedundantSpawn = isRedundantSpawn || SpeculativeSpawn.Same(speculativeSpawn, existingSpeculativeSpawn);
+        }
+        if (isRedundantSpawn) {
+          ecb.DestroyEntity(speculativeSpawn.Entity);
+          ecb.DestroyEntity(e);
+        } else {
+          ecb.RemoveComponent<NewSpeculativeSpawnTag>(e);
         }
       })
       .WithReadOnly(predictedGhosts)
       .WithReadOnly(speculativeSpawns)
+      .WithDisposeOnCompletion(existingSpeculativeEntities)
       .WithoutBurst()
       .Run();
-
-      newSpeculativeEntities.Dispose();
-      existingSpeculativeEntities.Dispose();
       ecb.Playback(EntityManager);
       ecb.Dispose();
     }
