@@ -1,10 +1,7 @@
-﻿using Unity.Burst;
-using Unity.Collections;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
 using UnityEngine;
-using Unity.Mathematics;
 using static Unity.Mathematics.math;
 
 namespace ECSFrenzy {
@@ -34,13 +31,6 @@ namespace ECSFrenzy {
     public float vertical;
     public int didFire;
     public int didBanner;
-  }
-
-  public class FrenzyNetCodeBootstrap : ClientServerBootstrap {
-    public override bool Initialize(string defaultWorldName) {
-      UnityEngine.Debug.Log($"FrenzyNetCodeBootstrap Initialize with {defaultWorldName}");
-      return base.Initialize(defaultWorldName);
-    }
   }
 
   [UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
@@ -91,23 +81,16 @@ namespace ECSFrenzy {
 
   [UpdateInGroup(typeof(ClientSimulationSystemGroup))]
   public class HandleRPCClient : ComponentSystem {
-    EntityArchetype joinGameArchetype;
-
-    protected override void OnCreate() {
-      joinGameArchetype = EntityManager.CreateArchetype(new ComponentType[] { 
-        typeof(JoinGameRequest),
-        typeof(SendRpcCommandRequestComponent)
-      });
-    }
-
     protected override void OnUpdate() {
       Entities
       .WithNone<NetworkStreamInGame>()
       .ForEach((Entity entity, ref NetworkIdComponent id) => {
-        Entity requestEntity = PostUpdateCommands.CreateEntity(joinGameArchetype);
+        var requestEntity = PostUpdateCommands.CreateEntity();
 
-        PostUpdateCommands.SetComponent(requestEntity, new SendRpcCommandRequestComponent { TargetConnection = entity });
         PostUpdateCommands.AddComponent<NetworkStreamInGame>(entity);
+        PostUpdateCommands.AddComponent<JoinGameRequest>(requestEntity);
+        PostUpdateCommands.AddComponent<SendRpcCommandRequestComponent>(requestEntity);
+        PostUpdateCommands.SetComponent(requestEntity, new SendRpcCommandRequestComponent { TargetConnection = entity });
       });
     }
   }
@@ -118,21 +101,20 @@ namespace ECSFrenzy {
       Entities
       .WithNone<SendRpcCommandRequestComponent>()
       .ForEach((Entity requestEntity, ref JoinGameRequest joinGameRequest, ref ReceiveRpcCommandRequestComponent reqSrc) => {
-        int networkId = EntityManager.GetComponentData<NetworkIdComponent>(reqSrc.SourceConnection).Value;
-        Entity ghostPrefabCollectionEntity = GetSingletonEntity<GhostPrefabCollectionComponent>();
-        DynamicBuffer<GhostPrefabBuffer> serverPrefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(ghostPrefabCollectionEntity);
-        Entity playerPrefab = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<NetworkPlayer>(e));
-        Entity bannerPrefab = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<Banner>(e));
-        Entity player = EntityManager.Instantiate(playerPrefab);
+        var networkId = EntityManager.GetComponentData<NetworkIdComponent>(reqSrc.SourceConnection).Value;
+        var ghostPrefabCollectionEntity = GetSingletonEntity<GhostPrefabCollectionComponent>();
+        var serverPrefabs = EntityManager.GetBuffer<GhostPrefabBuffer>(ghostPrefabCollectionEntity);
+        var playerPrefab = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<NetworkPlayer>(e));
+        var bannerPrefab = Utils.FindGhostPrefab(serverPrefabs, e => EntityManager.HasComponent<Banner>(e));
+        var player = EntityManager.Instantiate(playerPrefab);
 
-        Debug.Log($"Server setting connection {networkId} to in game");
         PostUpdateCommands.AddBuffer<PlayerInput>(player);
         PostUpdateCommands.SetComponent(player, new GhostOwnerComponent { NetworkId = networkId });
         PostUpdateCommands.SetComponent(reqSrc.SourceConnection, new CommandTargetComponent { targetEntity = player });
         PostUpdateCommands.DestroyEntity(requestEntity);
         PostUpdateCommands.AddComponent<NetworkStreamInGame>(reqSrc.SourceConnection);
 
-        Entity banner = EntityManager.Instantiate(bannerPrefab);
+        var banner = EntityManager.Instantiate(bannerPrefab);
         PostUpdateCommands.SetComponent(banner, new GhostOwnerComponent { NetworkId = networkId });
       });
     }
@@ -176,8 +158,8 @@ namespace ECSFrenzy {
       } else {
         var playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
         var stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-        int didFire = Input.GetButtonDown("Fire1") ? 1 : 0;
-        int didBanner = Input.GetButtonDown("Jump") ? 1 : 0;
+        var didFire = Input.GetButtonDown("Fire1") ? 1 : 0;
+        var didBanner = Input.GetButtonDown("Jump") ? 1 : 0;
 
         if (length(stickInput) < SystemConfig.Instance.ControllerDeadzone) {
           stickInput = float2(0,0);
@@ -188,7 +170,7 @@ namespace ECSFrenzy {
         Entities
         .WithAll<NetworkPlayer, PlayerInput>()
         .ForEach((Entity e, ref GhostOwnerComponent ghostOwner) => {
-          PlayerInput input = new PlayerInput {
+          var input = new PlayerInput {
             Tick = estimatedServerTick,
             horizontal = stickInput.x,
             vertical = stickInput.y,

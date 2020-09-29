@@ -13,14 +13,14 @@ namespace ECSFrenzy {
     }
 
     protected override void OnUpdate() {
-      Entity spawnListEntity = GetSingletonEntity<PredictedGhostSpawnList>();
-      BufferFromEntity<PredictedGhostSpawn> spawnListFromEntity = GetBufferFromEntity<PredictedGhostSpawn>();
+      var spawnListEntity = GetSingletonEntity<PredictedGhostSpawnList>();
+      var spawnListFromEntity = GetBufferFromEntity<PredictedGhostSpawn>();
 
       Entities
       .WithName("Predicted_Ghost_Classifier")
       .WithAll<GhostSpawnQueueComponent>()
       .ForEach((DynamicBuffer<GhostSpawnBuffer> ghosts, DynamicBuffer<SnapshotDataBuffer> data) => {
-        DynamicBuffer<PredictedGhostSpawn> predictedGhostSpawnBuffer = spawnListFromEntity[spawnListEntity];
+        var predictedGhostSpawnBuffer = spawnListFromEntity[spawnListEntity];
 
         for (int i = 0; i < ghosts.Length; i++) {
           var ghost = ghosts[i];
@@ -28,6 +28,7 @@ namespace ECSFrenzy {
           if (ghost.SpawnType == GhostSpawnBuffer.Type.Predicted) {
             for (int j = 0; j < predictedGhostSpawnBuffer.Length; j++) {
               const int TICK_DELTA = 5;
+
               var predictedGhostSpawn = predictedGhostSpawnBuffer[j];
               var sameGhostType = ghost.GhostType == predictedGhostSpawn.ghostType;
               var clause1 = !SequenceHelpers.IsNewer(predictedGhostSpawn.spawnTick, ghost.ServerSpawnTick + TICK_DELTA);
