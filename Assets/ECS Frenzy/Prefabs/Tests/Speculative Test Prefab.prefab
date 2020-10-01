@@ -137,6 +137,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2833741694989170125}
   - component: {fileID: 4701294832781113309}
+  - component: {fileID: 8942913924792859924}
   m_Layer: 0
   m_Name: Speculative Test Prefab
   m_TagString: Untagged
@@ -172,3 +173,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Source: {fileID: 7837829253169342384}
+--- !u!114 &8942913924792859924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6612991975770164088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90dc696101ba30844a60bafe4a43d226, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TimeRemaining: 2

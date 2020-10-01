@@ -2,30 +2,31 @@
 using Unity.NetCode;
 
 namespace ECSFrenzy {
-  [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
-  [UpdateAfter(typeof(GhostSendSystem))]
+  [UpdateInWorld(UpdateInWorld.TargetWorld.Server)]
+  [UpdateInGroup(typeof(LateSimulationSystemGroup))]
   public class DeathTimerSystem : SystemBase {
-    BeginSimulationEntityCommandBufferSystem commandBufferSystem;
+    BeginSimulationEntityCommandBufferSystem BeginSimulationEntityCommandBufferSystem;
 
     protected override void OnCreate() {
-      commandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
+      BeginSimulationEntityCommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
     }
 
     protected override void OnUpdate() {
-      float dt = Time.DeltaTime;
-      EntityCommandBuffer.ParallelWriter ecbWriter = commandBufferSystem.CreateCommandBuffer().AsParallelWriter();
+      var dt = Time.DeltaTime;
+      var beginSimECB = BeginSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
 
       Entities
       .WithName("Update_Death_Timer")
-      .WithBurst()
-      .ForEach((Entity e, int entityInQueryIndex, ref DeathTimer deathTimer) => {
+      .ForEach((Entity e, int nativeThreadIndex, ref DeathTimer deathTimer) => {
         deathTimer.TimeRemaining -= dt;
 
         if (deathTimer.TimeRemaining <= 0) {
-          ecbWriter.DestroyEntity(entityInQueryIndex, e);
+          beginSimECB.DestroyEntity(nativeThreadIndex, e);
         }
-      }).ScheduleParallel();
-      commandBufferSystem.AddJobHandleForProducer(Dependency);
+      })
+      .WithBurst()
+      .ScheduleParallel();
+      BeginSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
     }
   }
 }

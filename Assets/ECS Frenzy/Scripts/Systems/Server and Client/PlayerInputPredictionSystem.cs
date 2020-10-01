@@ -1,11 +1,11 @@
 ﻿using Unity.Entities;
+using Unity.Collections;
 using Unity.Mathematics;
 using Unity.Transforms;
 using Unity.NetCode;
 using UnityEngine;
 using static Unity.Mathematics.math;
 using static ECSFrenzy.Utils;
-using Unity.Collections;
 
 namespace ECSFrenzy {
   [UpdateInGroup(typeof(GhostPredictionSystemGroup))]
@@ -82,15 +82,19 @@ namespace ECSFrenzy {
       var teams = GetComponentDataFromEntity<Team>(true);
       var ghostOwners = GetComponentDataFromEntity<GhostOwnerComponent>(true);
       var predictedGhosts = GetComponentDataFromEntity<PredictedGhostComponent>(true);
+      var inputBuffers = GetBufferFromEntity<PlayerInput>(true);
       var beginSimECB = BeginSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
 
       Entities
       .WithName("Predict_Player_Input")
       .WithAll<NetworkPlayer, PlayerInput>()
-      .ForEach((Entity playerEntity, int nativeThreadIndex, ref Translation position, ref Rotation rotation, ref PlayerState playerState, in DynamicBuffer<PlayerInput> inputBuffer) => {
+      .WithAll<Team, GhostOwnerComponent>()
+      .WithAll<PredictedGhostComponent, PlayerInput>()
+      .ForEach((Entity playerEntity, int nativeThreadIndex, ref Translation position, ref Rotation rotation, ref PlayerState playerState) => {
         var team = teams[playerEntity];
         var predictedGhost = predictedGhosts[playerEntity];
         var ghostOwner = ghostOwners[playerEntity];
+        var inputBuffer = inputBuffers[playerEntity];
 
         // Don't re-run prediction if no new data has arrived from the server for this entity since it was last predicted
         if (!GhostPredictionSystemGroup.ShouldPredict(predictingTick, predictedGhost)) {
@@ -154,6 +158,7 @@ namespace ECSFrenzy {
       .WithReadOnly(teams)
       .WithReadOnly(ghostOwners)
       .WithReadOnly(predictedGhosts)
+      .WithReadOnly(inputBuffers)
       .WithDisposeOnCompletion(banners)
       .WithDisposeOnCompletion(bannerTeams)
       .WithBurst()
