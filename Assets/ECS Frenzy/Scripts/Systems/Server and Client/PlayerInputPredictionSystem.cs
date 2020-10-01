@@ -12,8 +12,9 @@ namespace ECSFrenzy {
   public class PlayerInputPredictionSystem : SystemBase {
     Entity FireballPrefabEntity;
     Entity TestSpeculativePrefabEntity;
-    BeginSimulationEntityCommandBufferSystem CommandBufferSystem;
+    BeginSimulationEntityCommandBufferSystem BeginSimulationEntityCommandBufferSystem;
     GhostPredictionSystemGroup GhostPredictionSystemGroup;
+    bool IsServer;
 
     static Entity CreateSpeculativeSpawnPrefab(GameObject prefab, EntityManager entityManager, bool onServer) {
       if (!onServer) {
@@ -32,117 +33,132 @@ namespace ECSFrenzy {
       }
     }
 
-    static Entity SpawnGhostEntity(Entity prefab, EntityCommandBuffer entityCommandBuffer, bool onServer, in GhostOwnerComponent ghostOwnerComponent, uint tick, uint identifier) {
-      var entity = entityCommandBuffer.Instantiate(prefab);
+    static Entity SpawnGhostEntity(Entity prefab, EntityCommandBuffer.ParallelWriter entityCommandBuffer, int nativeThreadIndex, bool onServer, in GhostOwnerComponent ghostOwnerComponent, uint tick, uint identifier) {
+      var entity = entityCommandBuffer.Instantiate(nativeThreadIndex, prefab);
       
-      entityCommandBuffer.SetComponent(entity, ghostOwnerComponent);
+      entityCommandBuffer.SetComponent(nativeThreadIndex, entity, ghostOwnerComponent);
       if (!onServer) {
-        entityCommandBuffer.SetComponent(entity, new RedundantSpawnComponent(tick, identifier));
-        entityCommandBuffer.SetComponent(entity, new PredictedGhostSpawnRequestComponent());
+        entityCommandBuffer.SetComponent(nativeThreadIndex, entity, new RedundantSpawnComponent(tick, identifier));
+        entityCommandBuffer.SetComponent(nativeThreadIndex, entity, new PredictedGhostSpawnRequestComponent());
       }
       return entity;
     }
 
-    static Entity SpawnSpeculativeEntity(Entity prefab, EntityCommandBuffer entityCommandBuffer, Entity owner, uint tick, uint identifier) {
-      var entity = entityCommandBuffer.Instantiate(prefab);
-      var speculativeEntity = entityCommandBuffer.CreateEntity();
+    static Entity SpawnSpeculativeEntity(Entity prefab, EntityCommandBuffer.ParallelWriter entityCommandBuffer, int nativeThreadIndex, Entity owner, uint tick, uint identifier) {
+      var entity = entityCommandBuffer.Instantiate(nativeThreadIndex, prefab);
 
-      entityCommandBuffer.SetComponent(entity, new SpeculativeSpawn(owner, entity, tick, identifier));
-      entityCommandBuffer.SetComponent<NewSpeculativeSpawnTag>(entity, new NewSpeculativeSpawnTag());
+      entityCommandBuffer.SetComponent(nativeThreadIndex, entity, new SpeculativeSpawn(owner, entity, tick, identifier));
+      entityCommandBuffer.SetComponent<NewSpeculativeSpawnTag>(nativeThreadIndex, entity, new NewSpeculativeSpawnTag());
       return entity;
     }
 
     protected override void OnCreate() {
-      CommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
+      BeginSimulationEntityCommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
       GhostPredictionSystemGroup = World.GetExistingSystem<GhostPredictionSystemGroup>();
+      IsServer = World.GetExistingSystem<ServerSimulationSystemGroup>() != null;
     }
 
     protected override void OnUpdate() {
-      var isServer = World.GetExistingSystem<ServerSimulationSystemGroup>() != null;
-
       if (FireballPrefabEntity == Entity.Null) {
         var ghostPrefabCollectionEntity = GetSingletonEntity<GhostPrefabCollectionComponent>();
         var ghostPrefabs = GetBuffer<GhostPrefabBuffer>(ghostPrefabCollectionEntity);
         var ghostPrefab = FindGhostPrefab(ghostPrefabs, e => EntityManager.HasComponent<NetworkFireball>(e));
 
         FireballPrefabEntity = GhostCollectionSystem.CreatePredictedSpawnPrefab(EntityManager, ghostPrefab);
-        TestSpeculativePrefabEntity = CreateSpeculativeSpawnPrefab(SystemConfig.Instance.SpeculativeSpawnTestPrefab, EntityManager, isServer);
+        EntityManager.SetName(FireballPrefabEntity, "Predicted Fireball Prefab");
+        TestSpeculativePrefabEntity = CreateSpeculativeSpawnPrefab(SystemConfig.Instance.SpeculativeSpawnTestPrefab, EntityManager, IsServer);
+        EntityManager.SetName(TestSpeculativePrefabEntity, "Test Speculative Spawn Prefab");
       }
 
+      var isServer = IsServer;
       var dt = Time.DeltaTime;
       var predictingTick = GhostPredictionSystemGroup.PredictingTick;
       var maxMoveSpeed = SystemConfig.Instance.PlayerMoveSpeed;
       var fireballPrefabEntity = FireballPrefabEntity;
       var speculativeTestPrefabEntity = TestSpeculativePrefabEntity;
-      var playerAbilities = GetComponentDataFromEntity<PlayerAbilites>(true);
-      var cooldowns = GetComponentDataFromEntity<Cooldown>(true);
       var bannerQuery = GetEntityQuery(typeof(Banner), typeof(Team));
       var banners = bannerQuery.ToEntityArray(Allocator.TempJob);
       var bannerTeams = bannerQuery.ToComponentDataArray<Team>(Allocator.TempJob);
-      var ecb = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
-      var delayedECB = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>().CreateCommandBuffer();
-
-      // NOTE: The only reason two different ECBs are used here is the development process of trying to limit parallelism when implementing some new systems
-      // What needs to happen here is that both should be combined and a final requirement should be settled on for when exactly these commands should be played
-      // back in order to guarantee that subsequent systems such as the SpeculativeSpawnSystem and the RedundantSpawnCleanupSystem see them when next running
+      var teams = GetComponentDataFromEntity<Team>(true);
+      var ghostOwners = GetComponentDataFromEntity<GhostOwnerComponent>(true);
+      var predictedGhosts = GetComponentDataFromEntity<PredictedGhostComponent>(true);
+      var beginSimECB = BeginSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
 
       Entities
       .WithName("Predict_Player_Input")
       .WithAll<NetworkPlayer, PlayerInput>()
-      .ForEach((Entity playerEntity, in Translation position, in Rotation rotation, in PlayerState playerState, in Team team, in DynamicBuffer<PlayerInput> inputBuffer, in PredictedGhostComponent predictedGhost, in GhostOwnerComponent ghostOwner) => {
+      .ForEach((Entity playerEntity, int nativeThreadIndex, ref Translation position, ref Rotation rotation, ref PlayerState playerState, in DynamicBuffer<PlayerInput> inputBuffer) => {
+        var team = teams[playerEntity];
+        var predictedGhost = predictedGhosts[playerEntity];
+        var ghostOwner = ghostOwners[playerEntity];
+
+        // Don't re-run prediction if no new data has arrived from the server for this entity since it was last predicted
         if (!GhostPredictionSystemGroup.ShouldPredict(predictingTick, predictedGhost)) {
           return;
         }
-        
-        var foundAnyInputForThisTick = inputBuffer.GetDataAtTick(predictingTick, out PlayerInput input);
-        var foundInputForExactlyThisTick = foundAnyInputForThisTick && input.Tick == predictingTick; // InputBuffer not guaranteed to actually have PlayerInput for exactly this tick
+
+        // Only run prediction with playerinputs from exactly the currently-predicting tick
+        if (!(inputBuffer.GetDataAtTick(predictingTick, out PlayerInput input) && input.Tick == predictingTick)) {
+          if (isServer) {
+            UnityEngine.Debug.Log($"<color=white>Did NOT run server-side prediction because only available input had tick {input.Tick} while the predicting tick is {predictingTick}</color>");
+          }
+          return;
+        } else {
+          // if (isServer) {
+          //   UnityEngine.Debug.Log($"<color=white>Did run server-side prediction input had tick {input.Tick} matching predicting tick is {predictingTick} and DidFire={input.didFire}</color>");
+          // }
+        }
+
         var direction = float3(input.horizontal, 0, input.vertical);
-        var abilities = playerAbilities[playerEntity];
-        var newPlayerState = new PlayerState();
+        var isMoving = input.horizontal != 0 || input.vertical != 0;
         var up = float3(0, 1, 0);
 
-        newPlayerState.IsMoving = input.horizontal != 0 || input.vertical != 0;
-        newPlayerState.FireballCooldown = max(playerState.FireballCooldown - dt, 0);
+        position.Value = maxMoveSpeed * dt * direction + position.Value;
+        rotation.Value = isMoving ? (quaternion)(Quaternion.LookRotation(direction, up)) : rotation.Value;
+        playerState.FireballCooldownTimeRemaining = max(playerState.FireballCooldownTimeRemaining - dt, 0);
+        playerState.IsMoving = isMoving;
+        playerState.DidFireball = false;
+        playerState.DidBanner = false;
 
-        // Discrete actions so insist on having exact data for the predictedTick
-        if (foundInputForExactlyThisTick) {
-          if (input.didFire > 0 && newPlayerState.FireballCooldown <= 0) {
-            var fireball = SpawnGhostEntity(fireballPrefabEntity, delayedECB, isServer, ghostOwner, input.Tick, input.Tick);
+        if (input.didFire == 1 && playerState.FireballCooldownTimeRemaining <= 0) {
+          var fireball = SpawnGhostEntity(fireballPrefabEntity, beginSimECB, nativeThreadIndex, isServer, ghostOwner, input.Tick, input.Tick);
 
-            delayedECB.SetComponent(fireball, rotation);
-            delayedECB.SetComponent(fireball, (Heading)rotation.Value);
-            delayedECB.SetComponent(fireball, (position.Value + forward(rotation.Value) + up).ToTranslation());
+          beginSimECB.SetComponent(nativeThreadIndex, fireball, rotation);
+          beginSimECB.SetComponent(nativeThreadIndex, fireball, (Heading)rotation.Value);
+          beginSimECB.SetComponent(nativeThreadIndex, fireball, (position.Value + forward(rotation.Value) + up).ToTranslation());
 
-            if (!isServer) {
-              var spawnSoundEntity = SpawnSpeculativeEntity(speculativeTestPrefabEntity, ecb, playerEntity, input.Tick, input.Tick);
-            }
+          if (isServer) {
+            UnityEngine.Debug.Log($"<color=white>Predictive spawn on input.Tick {input.Tick}</color>");
+          } else {
+            UnityEngine.Debug.Log($"Predictive spawn on input.Tick {input.Tick}");
+          }
 
-            newPlayerState.DidFireball = true;
-            newPlayerState.FireballCooldown = 1f; // TODO: hard-coded here for a moment because I am tired. This should either go back to the generic cooldown system or be a parameter
-          } else if (input.didBanner != 0) {
-            for (int i = 0; i < bannerTeams.Length; i++) {
-              if (bannerTeams[i].Value == team.Value) {
-                ecb.SetComponent(banners[i], position.Value.ToTranslation());
-                newPlayerState.DidBanner = true;
-              }
+          if (!isServer) {
+            var spawnSoundEntity = SpawnSpeculativeEntity(speculativeTestPrefabEntity, beginSimECB, nativeThreadIndex, playerEntity, input.Tick, input.Tick);
+
+            UnityEngine.Debug.Log($"Speculative spawn on input.Tick {input.Tick}");
+          }
+
+          playerState.DidFireball = true;
+          playerState.FireballCooldownTimeRemaining = playerState.FireballCooldownDuration;
+        } else if (input.didBanner == 1) {
+          for (int i = 0; i < bannerTeams.Length; i++) {
+            if (bannerTeams[i].Value == team.Value) {
+              // TODO: I think the banner itself needs to be owner-predicted and a ghost for this prediction to work properly
+              beginSimECB.SetComponent(nativeThreadIndex, banners[i], position.Value.ToTranslation());
+              playerState.DidBanner = true;
             }
           }
         }
-        ecb.SetComponent(playerEntity, newPlayerState);
-        ecb.SetComponent(playerEntity, (maxMoveSpeed * dt * direction + position.Value).ToTranslation());
-        if (newPlayerState.IsMoving) {
-          ecb.SetComponent(playerEntity, new Rotation { Value = (quaternion)(Quaternion.LookRotation(direction, up)) });
-        }
       })
-      .WithReadOnly(playerAbilities)
-      .WithReadOnly(cooldowns)
+      .WithReadOnly(teams)
+      .WithReadOnly(ghostOwners)
+      .WithReadOnly(predictedGhosts)
       .WithDisposeOnCompletion(banners)
       .WithDisposeOnCompletion(bannerTeams)
-      .WithoutBurst()
-      .Run();
-
-      ecb.Playback(EntityManager);
-      ecb.Dispose();
+      .WithBurst()
+      .ScheduleParallel();
+      BeginSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
     }
   }
 }

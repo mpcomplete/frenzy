@@ -6,11 +6,11 @@ namespace ECSFrenzy {
   [UpdateInGroup(typeof(GhostPredictionSystemGroup))]
   [UpdateAfter(typeof(PlayerInputPredictionSystem))]
   public class FireballPredictionSystem : SystemBase {
-    BeginSimulationEntityCommandBufferSystem CommandBufferSystem;
+    BeginSimulationEntityCommandBufferSystem BeginSimulationEntityCommandBufferSystem;
     GhostPredictionSystemGroup PredictionSystemGroup;
 
     protected override void OnCreate() {
-      CommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
+      BeginSimulationEntityCommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
       PredictionSystemGroup = World.GetExistingSystem<GhostPredictionSystemGroup>();
     }
 
@@ -20,15 +20,16 @@ namespace ECSFrenzy {
 
       Entities
       .WithName("Predict_Fireball_Position")
-      .WithBurst()
       .WithAll<NetworkFireball>()
       .ForEach((ref Translation translation, in MoveSpeed moveSpeed, in Heading heading, in PredictedGhostComponent predictedGhost) => {
         if (!GhostPredictionSystemGroup.ShouldPredict(predictingTick, predictedGhost))
           return;
 
         translation.Value += dt * moveSpeed.Value * heading.Value;
-      }).ScheduleParallel();
-      CommandBufferSystem.AddJobHandleForProducer(Dependency);
+      })
+      .WithBurst()
+      .ScheduleParallel();
+      BeginSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
     }
   }
 }

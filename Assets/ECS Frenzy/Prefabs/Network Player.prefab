@@ -250,7 +250,6 @@ GameObject:
   - component: {fileID: 3679481439780764391}
   - component: {fileID: 8586843998458312118}
   - component: {fileID: 8280395429886221851}
-  - component: {fileID: 4969406709905662602}
   - component: {fileID: 3679481439780764388}
   - component: {fileID: 3679481439780764389}
   - component: {fileID: 4752303934304113744}
@@ -303,13 +302,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c79d771cedb4794bf100ce60df5f764, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ForcePrefabConversion: 0
   DefaultGhostMode: 2
   SupportedGhostModes: 3
   OptimizationMode: 0
   Importance: 1
   prefabId: d0e554df0c8893f41938f80cf008e972
   Name: Network Player
-  doNotStrip: 0
 --- !u!114 &3679481439780764391
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -334,8 +333,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6738214b04076e44fac771677d1c0c2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  FireballCooldownDuration: 0.5
+  FireballCooldownTimeRemaining: 0
   IsMoving: 0
   DidFireball: 0
+  DidBanner: 0
 --- !u!114 &8280395429886221851
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -352,19 +354,6 @@ MonoBehaviour:
   Ability2: {fileID: 3008813281202106844}
   Ability3: {fileID: 1868606357605505042}
   Ability4: {fileID: 2798185333522783924}
---- !u!114 &4969406709905662602
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3679481439780764386}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 74881f979b77d184c815400e46c618a5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Value: 0
 --- !u!114 &3679481439780764388
 MonoBehaviour:
   m_ObjectHideFlags: 0

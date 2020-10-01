@@ -21,7 +21,7 @@ namespace ECSFrenzy.Generated
         {
             State = new GhostComponentSerializer.State
             {
-                GhostFieldsHash = 4379934046830037180,
+                GhostFieldsHash = 10278782975620710441,
                 ExcludeFromComponentCollectionHash = 0,
                 ComponentType = ComponentType.ReadWrite<ECSFrenzy.PlayerState>(),
                 ComponentSize = UnsafeUtility.SizeOf<ECSFrenzy.PlayerState>(),
@@ -52,12 +52,13 @@ namespace ECSFrenzy.Generated
         public static readonly GhostComponentSerializer.State State;
         public struct Snapshot
         {
-            public float FireballCooldown;
+            public float FireballCooldownDuration;
+            public float FireballCooldownTimeRemaining;
             public uint IsMoving;
             public uint DidFireball;
             public uint DidBanner;
         }
-        public const int ChangeMaskBits = 4;
+        public const int ChangeMaskBits = 5;
         [BurstCompile]
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.CopyToFromSnapshotDelegate))]
         private static void CopyToSnapshot(IntPtr stateData, IntPtr snapshotData, int snapshotOffset, int snapshotStride, IntPtr componentData, int componentStride, int count)
@@ -67,7 +68,8 @@ namespace ECSFrenzy.Generated
                 ref var snapshot = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotData, snapshotOffset + snapshotStride*i);
                 ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.PlayerState>(componentData, componentStride*i);
                 ref var serializerState = ref GhostComponentSerializer.TypeCast<GhostSerializerState>(stateData, 0);
-                snapshot.FireballCooldown = component.FireballCooldown;
+                snapshot.FireballCooldownDuration = component.FireballCooldownDuration;
+                snapshot.FireballCooldownTimeRemaining = component.FireballCooldownTimeRemaining;
                 snapshot.IsMoving = component.IsMoving?1u:0;
                 snapshot.DidFireball = component.DidFireball?1u:0;
                 snapshot.DidBanner = component.DidBanner?1u:0;
@@ -86,7 +88,8 @@ namespace ECSFrenzy.Generated
                 ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.PlayerState>(componentData, componentStride*i);
                 var deserializerState = GhostComponentSerializer.TypeCast<GhostDeserializerState>(stateData, 0);
                 deserializerState.SnapshotTick = snapshotInterpolationData.Tick;
-                component.FireballCooldown = snapshotBefore.FireballCooldown;
+                component.FireballCooldownDuration = snapshotBefore.FireballCooldownDuration;
+                component.FireballCooldownTimeRemaining = snapshotBefore.FireballCooldownTimeRemaining;
                 component.IsMoving = snapshotBefore.IsMoving != 0;
                 component.DidFireball = snapshotBefore.DidFireball != 0;
                 component.DidBanner = snapshotBefore.DidBanner != 0;
@@ -98,7 +101,8 @@ namespace ECSFrenzy.Generated
         {
             ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.PlayerState>(componentData, 0);
             ref var backup = ref GhostComponentSerializer.TypeCast<ECSFrenzy.PlayerState>(backupData, 0);
-            component.FireballCooldown = backup.FireballCooldown;
+            component.FireballCooldownDuration = backup.FireballCooldownDuration;
+            component.FireballCooldownTimeRemaining = backup.FireballCooldownTimeRemaining;
             component.IsMoving = backup.IsMoving;
             component.DidFireball = backup.DidFireball;
             component.DidBanner = backup.DidBanner;
@@ -122,11 +126,12 @@ namespace ECSFrenzy.Generated
             ref var snapshot = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotData);
             ref var baseline = ref GhostComponentSerializer.TypeCast<Snapshot>(baselineData);
             uint changeMask;
-            changeMask = (snapshot.FireballCooldown != baseline.FireballCooldown) ? 1u : 0;
-            changeMask |= (snapshot.IsMoving != baseline.IsMoving) ? (1u<<1) : 0;
-            changeMask |= (snapshot.DidFireball != baseline.DidFireball) ? (1u<<2) : 0;
-            changeMask |= (snapshot.DidBanner != baseline.DidBanner) ? (1u<<3) : 0;
-            GhostComponentSerializer.CopyToChangeMask(bits, changeMask, startOffset, 4);
+            changeMask = (snapshot.FireballCooldownDuration != baseline.FireballCooldownDuration) ? 1u : 0;
+            changeMask |= (snapshot.FireballCooldownTimeRemaining != baseline.FireballCooldownTimeRemaining) ? (1u<<1) : 0;
+            changeMask |= (snapshot.IsMoving != baseline.IsMoving) ? (1u<<2) : 0;
+            changeMask |= (snapshot.DidFireball != baseline.DidFireball) ? (1u<<3) : 0;
+            changeMask |= (snapshot.DidBanner != baseline.DidBanner) ? (1u<<4) : 0;
+            GhostComponentSerializer.CopyToChangeMask(bits, changeMask, startOffset, 5);
         }
         [BurstCompile]
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.SerializeDelegate))]
@@ -136,12 +141,14 @@ namespace ECSFrenzy.Generated
             ref var baseline = ref GhostComponentSerializer.TypeCast<Snapshot>(baselineData);
             uint changeMask = GhostComponentSerializer.CopyFromChangeMask(changeMaskData, startOffset, ChangeMaskBits);
             if ((changeMask & (1 << 0)) != 0)
-                writer.WritePackedFloatDelta(snapshot.FireballCooldown, baseline.FireballCooldown, compressionModel);
+                writer.WritePackedFloatDelta(snapshot.FireballCooldownDuration, baseline.FireballCooldownDuration, compressionModel);
             if ((changeMask & (1 << 1)) != 0)
-                writer.WritePackedUIntDelta(snapshot.IsMoving, baseline.IsMoving, compressionModel);
+                writer.WritePackedFloatDelta(snapshot.FireballCooldownTimeRemaining, baseline.FireballCooldownTimeRemaining, compressionModel);
             if ((changeMask & (1 << 2)) != 0)
-                writer.WritePackedUIntDelta(snapshot.DidFireball, baseline.DidFireball, compressionModel);
+                writer.WritePackedUIntDelta(snapshot.IsMoving, baseline.IsMoving, compressionModel);
             if ((changeMask & (1 << 3)) != 0)
+                writer.WritePackedUIntDelta(snapshot.DidFireball, baseline.DidFireball, compressionModel);
+            if ((changeMask & (1 << 4)) != 0)
                 writer.WritePackedUIntDelta(snapshot.DidBanner, baseline.DidBanner, compressionModel);
         }
         [BurstCompile]
@@ -152,18 +159,22 @@ namespace ECSFrenzy.Generated
             ref var baseline = ref GhostComponentSerializer.TypeCast<Snapshot>(baselineData);
             uint changeMask = GhostComponentSerializer.CopyFromChangeMask(changeMaskData, startOffset, ChangeMaskBits);
             if ((changeMask & (1 << 0)) != 0)
-                snapshot.FireballCooldown = reader.ReadPackedFloatDelta(baseline.FireballCooldown, compressionModel);
+                snapshot.FireballCooldownDuration = reader.ReadPackedFloatDelta(baseline.FireballCooldownDuration, compressionModel);
             else
-                snapshot.FireballCooldown = baseline.FireballCooldown;
+                snapshot.FireballCooldownDuration = baseline.FireballCooldownDuration;
             if ((changeMask & (1 << 1)) != 0)
+                snapshot.FireballCooldownTimeRemaining = reader.ReadPackedFloatDelta(baseline.FireballCooldownTimeRemaining, compressionModel);
+            else
+                snapshot.FireballCooldownTimeRemaining = baseline.FireballCooldownTimeRemaining;
+            if ((changeMask & (1 << 2)) != 0)
                 snapshot.IsMoving = reader.ReadPackedUIntDelta(baseline.IsMoving, compressionModel);
             else
                 snapshot.IsMoving = baseline.IsMoving;
-            if ((changeMask & (1 << 2)) != 0)
+            if ((changeMask & (1 << 3)) != 0)
                 snapshot.DidFireball = reader.ReadPackedUIntDelta(baseline.DidFireball, compressionModel);
             else
                 snapshot.DidFireball = baseline.DidFireball;
-            if ((changeMask & (1 << 3)) != 0)
+            if ((changeMask & (1 << 4)) != 0)
                 snapshot.DidBanner = reader.ReadPackedUIntDelta(baseline.DidBanner, compressionModel);
             else
                 snapshot.DidBanner = baseline.DidBanner;
@@ -176,7 +187,9 @@ namespace ECSFrenzy.Generated
             ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.PlayerState>(componentData, 0);
             ref var backup = ref GhostComponentSerializer.TypeCast<ECSFrenzy.PlayerState>(backupData, 0);
             int errorIndex = 0;
-            errors[errorIndex] = math.max(errors[errorIndex], math.abs(component.FireballCooldown - backup.FireballCooldown));
+            errors[errorIndex] = math.max(errors[errorIndex], math.abs(component.FireballCooldownDuration - backup.FireballCooldownDuration));
+            ++errorIndex;
+            errors[errorIndex] = math.max(errors[errorIndex], math.abs(component.FireballCooldownTimeRemaining - backup.FireballCooldownTimeRemaining));
             ++errorIndex;
             errors[errorIndex] = math.max(errors[errorIndex], (component.IsMoving != backup.IsMoving) ? 1 : 0);
             ++errorIndex;
@@ -190,7 +203,11 @@ namespace ECSFrenzy.Generated
             int nameCount = 0;
             if (nameCount != 0)
                 names.Append(new FixedString32(","));
-            names.Append(new FixedString64("FireballCooldown"));
+            names.Append(new FixedString64("FireballCooldownDuration"));
+            ++nameCount;
+            if (nameCount != 0)
+                names.Append(new FixedString32(","));
+            names.Append(new FixedString64("FireballCooldownTimeRemaining"));
             ++nameCount;
             if (nameCount != 0)
                 names.Append(new FixedString32(","));

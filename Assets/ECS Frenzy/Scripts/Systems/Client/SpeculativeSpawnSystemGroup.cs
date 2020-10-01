@@ -1,14 +1,10 @@
-﻿using System;
-using Unity.Collections;
-using Unity.Burst;
+﻿using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 
 namespace ECSFrenzy {
   public struct NewSpeculativeSpawnTag : IComponentData {}
 
-  [Serializable]
-  [BurstCompile]
   public struct SpeculativeSpawn : IComponentData {
     public Entity OwnerEntity;
     public Entity Entity;
@@ -28,7 +24,7 @@ namespace ECSFrenzy {
   }
 
   [UpdateInGroup(typeof(ClientSimulationSystemGroup))]
-  [UpdateAfter(typeof(GhostSimulationSystemGroup))]
+  [UpdateAfter(typeof(GhostSpawnSystemGroup))]
   public class SpeculativeSpawnSystemGroup : ComponentSystemGroup {}
 
   [UpdateInGroup(typeof(SpeculativeSpawnSystemGroup))]
@@ -42,6 +38,7 @@ namespace ECSFrenzy {
 
       Entities
       .WithName("Destroy_Existing_Speculative_Spawns_That_Were_Not_Resimulated")
+      .WithNone<NewSpeculativeSpawnTag>()
       .ForEach((Entity e, in SpeculativeSpawn speculativeSpawn) => {
         var predictedGhost = predictedGhosts[speculativeSpawn.OwnerEntity];
         var ownerWasResimulated = speculativeSpawn.SpawnTick > predictedGhost.PredictionStartTick;
@@ -91,6 +88,7 @@ namespace ECSFrenzy {
           isRedundantSpawn = isRedundantSpawn || SpeculativeSpawn.Same(speculativeSpawn, existingSpeculativeSpawn);
         }
         if (isRedundantSpawn) {
+          UnityEngine.Debug.Log($"<color=red>Destroyed redundant speculative spawn {speculativeSpawn.SpawnTick}</color>");
           ecb.DestroyEntity(speculativeSpawn.Entity);
           ecb.DestroyEntity(e);
         } else {

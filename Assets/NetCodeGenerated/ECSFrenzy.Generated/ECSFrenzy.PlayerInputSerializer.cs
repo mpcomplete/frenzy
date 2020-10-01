@@ -18,32 +18,32 @@ namespace ECSFrenzy.Generated
         {
             writer.WriteFloat(data.horizontal);
             writer.WriteFloat(data.vertical);
-            writer.WriteInt((int) data.didFire);
-            writer.WriteInt((int) data.didBanner);
+            writer.WriteUInt(data.didFire);
+            writer.WriteUInt(data.didBanner);
         }
 
         public void Deserialize(ref DataStreamReader reader, ref ECSFrenzy.PlayerInput data)
         {
             data.horizontal = reader.ReadFloat();
             data.vertical = reader.ReadFloat();
-            data.didFire = (int) reader.ReadInt();
-            data.didBanner = (int) reader.ReadInt();
+            data.didFire = (byte) reader.ReadUInt();
+            data.didBanner = (byte) reader.ReadUInt();
         }
 
         public void Serialize(ref DataStreamWriter writer, in ECSFrenzy.PlayerInput data, in ECSFrenzy.PlayerInput baseline, NetworkCompressionModel compressionModel)
         {
             writer.WritePackedFloatDelta(data.horizontal, baseline.horizontal, compressionModel);
             writer.WritePackedFloatDelta(data.vertical, baseline.vertical, compressionModel);
-            writer.WritePackedIntDelta((int) data.didFire, (int) baseline.didFire, compressionModel);
-            writer.WritePackedIntDelta((int) data.didBanner, (int) baseline.didBanner, compressionModel);
+            writer.WritePackedUIntDelta(data.didFire, baseline.didFire, compressionModel);
+            writer.WritePackedUIntDelta(data.didBanner, baseline.didBanner, compressionModel);
         }
 
         public void Deserialize(ref DataStreamReader reader, ref ECSFrenzy.PlayerInput data, in ECSFrenzy.PlayerInput baseline, NetworkCompressionModel compressionModel)
         {
             data.horizontal = reader.ReadPackedFloatDelta(baseline.horizontal, compressionModel);
             data.vertical = reader.ReadPackedFloatDelta(baseline.vertical, compressionModel);
-            data.didFire = (int) reader.ReadPackedIntDelta((int) baseline.didFire, compressionModel);
-            data.didBanner = (int) reader.ReadPackedIntDelta((int) baseline.didBanner, compressionModel);
+            data.didFire = (byte) reader.ReadPackedUIntDelta(baseline.didFire, compressionModel);
+            data.didBanner = (byte) reader.ReadPackedUIntDelta(baseline.didBanner, compressionModel);
         }
     }
     public class ECSFrenzyPlayerInputSendCommandSystem : CommandSendSystem<ECSFrenzyPlayerInputSerializer, ECSFrenzy.PlayerInput>

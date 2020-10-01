@@ -4,36 +4,25 @@ using Unity.Jobs;
 using Unity.NetCode;
 
 namespace ECSFrenzy {
-  [UpdateInWorld(UpdateInWorld.TargetWorld.Client)]
   [UpdateInGroup(typeof(GhostSpawnSystemGroup), OrderLast=true)]
   public class RedundantPredictiveSpawnCleanupSystem : SystemBase {
-    BeginSimulationEntityCommandBufferSystem Barrier;
-
-    protected override void OnCreate() {
-      Barrier = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
-    }
-
     protected override void OnUpdate() {
       const int CAPACITY = 1024;
 
-      var unique = new NativeHashSet<RedundantSpawnComponent>(CAPACITY, Allocator.TempJob);
-      var commandBuffer = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
-      var spawnListEntity = GetSingletonEntity<PredictedGhostSpawnList>();
-      var spawnListFromEntity = GetBufferFromEntity<PredictedGhostSpawn>();
       var redundantSpawnFromEntity = GetComponentDataFromEntity<RedundantSpawnComponent>(true);
+      var unique = new NativeHashSet<RedundantSpawnComponent>(CAPACITY, Allocator.TempJob);
+      var ecb = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
 
-      // Loop over all predictively-spawned ghosts and destroy redundant ones ( from re-simulation )
-      Job
-      .WithName("Cleanup_Redundant_Predictive_Spawns")
-      .WithCode(() => {
-        var spawnList = spawnListFromEntity[spawnListEntity];
-
+      Entities
+      .WithAll<PredictedGhostSpawnList>()
+      .ForEach((Entity e, DynamicBuffer<PredictedGhostSpawn> spawnList) => {
         for (int i = 0; i < spawnList.Length; i++) {
           var spawn = spawnList[i];
           var redundantSpawn = redundantSpawnFromEntity[spawn.entity];
 
           if (unique.Contains(redundantSpawn)) {
-            commandBuffer.DestroyEntity(spawn.entity);
+            UnityEngine.Debug.Log($"<color=red>Destroyed redundant predictive spawn {redundantSpawn.SimulatedSpawnTick}</color>");
+            ecb.DestroyEntity(spawn.entity);
             spawnList.RemoveAtSwapBack(i);
             --i;
           } else {
@@ -42,11 +31,11 @@ namespace ECSFrenzy {
         }
       })
       .WithReadOnly(redundantSpawnFromEntity)
+      .WithDisposeOnCompletion(unique)
       .WithoutBurst()
       .Run();
-      commandBuffer.Playback(EntityManager);
-      commandBuffer.Dispose();
-      unique.Dispose();
+      ecb.Playback(EntityManager);
+      ecb.Dispose();
     }
   }
 }

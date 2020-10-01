@@ -29,9 +29,11 @@ namespace ECSFrenzy {
       Entities
       .WithName("Instantiate_PlayerHUD_Instances")
       .WithNone<PlayerHUDInstance>()
+      .WithAll<NetworkPlayer, PlayerInput>()
       .ForEach((Entity e) => {
         var playerHUD = PlayerHUD.Instantiate(hudPrefab);
         
+        Debug.Log("<color=pink>Instantated new PlayerHUD INSTANCE</color>");
         playerHUD.Camera = Camera;
         EntityManager.AddComponentData(e, new PlayerHUDInstance { Value = playerHUD });
       })

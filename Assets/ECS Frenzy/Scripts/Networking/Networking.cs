@@ -1,6 +1,7 @@
 ﻿using Unity.Entities;
 using Unity.Networking.Transport;
 using Unity.NetCode;
+using Unity.Mathematics;
 using UnityEngine;
 using static Unity.Mathematics.math;
 
@@ -29,8 +30,8 @@ namespace ECSFrenzy {
     public uint Tick {get; set;}
     public float horizontal;
     public float vertical;
-    public int didFire;
-    public int didBanner;
+    public byte didFire;
+    public byte didBanner;
   }
 
   [UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
@@ -127,20 +128,45 @@ namespace ECSFrenzy {
     ClientSimulationSystemGroup ClientSimulationSystemGroup;
     BeginSimulationEntityCommandBufferSystem BeginSimulationEntityCommandBufferSystem;
 
+    static float2 StickInputsWithRadialDeadzone(float horizontal, float vertical, float deadzone) {
+      var stickInput = float2(horizontal, vertical);
+      var lengthInput = length(stickInput);
+
+      return lengthInput < deadzone ? float2(0, 0) : stickInput / lengthInput;
+    }
+
+    static void AddNewPlayerInputWithDiscreteStateFusion(DynamicBuffer<PlayerInput> inputs, PlayerInput input) {
+      inputs.GetDataAtTick(input.Tick, out PlayerInput currentInput);
+
+      if (currentInput.Tick == input.Tick) {
+        if (input.didFire != currentInput.didFire) {
+          Debug.LogError($"Found tick already existing for estimated server tick {input.Tick} with DidFire conflict!");
+        }
+        if (input.didFire != currentInput.didFire) {
+          Debug.LogError($"Found tick already existing for estimated server tick {input.Tick} with DidBanner conflict!");
+        }
+        input.didFire = (input.didFire == 1 || currentInput.didFire == 1) ? (byte)1 : (byte)0;
+        input.didBanner = (input.didBanner == 1 || currentInput.didBanner == 1) ? (byte)1 : (byte)0;
+      }
+      inputs.AddCommandData(input);
+    }
+
     protected override void OnCreate() {
       ClientSimulationSystemGroup = World.GetExistingSystem<ClientSimulationSystemGroup>();
       BeginSimulationEntityCommandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
       RequireSingletonForUpdate<NetworkIdComponent>();
+      RequireSingletonForUpdate<CommandTargetComponent>();
     }
 
     protected override void OnUpdate() {
+      var commandTargetEntity = GetSingletonEntity<CommandTargetComponent>();
       var localInputEntity = GetSingleton<CommandTargetComponent>().targetEntity;
       var estimatedServerTick = ClientSimulationSystemGroup.ServerTick;
+      var ecb = BeginSimulationEntityCommandBufferSystem.CreateCommandBuffer();
 
+      // We don't have anything configured as our Command Target yet so try to set that up
       if (localInputEntity == Entity.Null) {
         var localPlayerId = GetSingleton<NetworkIdComponent>().Value;
-        var commandTargetEntity = GetSingletonEntity<CommandTargetComponent>();
-        var ecb = BeginSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter();
 
         Entities
         .WithAll<NetworkPlayer>()
@@ -149,41 +175,38 @@ namespace ECSFrenzy {
           if (ghostOwner.NetworkId == localPlayerId) {
             var ctc = new CommandTargetComponent { targetEntity = ent };
 
-            ecb.AddBuffer<PlayerInput>(nativeThreadIndex, ent);
-            ecb.SetComponent(nativeThreadIndex, commandTargetEntity, ctc);
+            ecb.AddBuffer<PlayerInput>(ent);
+            ecb.SetComponent(commandTargetEntity, ctc);
           }
         })
-        .ScheduleParallel();
-        BeginSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
-      } else {
-        var playerInputs = EntityManager.GetBuffer<PlayerInput>(localInputEntity);
-        var stickInput = float2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-        var didFire = Input.GetButtonDown("Fire1") ? 1 : 0;
-        var didBanner = Input.GetButtonDown("Jump") ? 1 : 0;
-
-        if (length(stickInput) < SystemConfig.Instance.ControllerDeadzone) {
-          stickInput = float2(0,0);
-        } else {
-          stickInput = normalize(stickInput);
-        }
-
-        Entities
-        .WithAll<NetworkPlayer, PlayerInput>()
-        .ForEach((Entity e, ref GhostOwnerComponent ghostOwner) => {
-          var input = new PlayerInput {
-            Tick = estimatedServerTick,
-            horizontal = stickInput.x,
-            vertical = stickInput.y,
-            didFire = didFire,
-            didBanner = didBanner
-          };
-
-          playerInputs.AddCommandData(input);
-        })
         .WithoutBurst()
-        .WithStructuralChanges()
         .Run();
       }
+
+      float2 stickInput = StickInputsWithRadialDeadzone(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), SystemConfig.Instance.ControllerDeadzone);
+      byte didFire = Input.GetButtonDown("Fire1") ? (byte)1 : (byte)0;
+      byte didBanner = Input.GetButtonDown("Jump") ? (byte)1 : (byte)0;
+
+      Entities
+      .WithAll<NetworkPlayer, GhostOwnerComponent>()
+      .ForEach((Entity e, DynamicBuffer<PlayerInput> playerInputs) => {
+        var input = new PlayerInput {
+          Tick = estimatedServerTick,
+          horizontal = stickInput.x,
+          vertical = stickInput.y,
+          didFire = didFire,
+          didBanner = didBanner
+        };
+        // We will wipe out existing input button actions if we overwrite them with new data targeting the same tick
+        // This will appear to swallow user input rarely which will seem like an insidious bug and make people hate us
+        // As such, anytime we are adding new data to the input buffer we should check for existing data matching
+        // the Tick and fuse their discrete button values such that if the button is pressed in either one then the button
+        // remains pressed
+        AddNewPlayerInputWithDiscreteStateFusion(playerInputs, input);
+      })
+      .WithBurst()
+      .Schedule();
+      BeginSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
     }
   }
 }
