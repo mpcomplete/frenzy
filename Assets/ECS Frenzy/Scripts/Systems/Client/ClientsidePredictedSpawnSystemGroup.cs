@@ -3,32 +3,11 @@ using Unity.Entities;
 using Unity.NetCode;
 
 namespace ECSFrenzy {
-  public struct NewSpeculativeSpawnTag : IComponentData {}
+  [UpdateInGroup(typeof(GhostSpawnSystemGroup), OrderFirst=true)]
+  public class ClientsidePredictedSpawnSystemGroup : ComponentSystemGroup {}
 
-  public struct SpeculativeSpawn : IComponentData {
-    public Entity OwnerEntity;
-    public Entity Entity;
-    public uint SpawnTick;
-    public uint Identifier;
-
-    public static bool Same(SpeculativeSpawn a, SpeculativeSpawn b) {
-      return a.SpawnTick == b.SpawnTick && a.Identifier == b.Identifier;
-    }
-
-    public SpeculativeSpawn(Entity ownerEntity, Entity entity, uint spawnTick, uint identifier) {
-      OwnerEntity = ownerEntity;
-      Entity = entity;
-      SpawnTick = spawnTick;
-      Identifier = identifier;
-    }
-  }
-
-  [UpdateInGroup(typeof(ClientSimulationSystemGroup))]
-  [UpdateAfter(typeof(GhostSpawnSystemGroup))]
-  public class SpeculativeSpawnSystemGroup : ComponentSystemGroup {}
-
-  [UpdateInGroup(typeof(SpeculativeSpawnSystemGroup))]
-  public class DestroyInvalidSpeculativeSpawnSystem : SystemBase {
+  [UpdateInGroup(typeof(ClientsidePredictedSpawnSystemGroup))]
+  public class DestroyInvalidClientsideSpawnSystem : SystemBase {
     protected override void OnUpdate() {
       var newSpeculativeQuery = GetEntityQuery(ComponentType.ReadOnly<SpeculativeSpawn>(), ComponentType.ReadOnly<NewSpeculativeSpawnTag>());
       var newSpeculativeEntities = newSpeculativeQuery.ToEntityArray(Allocator.TempJob);
@@ -36,8 +15,12 @@ namespace ECSFrenzy {
       var predictedGhosts = GetComponentDataFromEntity<PredictedGhostComponent>(true);
       var ecb = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
 
+      // TODO: probably should detect if the ownerEntity still exists
+      // TODO: alternatively, perhaps these could all be destroyed automatically when the owner is destroyed?
+      // TODO: so many choices... so little time
+
       Entities
-      .WithName("Destroy_Existing_Speculative_Spawns_That_Were_Not_Resimulated")
+      .WithName("Destroy_Existing_Clientside_Spawns_That_Were_Not_Resimulated")
       .WithNone<NewSpeculativeSpawnTag>()
       .ForEach((Entity e, in SpeculativeSpawn speculativeSpawn) => {
         var predictedGhost = predictedGhosts[speculativeSpawn.OwnerEntity];
@@ -59,15 +42,14 @@ namespace ECSFrenzy {
       .WithReadOnly(predictedGhosts)
       .WithReadOnly(speculativeSpawns)
       .WithDisposeOnCompletion(newSpeculativeEntities)
-      .WithoutBurst()
       .Run();
       ecb.Playback(EntityManager);
       ecb.Dispose();
     }
   }
 
-  [UpdateInGroup(typeof(SpeculativeSpawnSystemGroup))]
-  public class DestroyOrPromoteNewSpeculativeSpawnSystem : SystemBase {
+  [UpdateInGroup(typeof(ClientsidePredictedSpawnSystemGroup))]
+  public class DestroyOrPromoteNewClientsideSpawnSystem : SystemBase {
     protected override void OnUpdate() {
       var existingSpeculativeQuery = GetEntityQuery(ComponentType.ReadOnly<SpeculativeSpawn>(), ComponentType.Exclude<NewSpeculativeSpawnTag>());
       var existingSpeculativeEntities = existingSpeculativeQuery.ToEntityArray(Allocator.TempJob);
@@ -76,7 +58,7 @@ namespace ECSFrenzy {
       var ecb = new EntityCommandBuffer(Allocator.TempJob, PlaybackPolicy.SinglePlayback);
 
       Entities
-      .WithName("Destroy_or_Promote_New_Speculative_Spawns")
+      .WithName("Destroy_or_Promote_New_Clientside_Spawns")
       .WithAll<NewSpeculativeSpawnTag>()
       .ForEach((Entity e, in SpeculativeSpawn speculativeSpawn) => {
         var isRedundantSpawn = false;
@@ -98,7 +80,6 @@ namespace ECSFrenzy {
       .WithReadOnly(predictedGhosts)
       .WithReadOnly(speculativeSpawns)
       .WithDisposeOnCompletion(existingSpeculativeEntities)
-      .WithoutBurst()
       .Run();
       ecb.Playback(EntityManager);
       ecb.Dispose();

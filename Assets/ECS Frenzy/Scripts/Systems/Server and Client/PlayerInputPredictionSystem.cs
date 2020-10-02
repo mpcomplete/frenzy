@@ -11,20 +11,18 @@ namespace ECSFrenzy {
   [UpdateInGroup(typeof(GhostPredictionSystemGroup))]
   public class PlayerInputPredictionSystem : SystemBase {
     Entity FireballPrefabEntity;
-    Entity TestSpeculativePrefabEntity;
+    Entity TestClientOnlyPrefabEntity;
     BeginSimulationEntityCommandBufferSystem BeginSimulationEntityCommandBufferSystem;
     GhostPredictionSystemGroup GhostPredictionSystemGroup;
     bool IsServer;
 
-    static Entity CreateSpeculativeSpawnPrefab(GameObject prefab, EntityManager entityManager, bool onServer) {
+    static Entity CreateClientOnlyEntityPrefab(GameObject prefab, EntityManager entityManager, bool onServer) {
       if (!onServer) {
         var blobAssetStore = new BlobAssetStore(); 
         var conversionFlags = GameObjectConversionUtility.ConversionFlags.AssignName;
         var conversionSettings = new GameObjectConversionSettings(entityManager.World, conversionFlags, blobAssetStore);
         var entity = GameObjectConversionUtility.ConvertGameObjectHierarchy(prefab, conversionSettings);
 
-        entityManager.AddComponent<SpeculativeSpawn>(entity);
-        entityManager.AddComponent<NewSpeculativeSpawnTag>(entity);
         entityManager.AddComponent<Prefab>(entity);
         blobAssetStore.Dispose();
         return entity;
@@ -33,22 +31,23 @@ namespace ECSFrenzy {
       }
     }
 
-    static Entity SpawnGhostEntity(Entity prefab, EntityCommandBuffer.ParallelWriter entityCommandBuffer, int nativeThreadIndex, bool onServer, in GhostOwnerComponent ghostOwnerComponent, uint tick, uint identifier) {
+    static Entity SpawnPredictedGhostEntity(Entity prefab, Entity owner, EntityCommandBuffer.ParallelWriter entityCommandBuffer, int nativeThreadIndex, bool onServer, in GhostOwnerComponent ghostOwnerComponent, uint tick, uint identifier) {
       var entity = entityCommandBuffer.Instantiate(nativeThreadIndex, prefab);
       
       entityCommandBuffer.SetComponent(nativeThreadIndex, entity, ghostOwnerComponent);
       if (!onServer) {
-        entityCommandBuffer.SetComponent(nativeThreadIndex, entity, new RedundantSpawnComponent(tick, identifier));
         entityCommandBuffer.SetComponent(nativeThreadIndex, entity, new PredictedGhostSpawnRequestComponent());
+        entityCommandBuffer.SetComponent(nativeThreadIndex, entity, new NewSpeculativeSpawnTag());
+        entityCommandBuffer.SetComponent(nativeThreadIndex, entity, new SpeculativeSpawn(owner, entity, tick, identifier));
       }
       return entity;
     }
 
-    static Entity SpawnSpeculativeEntity(Entity prefab, EntityCommandBuffer.ParallelWriter entityCommandBuffer, int nativeThreadIndex, Entity owner, uint tick, uint identifier) {
+    static Entity SpawnClientOnlyEntity(Entity prefab, Entity owner, EntityCommandBuffer.ParallelWriter entityCommandBuffer, int nativeThreadIndex, uint tick, uint identifier) {
       var entity = entityCommandBuffer.Instantiate(nativeThreadIndex, prefab);
 
+      entityCommandBuffer.SetComponent(nativeThreadIndex, entity, new NewSpeculativeSpawnTag());
       entityCommandBuffer.SetComponent(nativeThreadIndex, entity, new SpeculativeSpawn(owner, entity, tick, identifier));
-      entityCommandBuffer.SetComponent<NewSpeculativeSpawnTag>(nativeThreadIndex, entity, new NewSpeculativeSpawnTag());
       return entity;
     }
 
@@ -66,8 +65,8 @@ namespace ECSFrenzy {
 
         FireballPrefabEntity = GhostCollectionSystem.CreatePredictedSpawnPrefab(EntityManager, ghostPrefab);
         EntityManager.SetName(FireballPrefabEntity, "Predicted Fireball Prefab");
-        TestSpeculativePrefabEntity = CreateSpeculativeSpawnPrefab(SystemConfig.Instance.SpeculativeSpawnTestPrefab, EntityManager, IsServer);
-        EntityManager.SetName(TestSpeculativePrefabEntity, "Test Speculative Spawn Prefab");
+        TestClientOnlyPrefabEntity = CreateClientOnlyEntityPrefab(SystemConfig.Instance.SpeculativeSpawnTestPrefab, EntityManager, IsServer);
+        EntityManager.SetName(TestClientOnlyPrefabEntity, "Test Client Only Prefab");
       }
 
       var isServer = IsServer;
@@ -75,7 +74,7 @@ namespace ECSFrenzy {
       var predictingTick = GhostPredictionSystemGroup.PredictingTick;
       var maxMoveSpeed = SystemConfig.Instance.PlayerMoveSpeed;
       var fireballPrefabEntity = FireballPrefabEntity;
-      var speculativeTestPrefabEntity = TestSpeculativePrefabEntity;
+      var clientOnlyPrefabEntity = TestClientOnlyPrefabEntity;
       var bannerQuery = GetEntityQuery(typeof(Banner), typeof(Team));
       var banners = bannerQuery.ToEntityArray(Allocator.TempJob);
       var bannerTeams = bannerQuery.ToComponentDataArray<Team>(Allocator.TempJob);
@@ -125,7 +124,7 @@ namespace ECSFrenzy {
         playerState.DidBanner = false;
 
         if (input.didFire == 1 && playerState.FireballCooldownTimeRemaining <= 0) {
-          var fireball = SpawnGhostEntity(fireballPrefabEntity, beginSimECB, nativeThreadIndex, isServer, ghostOwner, input.Tick, input.Tick);
+          var fireball = SpawnPredictedGhostEntity(fireballPrefabEntity, playerEntity, beginSimECB, nativeThreadIndex, isServer, ghostOwner, input.Tick, input.Tick);
 
           beginSimECB.SetComponent(nativeThreadIndex, fireball, rotation);
           beginSimECB.SetComponent(nativeThreadIndex, fireball, (Heading)rotation.Value);
@@ -138,9 +137,9 @@ namespace ECSFrenzy {
           }
 
           if (!isServer) {
-            var spawnSoundEntity = SpawnSpeculativeEntity(speculativeTestPrefabEntity, beginSimECB, nativeThreadIndex, playerEntity, input.Tick, input.Tick);
+            var spawnSoundEntity = SpawnClientOnlyEntity(clientOnlyPrefabEntity, playerEntity, beginSimECB, nativeThreadIndex, input.Tick, input.Tick);
 
-            UnityEngine.Debug.Log($"Speculative spawn on input.Tick {input.Tick}");
+            UnityEngine.Debug.Log($"Client-only spawn on input.Tick {input.Tick}");
           }
 
           playerState.DidFireball = true;
