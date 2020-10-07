@@ -413,7 +413,7 @@ MonoBehaviour:
   RenderedPlayerPrefab: {fileID: 7397049788785989640, guid: b0751c95da29cbd4a93ab8b273e57282, type: 3}
   RenderedFireballPrefab: {fileID: 5229814469993547117, guid: d408c96b1c8ba3c478a626c1a03c5ed9, type: 3}
   NavAgentBridgePrefab: {fileID: -6526023300986269157, guid: 081516d6ff4c7a84cbf69debb2f80e55, type: 3}
-  PlayerMoveSpeed: 5
+  PlayerMoveSpeed: 10
   ControllerDeadzone: 0.19
   TeamConfigs:
   - {fileID: 11400000, guid: 6124eef8c01cbd0488c53bfccb124e29, type: 2}
@@ -984,6 +984,10 @@ PrefabInstance:
       propertyPath: MinionPrefab
       value: 
       objectReference: {fileID: 2484522229482473256, guid: 1b92d51253d5a944e9bbca447d4207e0, type: 3}
+    - target: {fileID: 7427366360830136179, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: SpawnCooldown
+      value: 0.1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
 --- !u!4 &1095727031 stripped
@@ -1294,6 +1298,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 497781729}
     m_Modifications:
+    - target: {fileID: 455356340, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: Value
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1122110121661493769, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1366,6 +1374,14 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 152412328}
+    - target: {fileID: 6449329482225273792, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: Value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7427366360830136179, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: SpawnCooldown
+      value: 0.1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
 --- !u!4 &2022889347 stripped
