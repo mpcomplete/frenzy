@@ -25,13 +25,13 @@ namespace ECSFrenzy {
 
   public struct JoinGameRequest : IRpcCommand {}
 
-  [GhostComponent(PrefabType=GhostPrefabType.AllPredicted)]
   public struct PlayerInput : ICommandData {
     public uint Tick {get; set;}
     public float horizontal;
     public float vertical;
     public byte didFire;
     public byte didBanner;
+    public byte isChanneling;
   }
 
   [UpdateInWorld(UpdateInWorld.TargetWorld.Default)]
@@ -73,7 +73,7 @@ namespace ECSFrenzy {
         }
         #endif
         else {
-          // UnityEngine.Debug.Log($"World does not contain either client or server simululation system group");
+          // UnityEngine.Debug.Log($"World does not contain either client or server simulation system group");
         }
       }
     }
@@ -185,6 +185,7 @@ namespace ECSFrenzy {
 
       float2 stickInput = StickInputsWithRadialDeadzone(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), SystemConfig.Instance.ControllerDeadzone);
       byte didFire = Input.GetButtonDown("Fire1") ? (byte)1 : (byte)0;
+      byte isChanneling = Input.GetButton("Fire3") ? (byte)1 : (byte)0;
       byte didBanner = Input.GetButtonDown("Jump") ? (byte)1 : (byte)0;
 
       Entities
@@ -195,7 +196,8 @@ namespace ECSFrenzy {
           horizontal = stickInput.x,
           vertical = stickInput.y,
           didFire = didFire,
-          didBanner = didBanner
+          didBanner = didBanner,
+          isChanneling = isChanneling
         };
         // We will wipe out existing input button actions if we overwrite them with new data targeting the same tick
         // This will appear to swallow user input rarely which will seem like an insidious bug and make people hate us

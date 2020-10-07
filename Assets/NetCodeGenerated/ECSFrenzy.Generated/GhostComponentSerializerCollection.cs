@@ -14,10 +14,11 @@ namespace ECSFrenzy.Generated
             ghostCollectionSystem.AddSerializer(HeadingGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(MoveSpeedGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(TurnSpeedGhostComponentSerializer.State);
-            ghostCollectionSystem.AddSerializer(ECSFrenzyFireballAbilityGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(ECSFrenzyBaseGhostComponentSerializer.State);
+            ghostCollectionSystem.AddSerializer(ECSFrenzyChanneledBeamAbilityGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(ECSFrenzyCooldownGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(ECSFrenzyCooldownStatusGhostComponentSerializer.State);
+            ghostCollectionSystem.AddSerializer(ECSFrenzyFireballAbilityGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(ECSFrenzyPlayerStateGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(ECSFrenzyTeamGhostComponentSerializer.State);
         }

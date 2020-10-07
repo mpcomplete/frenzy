@@ -21,7 +21,7 @@ namespace ECSFrenzy.Generated
         {
             State = new GhostComponentSerializer.State
             {
-                GhostFieldsHash = 10278782975620710441,
+                GhostFieldsHash = 11223936245589747858,
                 ExcludeFromComponentCollectionHash = 0,
                 ComponentType = ComponentType.ReadWrite<ECSFrenzy.PlayerState>(),
                 ComponentSize = UnsafeUtility.SizeOf<ECSFrenzy.PlayerState>(),
@@ -57,8 +57,9 @@ namespace ECSFrenzy.Generated
             public uint IsMoving;
             public uint DidFireball;
             public uint DidBanner;
+            public uint IsChanneling;
         }
-        public const int ChangeMaskBits = 5;
+        public const int ChangeMaskBits = 6;
         [BurstCompile]
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.CopyToFromSnapshotDelegate))]
         private static void CopyToSnapshot(IntPtr stateData, IntPtr snapshotData, int snapshotOffset, int snapshotStride, IntPtr componentData, int componentStride, int count)
@@ -73,6 +74,7 @@ namespace ECSFrenzy.Generated
                 snapshot.IsMoving = component.IsMoving?1u:0;
                 snapshot.DidFireball = component.DidFireball?1u:0;
                 snapshot.DidBanner = component.DidBanner?1u:0;
+                snapshot.IsChanneling = component.IsChanneling?1u:0;
             }
         }
         [BurstCompile]
@@ -93,6 +95,7 @@ namespace ECSFrenzy.Generated
                 component.IsMoving = snapshotBefore.IsMoving != 0;
                 component.DidFireball = snapshotBefore.DidFireball != 0;
                 component.DidBanner = snapshotBefore.DidBanner != 0;
+                component.IsChanneling = snapshotBefore.IsChanneling != 0;
             }
         }
         [BurstCompile]
@@ -106,6 +109,7 @@ namespace ECSFrenzy.Generated
             component.IsMoving = backup.IsMoving;
             component.DidFireball = backup.DidFireball;
             component.DidBanner = backup.DidBanner;
+            component.IsChanneling = backup.IsChanneling;
         }
 
         [BurstCompile]
@@ -118,6 +122,7 @@ namespace ECSFrenzy.Generated
             snapshot.IsMoving = (uint)predictor.PredictInt((int)snapshot.IsMoving, (int)baseline1.IsMoving, (int)baseline2.IsMoving);
             snapshot.DidFireball = (uint)predictor.PredictInt((int)snapshot.DidFireball, (int)baseline1.DidFireball, (int)baseline2.DidFireball);
             snapshot.DidBanner = (uint)predictor.PredictInt((int)snapshot.DidBanner, (int)baseline1.DidBanner, (int)baseline2.DidBanner);
+            snapshot.IsChanneling = (uint)predictor.PredictInt((int)snapshot.IsChanneling, (int)baseline1.IsChanneling, (int)baseline2.IsChanneling);
         }
         [BurstCompile]
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.CalculateChangeMaskDelegate))]
@@ -131,7 +136,8 @@ namespace ECSFrenzy.Generated
             changeMask |= (snapshot.IsMoving != baseline.IsMoving) ? (1u<<2) : 0;
             changeMask |= (snapshot.DidFireball != baseline.DidFireball) ? (1u<<3) : 0;
             changeMask |= (snapshot.DidBanner != baseline.DidBanner) ? (1u<<4) : 0;
-            GhostComponentSerializer.CopyToChangeMask(bits, changeMask, startOffset, 5);
+            changeMask |= (snapshot.IsChanneling != baseline.IsChanneling) ? (1u<<5) : 0;
+            GhostComponentSerializer.CopyToChangeMask(bits, changeMask, startOffset, 6);
         }
         [BurstCompile]
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.SerializeDelegate))]
@@ -150,6 +156,8 @@ namespace ECSFrenzy.Generated
                 writer.WritePackedUIntDelta(snapshot.DidFireball, baseline.DidFireball, compressionModel);
             if ((changeMask & (1 << 4)) != 0)
                 writer.WritePackedUIntDelta(snapshot.DidBanner, baseline.DidBanner, compressionModel);
+            if ((changeMask & (1 << 5)) != 0)
+                writer.WritePackedUIntDelta(snapshot.IsChanneling, baseline.IsChanneling, compressionModel);
         }
         [BurstCompile]
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.DeserializeDelegate))]
@@ -178,6 +186,10 @@ namespace ECSFrenzy.Generated
                 snapshot.DidBanner = reader.ReadPackedUIntDelta(baseline.DidBanner, compressionModel);
             else
                 snapshot.DidBanner = baseline.DidBanner;
+            if ((changeMask & (1 << 5)) != 0)
+                snapshot.IsChanneling = reader.ReadPackedUIntDelta(baseline.IsChanneling, compressionModel);
+            else
+                snapshot.IsChanneling = baseline.IsChanneling;
         }
         #if UNITY_EDITOR || DEVELOPMENT_BUILD
         [BurstCompile]
@@ -196,6 +208,8 @@ namespace ECSFrenzy.Generated
             errors[errorIndex] = math.max(errors[errorIndex], (component.DidFireball != backup.DidFireball) ? 1 : 0);
             ++errorIndex;
             errors[errorIndex] = math.max(errors[errorIndex], (component.DidBanner != backup.DidBanner) ? 1 : 0);
+            ++errorIndex;
+            errors[errorIndex] = math.max(errors[errorIndex], (component.IsChanneling != backup.IsChanneling) ? 1 : 0);
             ++errorIndex;
         }
         private static int GetPredictionErrorNames(ref FixedString512 names)
@@ -220,6 +234,10 @@ namespace ECSFrenzy.Generated
             if (nameCount != 0)
                 names.Append(new FixedString32(","));
             names.Append(new FixedString64("DidBanner"));
+            ++nameCount;
+            if (nameCount != 0)
+                names.Append(new FixedString32(","));
+            names.Append(new FixedString64("IsChanneling"));
             ++nameCount;
             return nameCount;
         }

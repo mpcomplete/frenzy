@@ -20,6 +20,7 @@ namespace ECSFrenzy.Generated
             writer.WriteFloat(data.vertical);
             writer.WriteUInt(data.didFire);
             writer.WriteUInt(data.didBanner);
+            writer.WriteUInt(data.isChanneling);
         }
 
         public void Deserialize(ref DataStreamReader reader, ref ECSFrenzy.PlayerInput data)
@@ -28,6 +29,7 @@ namespace ECSFrenzy.Generated
             data.vertical = reader.ReadFloat();
             data.didFire = (byte) reader.ReadUInt();
             data.didBanner = (byte) reader.ReadUInt();
+            data.isChanneling = (byte) reader.ReadUInt();
         }
 
         public void Serialize(ref DataStreamWriter writer, in ECSFrenzy.PlayerInput data, in ECSFrenzy.PlayerInput baseline, NetworkCompressionModel compressionModel)
@@ -36,6 +38,7 @@ namespace ECSFrenzy.Generated
             writer.WritePackedFloatDelta(data.vertical, baseline.vertical, compressionModel);
             writer.WritePackedUIntDelta(data.didFire, baseline.didFire, compressionModel);
             writer.WritePackedUIntDelta(data.didBanner, baseline.didBanner, compressionModel);
+            writer.WritePackedUIntDelta(data.isChanneling, baseline.isChanneling, compressionModel);
         }
 
         public void Deserialize(ref DataStreamReader reader, ref ECSFrenzy.PlayerInput data, in ECSFrenzy.PlayerInput baseline, NetworkCompressionModel compressionModel)
@@ -44,6 +47,7 @@ namespace ECSFrenzy.Generated
             data.vertical = reader.ReadPackedFloatDelta(baseline.vertical, compressionModel);
             data.didFire = (byte) reader.ReadPackedUIntDelta(baseline.didFire, compressionModel);
             data.didBanner = (byte) reader.ReadPackedUIntDelta(baseline.didBanner, compressionModel);
+            data.isChanneling = (byte) reader.ReadPackedUIntDelta(baseline.isChanneling, compressionModel);
         }
     }
     public class ECSFrenzyPlayerInputSendCommandSystem : CommandSendSystem<ECSFrenzyPlayerInputSerializer, ECSFrenzy.PlayerInput>

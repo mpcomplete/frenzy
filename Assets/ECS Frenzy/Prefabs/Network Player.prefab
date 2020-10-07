@@ -249,6 +249,7 @@ GameObject:
   - component: {fileID: 3679481439780764390}
   - component: {fileID: 3679481439780764391}
   - component: {fileID: 8586843998458312118}
+  - component: {fileID: -4463409928783434692}
   - component: {fileID: 8280395429886221851}
   - component: {fileID: 3679481439780764388}
   - component: {fileID: 3679481439780764389}
@@ -338,6 +339,21 @@ MonoBehaviour:
   IsMoving: 0
   DidFireball: 0
   DidBanner: 0
+  IsChanneling: 0
+  ChannelBeam: {fileID: 0}
+--- !u!114 &-4463409928783434692
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3679481439780764386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49b5f6239ddc78a48932c66bb911878a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ChanneledBeam: {fileID: 0}
 --- !u!114 &8280395429886221851
 MonoBehaviour:
   m_ObjectHideFlags: 0

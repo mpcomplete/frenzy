@@ -12,5 +12,6 @@ namespace ECSFrenzy {
     [GhostField] public bool IsMoving;
     [GhostField] public bool DidFireball;
     [GhostField] public bool DidBanner;
+    [GhostField] public bool IsChanneling;
   }
 }
