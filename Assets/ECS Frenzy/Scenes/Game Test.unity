@@ -408,12 +408,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa8e84c6ba3f8e04aa648bb7ae311f89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SpeculativeSpawnTestPrefab: {fileID: 6612991975770164088, guid: 48bc4edfc91331548826a328d24ec5f8, type: 3}
+  PlayerHUDPrefab: {fileID: 8428763260966778896, guid: 9463341f355788b4c91df2a42997586f, type: 3}
   RenderedPlayerPrefab: {fileID: 7397049788785989640, guid: b0751c95da29cbd4a93ab8b273e57282, type: 3}
   RenderedFireballPrefab: {fileID: 5229814469993547117, guid: d408c96b1c8ba3c478a626c1a03c5ed9, type: 3}
   NavAgentBridgePrefab: {fileID: -6526023300986269157, guid: 081516d6ff4c7a84cbf69debb2f80e55, type: 3}
   PlayerMoveSpeed: 5
   ControllerDeadzone: 0.19
-  TeamConfigs: []
+  TeamConfigs:
+  - {fileID: 11400000, guid: 6124eef8c01cbd0488c53bfccb124e29, type: 2}
+  - {fileID: 11400000, guid: 0e752cb8f86dee942b977b2eb1804177, type: 2}
 --- !u!4 &270736811
 Transform:
   m_ObjectHideFlags: 0
@@ -976,6 +980,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Team 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7427366360830136179, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: MinionPrefab
+      value: 
+      objectReference: {fileID: 2484522229482473256, guid: 1b92d51253d5a944e9bbca447d4207e0, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
 --- !u!4 &1095727031 stripped
@@ -1273,9 +1281,11 @@ MonoBehaviour:
     enabled: 1
   - prefab: {fileID: 3375929130029482782, guid: 1b92d51253d5a944e9bbca447d4207e0, type: 3}
     enabled: 1
-  - prefab: {fileID: 924912124691510099, guid: f627a587adea7834ca64b16a09552db1, type: 3}
-    enabled: 1
   - prefab: {fileID: 4762118607386222133, guid: e5bd4880f4c86c3489c909d4145da22f, type: 3}
+    enabled: 1
+  - prefab: {fileID: 7032664890655128123, guid: 89502ac4cfb941843b0fe12488b36489, type: 3}
+    enabled: 1
+  - prefab: {fileID: 8218223539119841053, guid: 6108cea8f46874b4683ef932dd9b7775, type: 3}
     enabled: 1
 --- !u!1001 &2022889346
 PrefabInstance:

@@ -182,6 +182,8 @@ namespace ECSFrenzy {
       .WithAll<NetworkPlayer, PlayerInput>()
       .WithAll<Team, GhostOwnerComponent>()
       .WithAll<PredictedGhostComponent, PlayerInput>()
+      .WithDisposeOnCompletion(existingClientsideEntities)
+      .WithDisposeOnCompletion(existingClientsideSpeculativeSpawns)
       .ForEach((Entity playerEntity, int nativeThreadIndex, ref Translation position, ref Rotation rotation, ref PlayerState playerState) => {
         var team = teams[playerEntity];
         var predictedGhost = predictedGhosts[playerEntity];
