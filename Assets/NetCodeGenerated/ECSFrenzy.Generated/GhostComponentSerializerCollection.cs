@@ -21,6 +21,7 @@ namespace ECSFrenzy.Generated
             ghostCollectionSystem.AddSerializer(ECSFrenzyFireballAbilityGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(ECSFrenzyPlayerStateGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(ECSFrenzyTeamGhostComponentSerializer.State);
+            ghostCollectionSystem.AddSerializer(ECSFrenzyUniqueClientsideSpawnGhostComponentSerializer.State);
         }
 
         protected override void OnUpdate()

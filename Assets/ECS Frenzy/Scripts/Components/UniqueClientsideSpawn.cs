@@ -7,9 +7,9 @@ namespace ECSFrenzy {
   [GenerateAuthoringComponent]
   [GhostComponent(PrefabType=GhostPrefabType.AllPredicted)]
   public struct UniqueClientsideSpawn : IComponentData {
-    public Entity OwnerEntity;
-    public uint SpawnTick;
-    public uint Identifier;
+    [GhostField] public Entity OwnerEntity;
+    [GhostField] public uint SpawnTick;
+    [GhostField] public uint Identifier;
 
     public static bool Same(UniqueClientsideSpawn a, UniqueClientsideSpawn b) {
       return a.SpawnTick == b.SpawnTick && a.Identifier == b.Identifier;
