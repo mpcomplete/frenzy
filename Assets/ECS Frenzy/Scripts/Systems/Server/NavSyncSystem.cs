@@ -11,9 +11,9 @@ namespace ECSFrenzy {
     }
     protected override void OnUpdate() {
       Entities
-      .WithAll<Target>()
+      .WithAll<NavTarget>()
       .WithNone<NavState>()
-      .ForEach((Entity e, ref Translation translation, ref Team team, ref Target target) => {
+      .ForEach((Entity e, ref Translation translation, ref Team team, ref NavTarget target) => {
         if (target.Value == Entity.Null)
           return;
 
@@ -28,7 +28,7 @@ namespace ECSFrenzy {
       });
 
       Entities
-      .WithNone<Target>()
+      .WithNone<NavTarget>()
       .WithAll<NavState>()
       .ForEach((Entity e) => {
         NavMeshAgent agent = EntityManager.GetComponentData<NavState>(e).Value;
@@ -37,9 +37,9 @@ namespace ECSFrenzy {
       });
 
       Entities
-      .WithAll<Target>()
+      .WithAll<NavTarget>()
       .WithAll<NavState>()
-      .ForEach((Entity e, ref Translation translation, ref Target target) => {
+      .ForEach((Entity e, ref Translation translation, ref NavTarget target) => {
         NavMeshAgent agent = EntityManager.GetComponentData<NavState>(e).Value;
         translation.Value = agent.transform.position;
 
