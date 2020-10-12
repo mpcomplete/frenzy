@@ -11,16 +11,16 @@ namespace ECSFrenzy.Generated
         protected override void OnCreate()
         {
             var ghostCollectionSystem = World.GetOrCreateSystem<GhostCollectionSystem>();
+            ghostCollectionSystem.AddSerializer(BaseGhostComponentSerializer.State);
+            ghostCollectionSystem.AddSerializer(ChanneledBeamAbilityGhostComponentSerializer.State);
+            ghostCollectionSystem.AddSerializer(CooldownGhostComponentSerializer.State);
+            ghostCollectionSystem.AddSerializer(CooldownStatusGhostComponentSerializer.State);
+            ghostCollectionSystem.AddSerializer(FireballAbilityGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(HeadingGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(MoveSpeedGhostComponentSerializer.State);
+            ghostCollectionSystem.AddSerializer(PlayerStateGhostComponentSerializer.State);
+            ghostCollectionSystem.AddSerializer(TeamGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(TurnSpeedGhostComponentSerializer.State);
-            ghostCollectionSystem.AddSerializer(ECSFrenzyBaseGhostComponentSerializer.State);
-            ghostCollectionSystem.AddSerializer(ECSFrenzyChanneledBeamAbilityGhostComponentSerializer.State);
-            ghostCollectionSystem.AddSerializer(ECSFrenzyCooldownGhostComponentSerializer.State);
-            ghostCollectionSystem.AddSerializer(ECSFrenzyCooldownStatusGhostComponentSerializer.State);
-            ghostCollectionSystem.AddSerializer(ECSFrenzyFireballAbilityGhostComponentSerializer.State);
-            ghostCollectionSystem.AddSerializer(ECSFrenzyPlayerStateGhostComponentSerializer.State);
-            ghostCollectionSystem.AddSerializer(ECSFrenzyTeamGhostComponentSerializer.State);
         }
 
         protected override void OnUpdate()

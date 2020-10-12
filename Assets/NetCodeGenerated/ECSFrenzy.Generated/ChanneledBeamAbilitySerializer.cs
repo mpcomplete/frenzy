@@ -10,21 +10,20 @@ using Unity.Collections;
 using Unity.NetCode;
 using Unity.Transforms;
 using Unity.Mathematics;
-using ECSFrenzy;
 
 namespace ECSFrenzy.Generated
 {
     [BurstCompile]
-    public struct ECSFrenzyChanneledBeamAbilityGhostComponentSerializer
+    public struct ChanneledBeamAbilityGhostComponentSerializer
     {
-        static ECSFrenzyChanneledBeamAbilityGhostComponentSerializer()
+        static ChanneledBeamAbilityGhostComponentSerializer()
         {
             State = new GhostComponentSerializer.State
             {
                 GhostFieldsHash = 14767913548786401661,
                 ExcludeFromComponentCollectionHash = 0,
-                ComponentType = ComponentType.ReadWrite<ECSFrenzy.ChanneledBeamAbility>(),
-                ComponentSize = UnsafeUtility.SizeOf<ECSFrenzy.ChanneledBeamAbility>(),
+                ComponentType = ComponentType.ReadWrite<ChanneledBeamAbility>(),
+                ComponentSize = UnsafeUtility.SizeOf<ChanneledBeamAbility>(),
                 SnapshotSize = UnsafeUtility.SizeOf<Snapshot>(),
                 ChangeMaskBits = ChangeMaskBits,
                 SendMask = GhostComponentSerializer.SendMask.Predicted,
@@ -63,7 +62,7 @@ namespace ECSFrenzy.Generated
             for (int i = 0; i < count; ++i)
             {
                 ref var snapshot = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotData, snapshotOffset + snapshotStride*i);
-                ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.ChanneledBeamAbility>(componentData, componentStride*i);
+                ref var component = ref GhostComponentSerializer.TypeCast<ChanneledBeamAbility>(componentData, componentStride*i);
                 ref var serializerState = ref GhostComponentSerializer.TypeCast<GhostSerializerState>(stateData, 0);
                 snapshot.ChanneledBeam = 0;
                 snapshot.ChanneledBeamSpawnTick = 0;
@@ -85,7 +84,7 @@ namespace ECSFrenzy.Generated
                 ref var snapshotBefore = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotInterpolationData.SnapshotBefore, snapshotOffset);
                 ref var snapshotAfter = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotInterpolationData.SnapshotAfter, snapshotOffset);
                 float snapshotInterpolationFactor = snapshotInterpolationData.InterpolationFactor;
-                ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.ChanneledBeamAbility>(componentData, componentStride*i);
+                ref var component = ref GhostComponentSerializer.TypeCast<ChanneledBeamAbility>(componentData, componentStride*i);
                 var deserializerState = GhostComponentSerializer.TypeCast<GhostDeserializerState>(stateData, 0);
                 deserializerState.SnapshotTick = snapshotInterpolationData.Tick;
                 component.ChanneledBeam = Entity.Null;
@@ -100,8 +99,8 @@ namespace ECSFrenzy.Generated
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.RestoreFromBackupDelegate))]
         private static void RestoreFromBackup(IntPtr componentData, IntPtr backupData)
         {
-            ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.ChanneledBeamAbility>(componentData, 0);
-            ref var backup = ref GhostComponentSerializer.TypeCast<ECSFrenzy.ChanneledBeamAbility>(backupData, 0);
+            ref var component = ref GhostComponentSerializer.TypeCast<ChanneledBeamAbility>(componentData, 0);
+            ref var backup = ref GhostComponentSerializer.TypeCast<ChanneledBeamAbility>(backupData, 0);
             component.ChanneledBeam = backup.ChanneledBeam;
         }
 

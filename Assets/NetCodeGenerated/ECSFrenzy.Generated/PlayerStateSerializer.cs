@@ -10,21 +10,20 @@ using Unity.Collections;
 using Unity.NetCode;
 using Unity.Transforms;
 using Unity.Mathematics;
-using ECSFrenzy;
 
 namespace ECSFrenzy.Generated
 {
     [BurstCompile]
-    public struct ECSFrenzyPlayerStateGhostComponentSerializer
+    public struct PlayerStateGhostComponentSerializer
     {
-        static ECSFrenzyPlayerStateGhostComponentSerializer()
+        static PlayerStateGhostComponentSerializer()
         {
             State = new GhostComponentSerializer.State
             {
                 GhostFieldsHash = 11223936245589747858,
                 ExcludeFromComponentCollectionHash = 0,
-                ComponentType = ComponentType.ReadWrite<ECSFrenzy.PlayerState>(),
-                ComponentSize = UnsafeUtility.SizeOf<ECSFrenzy.PlayerState>(),
+                ComponentType = ComponentType.ReadWrite<PlayerState>(),
+                ComponentSize = UnsafeUtility.SizeOf<PlayerState>(),
                 SnapshotSize = UnsafeUtility.SizeOf<Snapshot>(),
                 ChangeMaskBits = ChangeMaskBits,
                 SendMask = GhostComponentSerializer.SendMask.Interpolated | GhostComponentSerializer.SendMask.Predicted,
@@ -67,7 +66,7 @@ namespace ECSFrenzy.Generated
             for (int i = 0; i < count; ++i)
             {
                 ref var snapshot = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotData, snapshotOffset + snapshotStride*i);
-                ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.PlayerState>(componentData, componentStride*i);
+                ref var component = ref GhostComponentSerializer.TypeCast<PlayerState>(componentData, componentStride*i);
                 ref var serializerState = ref GhostComponentSerializer.TypeCast<GhostSerializerState>(stateData, 0);
                 snapshot.FireballCooldownDuration = component.FireballCooldownDuration;
                 snapshot.FireballCooldownTimeRemaining = component.FireballCooldownTimeRemaining;
@@ -87,7 +86,7 @@ namespace ECSFrenzy.Generated
                 ref var snapshotBefore = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotInterpolationData.SnapshotBefore, snapshotOffset);
                 ref var snapshotAfter = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotInterpolationData.SnapshotAfter, snapshotOffset);
                 float snapshotInterpolationFactor = snapshotInterpolationData.InterpolationFactor;
-                ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.PlayerState>(componentData, componentStride*i);
+                ref var component = ref GhostComponentSerializer.TypeCast<PlayerState>(componentData, componentStride*i);
                 var deserializerState = GhostComponentSerializer.TypeCast<GhostDeserializerState>(stateData, 0);
                 deserializerState.SnapshotTick = snapshotInterpolationData.Tick;
                 component.FireballCooldownDuration = snapshotBefore.FireballCooldownDuration;
@@ -102,8 +101,8 @@ namespace ECSFrenzy.Generated
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.RestoreFromBackupDelegate))]
         private static void RestoreFromBackup(IntPtr componentData, IntPtr backupData)
         {
-            ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.PlayerState>(componentData, 0);
-            ref var backup = ref GhostComponentSerializer.TypeCast<ECSFrenzy.PlayerState>(backupData, 0);
+            ref var component = ref GhostComponentSerializer.TypeCast<PlayerState>(componentData, 0);
+            ref var backup = ref GhostComponentSerializer.TypeCast<PlayerState>(backupData, 0);
             component.FireballCooldownDuration = backup.FireballCooldownDuration;
             component.FireballCooldownTimeRemaining = backup.FireballCooldownTimeRemaining;
             component.IsMoving = backup.IsMoving;
@@ -196,8 +195,8 @@ namespace ECSFrenzy.Generated
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.ReportPredictionErrorsDelegate))]
         private static void ReportPredictionErrors(IntPtr componentData, IntPtr backupData, ref UnsafeList<float> errors)
         {
-            ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.PlayerState>(componentData, 0);
-            ref var backup = ref GhostComponentSerializer.TypeCast<ECSFrenzy.PlayerState>(backupData, 0);
+            ref var component = ref GhostComponentSerializer.TypeCast<PlayerState>(componentData, 0);
+            ref var backup = ref GhostComponentSerializer.TypeCast<PlayerState>(backupData, 0);
             int errorIndex = 0;
             errors[errorIndex] = math.max(errors[errorIndex], math.abs(component.FireballCooldownDuration - backup.FireballCooldownDuration));
             ++errorIndex;

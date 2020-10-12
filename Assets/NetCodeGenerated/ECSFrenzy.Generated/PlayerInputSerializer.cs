@@ -7,14 +7,13 @@ using Unity.Collections;
 using Unity.NetCode;
 using Unity.Transforms;
 using Unity.Mathematics;
-using ECSFrenzy;
 
 
 namespace ECSFrenzy.Generated
 {
-    public struct ECSFrenzyPlayerInputSerializer : ICommandDataSerializer<ECSFrenzy.PlayerInput>
+    public struct PlayerInputSerializer : ICommandDataSerializer<PlayerInput>
     {
-        public void Serialize(ref DataStreamWriter writer, in ECSFrenzy.PlayerInput data)
+        public void Serialize(ref DataStreamWriter writer, in PlayerInput data)
         {
             writer.WriteFloat(data.horizontal);
             writer.WriteFloat(data.vertical);
@@ -23,7 +22,7 @@ namespace ECSFrenzy.Generated
             writer.WriteUInt(data.isChanneling);
         }
 
-        public void Deserialize(ref DataStreamReader reader, ref ECSFrenzy.PlayerInput data)
+        public void Deserialize(ref DataStreamReader reader, ref PlayerInput data)
         {
             data.horizontal = reader.ReadFloat();
             data.vertical = reader.ReadFloat();
@@ -32,7 +31,7 @@ namespace ECSFrenzy.Generated
             data.isChanneling = (byte) reader.ReadUInt();
         }
 
-        public void Serialize(ref DataStreamWriter writer, in ECSFrenzy.PlayerInput data, in ECSFrenzy.PlayerInput baseline, NetworkCompressionModel compressionModel)
+        public void Serialize(ref DataStreamWriter writer, in PlayerInput data, in PlayerInput baseline, NetworkCompressionModel compressionModel)
         {
             writer.WritePackedFloatDelta(data.horizontal, baseline.horizontal, compressionModel);
             writer.WritePackedFloatDelta(data.vertical, baseline.vertical, compressionModel);
@@ -41,7 +40,7 @@ namespace ECSFrenzy.Generated
             writer.WritePackedUIntDelta(data.isChanneling, baseline.isChanneling, compressionModel);
         }
 
-        public void Deserialize(ref DataStreamReader reader, ref ECSFrenzy.PlayerInput data, in ECSFrenzy.PlayerInput baseline, NetworkCompressionModel compressionModel)
+        public void Deserialize(ref DataStreamReader reader, ref PlayerInput data, in PlayerInput baseline, NetworkCompressionModel compressionModel)
         {
             data.horizontal = reader.ReadPackedFloatDelta(baseline.horizontal, compressionModel);
             data.vertical = reader.ReadPackedFloatDelta(baseline.vertical, compressionModel);
@@ -50,7 +49,7 @@ namespace ECSFrenzy.Generated
             data.isChanneling = (byte) reader.ReadPackedUIntDelta(baseline.isChanneling, compressionModel);
         }
     }
-    public class ECSFrenzyPlayerInputSendCommandSystem : CommandSendSystem<ECSFrenzyPlayerInputSerializer, ECSFrenzy.PlayerInput>
+    public class PlayerInputSendCommandSystem : CommandSendSystem<PlayerInputSerializer, PlayerInput>
     {
         [BurstCompile]
         struct SendJob : IJobEntityBatch
@@ -67,7 +66,7 @@ namespace ECSFrenzy.Generated
             ScheduleJobData(sendJob);
         }
     }
-    public class ECSFrenzyPlayerInputReceiveCommandSystem : CommandReceiveSystem<ECSFrenzyPlayerInputSerializer, ECSFrenzy.PlayerInput>
+    public class PlayerInputReceiveCommandSystem : CommandReceiveSystem<PlayerInputSerializer, PlayerInput>
     {
         [BurstCompile]
         struct ReceiveJob : IJobEntityBatch

@@ -10,21 +10,20 @@ using Unity.Collections;
 using Unity.NetCode;
 using Unity.Transforms;
 using Unity.Mathematics;
-using ECSFrenzy;
 
 namespace ECSFrenzy.Generated
 {
     [BurstCompile]
-    public struct ECSFrenzyCooldownStatusGhostComponentSerializer
+    public struct TeamGhostComponentSerializer
     {
-        static ECSFrenzyCooldownStatusGhostComponentSerializer()
+        static TeamGhostComponentSerializer()
         {
             State = new GhostComponentSerializer.State
             {
                 GhostFieldsHash = 14767913548786401661,
                 ExcludeFromComponentCollectionHash = 0,
-                ComponentType = ComponentType.ReadWrite<ECSFrenzy.CooldownStatus>(),
-                ComponentSize = UnsafeUtility.SizeOf<ECSFrenzy.CooldownStatus>(),
+                ComponentType = ComponentType.ReadWrite<Team>(),
+                ComponentSize = UnsafeUtility.SizeOf<Team>(),
                 SnapshotSize = UnsafeUtility.SizeOf<Snapshot>(),
                 ChangeMaskBits = ChangeMaskBits,
                 SendMask = GhostComponentSerializer.SendMask.Interpolated | GhostComponentSerializer.SendMask.Predicted,
@@ -62,7 +61,7 @@ namespace ECSFrenzy.Generated
             for (int i = 0; i < count; ++i)
             {
                 ref var snapshot = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotData, snapshotOffset + snapshotStride*i);
-                ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.CooldownStatus>(componentData, componentStride*i);
+                ref var component = ref GhostComponentSerializer.TypeCast<Team>(componentData, componentStride*i);
                 ref var serializerState = ref GhostComponentSerializer.TypeCast<GhostSerializerState>(stateData, 0);
                 snapshot.Value = (int) component.Value;
             }
@@ -77,18 +76,18 @@ namespace ECSFrenzy.Generated
                 ref var snapshotBefore = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotInterpolationData.SnapshotBefore, snapshotOffset);
                 ref var snapshotAfter = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotInterpolationData.SnapshotAfter, snapshotOffset);
                 float snapshotInterpolationFactor = snapshotInterpolationData.InterpolationFactor;
-                ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.CooldownStatus>(componentData, componentStride*i);
+                ref var component = ref GhostComponentSerializer.TypeCast<Team>(componentData, componentStride*i);
                 var deserializerState = GhostComponentSerializer.TypeCast<GhostDeserializerState>(stateData, 0);
                 deserializerState.SnapshotTick = snapshotInterpolationData.Tick;
-                component.Value = (ECSFrenzy.CooldownStatus.Status) snapshotBefore.Value;
+                component.Value = (int) snapshotBefore.Value;
             }
         }
         [BurstCompile]
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.RestoreFromBackupDelegate))]
         private static void RestoreFromBackup(IntPtr componentData, IntPtr backupData)
         {
-            ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.CooldownStatus>(componentData, 0);
-            ref var backup = ref GhostComponentSerializer.TypeCast<ECSFrenzy.CooldownStatus>(backupData, 0);
+            ref var component = ref GhostComponentSerializer.TypeCast<Team>(componentData, 0);
+            ref var backup = ref GhostComponentSerializer.TypeCast<Team>(backupData, 0);
             component.Value = backup.Value;
         }
 
@@ -138,8 +137,8 @@ namespace ECSFrenzy.Generated
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.ReportPredictionErrorsDelegate))]
         private static void ReportPredictionErrors(IntPtr componentData, IntPtr backupData, ref UnsafeList<float> errors)
         {
-            ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.CooldownStatus>(componentData, 0);
-            ref var backup = ref GhostComponentSerializer.TypeCast<ECSFrenzy.CooldownStatus>(backupData, 0);
+            ref var component = ref GhostComponentSerializer.TypeCast<Team>(componentData, 0);
+            ref var backup = ref GhostComponentSerializer.TypeCast<Team>(backupData, 0);
             int errorIndex = 0;
             errors[errorIndex] = math.max(errors[errorIndex], math.abs(component.Value - backup.Value));
             ++errorIndex;

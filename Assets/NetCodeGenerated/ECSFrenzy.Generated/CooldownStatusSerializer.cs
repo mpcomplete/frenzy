@@ -10,21 +10,20 @@ using Unity.Collections;
 using Unity.NetCode;
 using Unity.Transforms;
 using Unity.Mathematics;
-using ECSFrenzy;
 
 namespace ECSFrenzy.Generated
 {
     [BurstCompile]
-    public struct ECSFrenzyFireballAbilityGhostComponentSerializer
+    public struct CooldownStatusGhostComponentSerializer
     {
-        static ECSFrenzyFireballAbilityGhostComponentSerializer()
+        static CooldownStatusGhostComponentSerializer()
         {
             State = new GhostComponentSerializer.State
             {
                 GhostFieldsHash = 14767913548786401661,
                 ExcludeFromComponentCollectionHash = 0,
-                ComponentType = ComponentType.ReadWrite<ECSFrenzy.FireballAbility>(),
-                ComponentSize = UnsafeUtility.SizeOf<ECSFrenzy.FireballAbility>(),
+                ComponentType = ComponentType.ReadWrite<CooldownStatus>(),
+                ComponentSize = UnsafeUtility.SizeOf<CooldownStatus>(),
                 SnapshotSize = UnsafeUtility.SizeOf<Snapshot>(),
                 ChangeMaskBits = ChangeMaskBits,
                 SendMask = GhostComponentSerializer.SendMask.Interpolated | GhostComponentSerializer.SendMask.Predicted,
@@ -52,7 +51,7 @@ namespace ECSFrenzy.Generated
         public static readonly GhostComponentSerializer.State State;
         public struct Snapshot
         {
-            public int SpawnTick;
+            public int Value;
         }
         public const int ChangeMaskBits = 1;
         [BurstCompile]
@@ -62,9 +61,9 @@ namespace ECSFrenzy.Generated
             for (int i = 0; i < count; ++i)
             {
                 ref var snapshot = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotData, snapshotOffset + snapshotStride*i);
-                ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.FireballAbility>(componentData, componentStride*i);
+                ref var component = ref GhostComponentSerializer.TypeCast<CooldownStatus>(componentData, componentStride*i);
                 ref var serializerState = ref GhostComponentSerializer.TypeCast<GhostSerializerState>(stateData, 0);
-                snapshot.SpawnTick = (int) component.SpawnTick;
+                snapshot.Value = (int) component.Value;
             }
         }
         [BurstCompile]
@@ -77,19 +76,19 @@ namespace ECSFrenzy.Generated
                 ref var snapshotBefore = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotInterpolationData.SnapshotBefore, snapshotOffset);
                 ref var snapshotAfter = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotInterpolationData.SnapshotAfter, snapshotOffset);
                 float snapshotInterpolationFactor = snapshotInterpolationData.InterpolationFactor;
-                ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.FireballAbility>(componentData, componentStride*i);
+                ref var component = ref GhostComponentSerializer.TypeCast<CooldownStatus>(componentData, componentStride*i);
                 var deserializerState = GhostComponentSerializer.TypeCast<GhostDeserializerState>(stateData, 0);
                 deserializerState.SnapshotTick = snapshotInterpolationData.Tick;
-                component.SpawnTick = (int) snapshotBefore.SpawnTick;
+                component.Value = (CooldownStatus.Status) snapshotBefore.Value;
             }
         }
         [BurstCompile]
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.RestoreFromBackupDelegate))]
         private static void RestoreFromBackup(IntPtr componentData, IntPtr backupData)
         {
-            ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.FireballAbility>(componentData, 0);
-            ref var backup = ref GhostComponentSerializer.TypeCast<ECSFrenzy.FireballAbility>(backupData, 0);
-            component.SpawnTick = backup.SpawnTick;
+            ref var component = ref GhostComponentSerializer.TypeCast<CooldownStatus>(componentData, 0);
+            ref var backup = ref GhostComponentSerializer.TypeCast<CooldownStatus>(backupData, 0);
+            component.Value = backup.Value;
         }
 
         [BurstCompile]
@@ -99,7 +98,7 @@ namespace ECSFrenzy.Generated
             ref var snapshot = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotData);
             ref var baseline1 = ref GhostComponentSerializer.TypeCast<Snapshot>(baseline1Data);
             ref var baseline2 = ref GhostComponentSerializer.TypeCast<Snapshot>(baseline2Data);
-            snapshot.SpawnTick = predictor.PredictInt(snapshot.SpawnTick, baseline1.SpawnTick, baseline2.SpawnTick);
+            snapshot.Value = predictor.PredictInt(snapshot.Value, baseline1.Value, baseline2.Value);
         }
         [BurstCompile]
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.CalculateChangeMaskDelegate))]
@@ -108,7 +107,7 @@ namespace ECSFrenzy.Generated
             ref var snapshot = ref GhostComponentSerializer.TypeCast<Snapshot>(snapshotData);
             ref var baseline = ref GhostComponentSerializer.TypeCast<Snapshot>(baselineData);
             uint changeMask;
-            changeMask = (snapshot.SpawnTick != baseline.SpawnTick) ? 1u : 0;
+            changeMask = (snapshot.Value != baseline.Value) ? 1u : 0;
             GhostComponentSerializer.CopyToChangeMask(bits, changeMask, startOffset, 1);
         }
         [BurstCompile]
@@ -119,7 +118,7 @@ namespace ECSFrenzy.Generated
             ref var baseline = ref GhostComponentSerializer.TypeCast<Snapshot>(baselineData);
             uint changeMask = GhostComponentSerializer.CopyFromChangeMask(changeMaskData, startOffset, ChangeMaskBits);
             if ((changeMask & (1 << 0)) != 0)
-                writer.WritePackedIntDelta(snapshot.SpawnTick, baseline.SpawnTick, compressionModel);
+                writer.WritePackedIntDelta(snapshot.Value, baseline.Value, compressionModel);
         }
         [BurstCompile]
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.DeserializeDelegate))]
@@ -129,19 +128,19 @@ namespace ECSFrenzy.Generated
             ref var baseline = ref GhostComponentSerializer.TypeCast<Snapshot>(baselineData);
             uint changeMask = GhostComponentSerializer.CopyFromChangeMask(changeMaskData, startOffset, ChangeMaskBits);
             if ((changeMask & (1 << 0)) != 0)
-                snapshot.SpawnTick = reader.ReadPackedIntDelta(baseline.SpawnTick, compressionModel);
+                snapshot.Value = reader.ReadPackedIntDelta(baseline.Value, compressionModel);
             else
-                snapshot.SpawnTick = baseline.SpawnTick;
+                snapshot.Value = baseline.Value;
         }
         #if UNITY_EDITOR || DEVELOPMENT_BUILD
         [BurstCompile]
         [MonoPInvokeCallback(typeof(GhostComponentSerializer.ReportPredictionErrorsDelegate))]
         private static void ReportPredictionErrors(IntPtr componentData, IntPtr backupData, ref UnsafeList<float> errors)
         {
-            ref var component = ref GhostComponentSerializer.TypeCast<ECSFrenzy.FireballAbility>(componentData, 0);
-            ref var backup = ref GhostComponentSerializer.TypeCast<ECSFrenzy.FireballAbility>(backupData, 0);
+            ref var component = ref GhostComponentSerializer.TypeCast<CooldownStatus>(componentData, 0);
+            ref var backup = ref GhostComponentSerializer.TypeCast<CooldownStatus>(backupData, 0);
             int errorIndex = 0;
-            errors[errorIndex] = math.max(errors[errorIndex], math.abs(component.SpawnTick - backup.SpawnTick));
+            errors[errorIndex] = math.max(errors[errorIndex], math.abs(component.Value - backup.Value));
             ++errorIndex;
         }
         private static int GetPredictionErrorNames(ref FixedString512 names)
@@ -149,7 +148,7 @@ namespace ECSFrenzy.Generated
             int nameCount = 0;
             if (nameCount != 0)
                 names.Append(new FixedString32(","));
-            names.Append(new FixedString64("SpawnTick"));
+            names.Append(new FixedString64("Value"));
             ++nameCount;
             return nameCount;
         }
