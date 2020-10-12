@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
@@ -21,6 +22,7 @@ namespace ECSFrenzy {
   [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
   public class BaseSystem : ComponentSystem {
     BlobAssetReference<Collider>[] colliderForTeam;
+    const int MaxMinions = 100;
 
     protected override void OnCreate() {
       colliderForTeam = new BlobAssetReference<Collider>[] {
@@ -35,8 +37,19 @@ namespace ECSFrenzy {
     }
 
     protected override void OnUpdate() {
+      int[] minionsOnTeam = { 0, 0 };
+      var query = GetEntityQuery(typeof(Minion), typeof(Team));
+      using (var minionTeams = query.ToComponentDataArray<Team>(Allocator.Temp)) {
+        for (int i = 0; i < minionTeams.Length; i++) {
+          int team = minionTeams[i].Value;
+          minionsOnTeam[team]++;
+        }
+      }
+
       Entities.ForEach((ref Base spawner, ref Team team) => {
         if (Time.ElapsedTime < spawner.NextSpawnTime)
+          return;
+        if (minionsOnTeam[team.Value] > MaxMinions)
           return;
 
         Entity minion = EntityManager.Instantiate(spawner.MinionPrefab);
@@ -50,6 +63,8 @@ namespace ECSFrenzy {
         EntityManager.AddComponentData(minion, new Heading { Value = transform.Forward });
         EntityManager.AddComponentData(minion, new Team { Value = team.Value });
         EntityManager.SetComponentData(minion, new PhysicsCollider { Value = colliderForTeam[team.Value] });
+        EntityManager.RemoveComponent<NavTarget>(minion);
+        EntityManager.RemoveComponent<AttackTarget>(minion);
         spawner.NextSpawnTime = (float)Time.ElapsedTime + spawner.SpawnCooldown;
       });
     }

@@ -4,7 +4,7 @@ using Unity.Entities;
 namespace ECSFrenzy {
   [Serializable]
   [GenerateAuthoringComponent]
-  public struct Target : IComponentData {
+  public struct AttackTarget : IComponentData {
     public Entity Value;
   }
 }

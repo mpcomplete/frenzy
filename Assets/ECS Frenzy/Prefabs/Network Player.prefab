@@ -254,6 +254,7 @@ GameObject:
   - component: {fileID: 3679481439780764388}
   - component: {fileID: 3679481439780764389}
   - component: {fileID: 4752303934304113744}
+  - component: {fileID: 4939381708979753180}
   m_Layer: 0
   m_Name: Network Player
   m_TagString: Untagged
@@ -340,7 +341,6 @@ MonoBehaviour:
   DidFireball: 0
   DidBanner: 0
   IsChanneling: 0
-  ChannelBeam: {fileID: 0}
 --- !u!114 &-4463409928783434692
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -591,3 +591,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Value: 0
+--- !u!114 &4939381708979753180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3679481439780764386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0c57baf38981be4989559e4cf2fd224, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Value: 100
