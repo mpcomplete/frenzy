@@ -3,10 +3,7 @@ using Unity.Entities;
 using Unity.NetCode;
 using Unity.Transforms;
 using Unity.Mathematics;
-using Unity.Physics;
 using Unity.Collections;
-using UnityEngine;
-using Unity.Physics.Systems;
 
 namespace ECSFrenzy {
   [Serializable]
@@ -19,7 +16,6 @@ namespace ECSFrenzy {
   [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
   public class MinionAISystem : SystemBase {
     BeginSimulationEntityCommandBufferSystem commandBufferSystem;
-    BuildPhysicsWorld physicsWorldSystem;
     public struct MinionState : IComponentData {
       public float TargetFindCooldown;  // shouldn't need this, but target finding is slow AF.
     }
@@ -32,18 +28,17 @@ namespace ECSFrenzy {
 
     protected override void OnCreate() {
       commandBufferSystem = World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
-      physicsWorldSystem = World.GetExistingSystem<BuildPhysicsWorld>();
     }
 
     protected override void OnUpdate() {
       var ecb = commandBufferSystem.CreateCommandBuffer().AsParallelWriter();
-      var collisionWorld = physicsWorldSystem.PhysicsWorld.CollisionWorld;
 
       // Minions with no nav target, head to the banner.
       var query = GetEntityQuery(typeof(Banner), typeof(Team));
       var banners = query.ToEntityArray(Allocator.TempJob);
       var bannerTeams = query.ToComponentDataArray<Team>(Allocator.TempJob);
       Entities
+      .WithAll<Minion>()
       .WithNone<NavTarget>()
       .WithNone<AttackTarget>()
       .WithDisposeOnCompletion(banners)
@@ -56,24 +51,39 @@ namespace ECSFrenzy {
         }
         if (target != Entity.Null) {
           ecb.AddComponent(nativeThreadIndex, e, new NavTarget { Value = target });
-          ecb.AddComponent(nativeThreadIndex, e, new MinionState { TargetFindCooldown = .1f });
         }
       }).ScheduleParallel();
 
       // Minions with no attack target, try to find one and path to it.
-      var entityTransforms = GetComponentDataFromEntity<LocalToWorld>(true);
-      var entityHealth = GetComponentDataFromEntity<Health>(false);
+      var query2 = GetEntityQuery(typeof(Team), typeof(Health), typeof(LocalToWorld));
+      var entities = query2.ToEntityArray(Allocator.TempJob);
+      var entityTeam = query2.ToComponentDataArray<Team>(Allocator.TempJob);
+      var entityHealth = query2.ToComponentDataArray<Health>(Allocator.TempJob);
+      var entityTransform = query2.ToComponentDataArray<LocalToWorld>(Allocator.TempJob);
       float dt = Time.DeltaTime;
+
+      Entity FindTarget(float3 pos, in Team team) {
+        (float distsq, Entity e) closest = (MinionAggroRange*MinionAggroRange, Entity.Null);
+        for (int i = 0; i < entities.Length; i++) {
+          if (entityTeam[i].Value == team.Value || entityHealth[i].Value <= 0)
+            continue;
+          float distsq = math.distancesq(entityTransform[i].Position, pos);
+          if (distsq < closest.distsq)
+            closest = (distsq, entities[i]);
+        }
+        return closest.e;
+      }
+
       Entities
+      .WithAll<Minion>()
       .WithAll<NavTarget>()
       .WithNone<AttackTarget>()
-      .WithReadOnly(entityHealth)
-      .ForEach((Entity e, int nativeThreadIndex, ref MinionState minionState, ref Team team, ref LocalToWorld transform) => {
-        minionState.TargetFindCooldown -= dt;
-        if (minionState.TargetFindCooldown > 0f)
-          return;
-        minionState.TargetFindCooldown = .1f;
-        Entity target = FindTarget(collisionWorld, transform.Position, team, entityHealth);
+      .WithDisposeOnCompletion(entities)
+      .WithDisposeOnCompletion(entityTeam)
+      .WithDisposeOnCompletion(entityHealth)
+      .WithDisposeOnCompletion(entityTransform)
+      .ForEach((Entity e, int nativeThreadIndex, ref Team team, ref LocalToWorld transform) => {
+        Entity target = FindTarget(transform.Position, team);
         if (target != Entity.Null) {
           ecb.SetComponent(nativeThreadIndex, e, new NavTarget { Value = target });
           ecb.AddComponent(nativeThreadIndex, e, new AttackTarget { Value = target });
@@ -82,6 +92,8 @@ namespace ECSFrenzy {
       }).ScheduleParallel();
 
       // Minions with an attack target, try to attack it.
+      var entityTransforms = GetComponentDataFromEntity<LocalToWorld>(true);
+      var entityHealths = GetComponentDataFromEntity<Health>(false);
       Entities
       .WithAll<AttackTarget>()
       .WithReadOnly(entityTransforms)
@@ -91,41 +103,18 @@ namespace ECSFrenzy {
           ecb.SetComponent(nativeThreadIndex, e, new NavTarget { Value = e });
           if (state.TimeRemaining <= 0f) {
             state.TimeRemaining = MinionAttackCooldown;
-            entityHealth[target.Value] = new Health { Value = entityHealth[target.Value].Value - MinionAttackDamage };
+            entityHealths[target.Value] = new Health { Value = entityHealths[target.Value].Value - MinionAttackDamage };
             //Debug.Log($"Dealing dmg {target.Value}; hp = {entityHealth[target.Value].Value}");
           }
           state.TimeRemaining -= dt;
         } else {
           ecb.SetComponent(nativeThreadIndex, e, new NavTarget { Value = target.Value });
         }
-        if (entityHealth[target.Value].Value <= 0f) {
+        if (entityHealths[target.Value].Value <= 0f) {
           ecb.RemoveComponent<NavTarget>(nativeThreadIndex, e);
           ecb.RemoveComponent<AttackTarget>(nativeThreadIndex, e);
         }
       }).Schedule();
-    }
-
-    static Entity FindTarget(in CollisionWorld collisionWorld, float3 pos, in Team team, in ComponentDataFromEntity<Health> entityHealth) {
-      (float distsq, Entity e) closest = (float.MaxValue, Entity.Null);
-      var hits = new NativeList<DistanceHit>(8, Allocator.Temp);
-      // Collide with opposite team.
-      uint layer = team.Value == 0 ? CollisionLayer.Team2 : CollisionLayer.Team1;
-      var fromPoint = new PointDistanceInput() { Filter = new CollisionFilter { BelongsTo = layer, CollidesWith = layer }, Position = pos, MaxDistance = MinionAggroRange };
-      if (collisionWorld.CalculateDistance(fromPoint, ref hits)) {
-        for (int i = 0; i < hits.Length; i++) {
-          var hit = hits[i];  // TODO: isn't random-access on a list slow?
-          Entity e = hit.Entity;
-          float distsq = math.distancesq(hit.Position, pos);
-          //Debug.Assert(EntityManager.HasComponent<Team>(e), $"Minion target collided invalid object: {EntityManager.GetName(e)}.");
-          //Debug.Assert(EntityManager.GetComponentData<Team>(e).Value != team.Value, "Minion target collided with own team. CollisionFilters are incorrect.");
-          if (distsq < closest.distsq && entityHealth.HasComponent(e) && entityHealth[e].Value > 0) {
-            closest = (distsq, e);
-          }
-        }
-      }
-      if (hits.IsCreated)
-        hits.Dispose();
-      return closest.e;
     }
   }
 }
