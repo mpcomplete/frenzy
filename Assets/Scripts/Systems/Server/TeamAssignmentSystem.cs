@@ -23,30 +23,31 @@ public class TeamAssignmentSystem : ComponentSystem {
   }
 
   protected override void OnUpdate() {
-    EntityQuery bannerQuery = Entities.WithAll<Banner, Team, LocalToWorld>().ToEntityQuery();
-    EntityQuery spawnQuery = Entities.WithAll<SpawnLocation, Team, LocalToWorld>().ToEntityQuery();
+    EntityQuery bannerQuery = Entities.WithAll<Banner, Team>().ToEntityQuery();
+    EntityQuery spawnerQuery = Entities.WithAll<Base, Team>().ToEntityQuery();
+    var entityTransform = GetComponentDataFromEntity<LocalToWorld>(true);
     using (var banners = bannerQuery.ToEntityArray(Allocator.TempJob))
-    using (var spawnLocations = spawnQuery.ToComponentDataArray<SpawnLocation>(Allocator.TempJob))
-    using (var teams = spawnQuery.ToComponentDataArray<Team>(Allocator.TempJob))
-    using (var spawnTransforms = spawnQuery.ToComponentDataArray<LocalToWorld>(Allocator.TempJob)) {
+    using (var spawners = spawnerQuery.ToComponentDataArray<Base>(Allocator.TempJob))
+    using (var teams = spawnerQuery.ToComponentDataArray<Team>(Allocator.TempJob)) {
       Entities
       .WithNone<SharedTeam>()
       .WithAll<NetworkPlayer>()
-      .ForEach((Entity e, ref Translation translation, ref Rotation rotation) => {
+      .ForEach((Entity e) => {
         int? spawnIndex = IndexOfMatchingTeam(teams);
 
         if (spawnIndex.HasValue) {
-          var transform = spawnTransforms[spawnIndex.Value];
-          EntityManager.SetComponentData(e, new Translation { Value = transform.Position });
-          EntityManager.SetComponentData(e, new Rotation { Value = transform.Rotation });
-          EntityManager.SetComponentData(e, new PhysicsCollider { Value = colliderForTeam[currentTeamNumber] });
-          EntityManager.SetComponentData(e, new Team { Value = currentTeamNumber });
-          EntityManager.AddSharedComponentData(e, new SharedTeam { Value = currentTeamNumber });
+          var spawner = spawners[spawnIndex.Value];
+          var transform = entityTransform[spawner.SpawnLocation];
+          PostUpdateCommands.SetComponent(e, new Translation { Value = transform.Position });
+          PostUpdateCommands.SetComponent(e, new Rotation { Value = transform.Rotation });
+          PostUpdateCommands.SetComponent(e, new PhysicsCollider { Value = colliderForTeam[currentTeamNumber] });
+          PostUpdateCommands.SetComponent(e, new Team { Value = currentTeamNumber });
+          PostUpdateCommands.AddSharedComponent(e, new SharedTeam { Value = currentTeamNumber });
 
           // TODO: Maybe we should just spawn the banner here? (Instead of with the Player.)
           if (currentTeamNumber < banners.Length) {
-            EntityManager.SetComponentData(banners[currentTeamNumber], new Team { Value = currentTeamNumber });
-            EntityManager.SetComponentData(banners[currentTeamNumber], new Translation { Value = transform.Position + 3*transform.Forward });
+            PostUpdateCommands.SetComponent(banners[currentTeamNumber], new Team { Value = currentTeamNumber });
+            PostUpdateCommands.SetComponent(banners[currentTeamNumber], new Translation { Value = transform.Position + 3*transform.Forward });
           }
 
           currentTeamNumber = (currentTeamNumber + 1) % 2;
