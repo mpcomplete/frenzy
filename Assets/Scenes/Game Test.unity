@@ -602,7 +602,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-1712
+  m_Name: pb_Mesh-1496
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -980,14 +980,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Team 1
       objectReference: {fileID: 0}
-    - target: {fileID: 7427366360830136179, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
-      propertyPath: MinionPrefab
-      value: 
-      objectReference: {fileID: 2484522229482473256, guid: 1b92d51253d5a944e9bbca447d4207e0, type: 3}
-    - target: {fileID: 7427366360830136179, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
-      propertyPath: SpawnCooldown
-      value: 0.1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
 --- !u!4 &1095727031 stripped
@@ -1079,7 +1071,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-1714
+  m_Name: pb_Mesh-1498
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1302,6 +1294,14 @@ PrefabInstance:
       propertyPath: Value
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 684218462144174480, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: Value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 717438241436214626, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1122110121661493769, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1366,10 +1366,6 @@ PrefabInstance:
       propertyPath: Value
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 4700082516166242405, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
-      propertyPath: TeamNumber
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6172795695026228839, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -1378,9 +1374,13 @@ PrefabInstance:
       propertyPath: Value
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 7427366360830136179, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
-      propertyPath: SpawnCooldown
-      value: 0.1
+    - target: {fileID: 7668417592724609770, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: Value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7701646280023139864, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 714e007b3a4b1ab44b9e7ff30c8b0f7e, type: 3}

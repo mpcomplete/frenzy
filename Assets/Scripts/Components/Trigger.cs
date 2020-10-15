@@ -11,7 +11,7 @@ using Unity.Physics.Systems;
 [Serializable]
 [GenerateAuthoringComponent]
 public struct Trigger : IComponentData {
-  public enum TriggerState { JustTriggered, Triggered, JustUnTriggered, UnTriggered }
+  public enum TriggerState { JustTriggered, Triggered, JustCompleted, JustUnTriggered, UnTriggered }
   public TriggerState State;
   [GhostField] public float TimeRemaining;
   [GhostField] public int Cost;
@@ -65,12 +65,16 @@ public class TriggerSystem : JobComponentSystem {
           trigger.TimeRemaining -= dt;
 
           if (trigger.TimeRemaining <= 0) {
-            UnityEngine.Debug.Log($"Triggered! {e}");
-            trigger.State = Trigger.TriggerState.JustUnTriggered;
+            UnityEngine.Debug.Log($"Completed! {e}");
+            trigger.State = Trigger.TriggerState.JustCompleted;
           }
         } else {
           trigger.State = Trigger.TriggerState.JustUnTriggered;
         }
+        break;
+      case Trigger.TriggerState.JustCompleted:
+        UnityEngine.Debug.Log($"Completed cleared! {e}");
+        trigger.State = Trigger.TriggerState.JustUnTriggered;
         break;
       case Trigger.TriggerState.UnTriggered:
       case Trigger.TriggerState.JustUnTriggered:

@@ -12,9 +12,9 @@ public class TeamAssignmentSystem : ComponentSystem {
 
   protected override void OnCreate() {
     colliderForTeam = new BlobAssetReference<Collider>[] {
-        CollisionLayer.CreateCollider(0, CollisionLayer.Player),
-        CollisionLayer.CreateCollider(1, CollisionLayer.Player),
-      };
+      CollisionLayer.CreateCollider(0, CollisionLayer.Player),
+      CollisionLayer.CreateCollider(1, CollisionLayer.Player),
+    };
   }
 
   protected override void OnDestroy() {
@@ -43,8 +43,8 @@ public class TeamAssignmentSystem : ComponentSystem {
           EntityManager.SetComponentData(e, new Team { Value = currentTeamNumber });
           EntityManager.AddSharedComponentData(e, new SharedTeam { Value = currentTeamNumber });
 
-            // TODO: Maybe we should just spawn the banner here? (Instead of with the Player.)
-            if (currentTeamNumber < banners.Length) {
+          // TODO: Maybe we should just spawn the banner here? (Instead of with the Player.)
+          if (currentTeamNumber < banners.Length) {
             EntityManager.SetComponentData(banners[currentTeamNumber], new Team { Value = currentTeamNumber });
             EntityManager.SetComponentData(banners[currentTeamNumber], new Translation { Value = transform.Position + 3*transform.Forward });
           }
