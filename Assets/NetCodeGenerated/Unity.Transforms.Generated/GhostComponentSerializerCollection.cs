@@ -11,6 +11,7 @@ namespace Unity.Transforms.Generated
         protected override void OnCreate()
         {
             var ghostCollectionSystem = World.GetOrCreateSystem<GhostCollectionSystem>();
+            ghostCollectionSystem.AddSerializer(UnityTransformsNonUniformScaleGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(UnityTransformsRotationGhostComponentSerializer.State);
             ghostCollectionSystem.AddSerializer(UnityTransformsTranslationGhostComponentSerializer.State);
         }
