@@ -22,6 +22,7 @@ public class PlayerHUDRenderingSystem : SystemBase {
   }
 
   protected override void OnUpdate() {
+    return;
     var hudPrefab = SystemConfig.Instance.PlayerHUDPrefab;
     var dt = Time.DeltaTime;
 

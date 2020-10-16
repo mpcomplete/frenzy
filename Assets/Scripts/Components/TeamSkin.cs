@@ -30,6 +30,10 @@ public class TeamSkinningSystem : ComponentSystem {
   }
 
   void SetMaterial(Entity e, Entity entityToSkin, in Team team) {
+    if (entityToSkin == Entity.Null || !EntityManager.HasComponent<RenderMesh>(entityToSkin)) {
+      return;
+      UnityEngine.Debug.Log($"Oops {e}/{entityToSkin}; {EntityManager.GetName(e)}");
+    }
     var rm = EntityManager.GetSharedComponentData<RenderMesh>(entityToSkin);
     rm.material = SystemConfig.Instance.TeamConfigs[team.Value].Material;
     PostUpdateCommands.AddComponent(e, new TeamState());
