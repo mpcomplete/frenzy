@@ -11,7 +11,7 @@ using Unity.Physics.Systems;
 [Serializable]
 [GenerateAuthoringComponent]
 public struct Trigger : IComponentData {
-  public enum TriggerState { JustTriggered, Triggered, JustCompleted, JustUnTriggered, UnTriggered }
+  public enum TriggerState { JustEntered, Entered, JustTriggered, JustExited, Exited }
   public TriggerState State;
   [GhostField] public float TimeRemaining;
   [GhostField] public int Cost;
@@ -58,31 +58,29 @@ public class TriggerSystem : JobComponentSystem {
       bool triggered = activeTriggers.Contains(e);
 
       switch (trigger.State) {
-      case Trigger.TriggerState.Triggered:
-      case Trigger.TriggerState.JustTriggered:
+      case Trigger.TriggerState.Entered:
+      case Trigger.TriggerState.JustEntered:
         if (triggered) {
-          trigger.State = Trigger.TriggerState.Triggered;
+          trigger.State = Trigger.TriggerState.Entered;
           trigger.TimeRemaining -= dt;
 
           if (trigger.TimeRemaining <= 0) {
-            UnityEngine.Debug.Log($"Completed! {e}");
-            trigger.State = Trigger.TriggerState.JustCompleted;
+            trigger.State = Trigger.TriggerState.JustTriggered;
           }
         } else {
-          trigger.State = Trigger.TriggerState.JustUnTriggered;
+          trigger.State = Trigger.TriggerState.JustExited;
         }
         break;
-      case Trigger.TriggerState.JustCompleted:
-        UnityEngine.Debug.Log($"Completed cleared! {e}");
-        trigger.State = Trigger.TriggerState.JustUnTriggered;
+      case Trigger.TriggerState.JustTriggered:
+        trigger.State = Trigger.TriggerState.JustExited;
         break;
-      case Trigger.TriggerState.UnTriggered:
-      case Trigger.TriggerState.JustUnTriggered:
+      case Trigger.TriggerState.Exited:
+      case Trigger.TriggerState.JustExited:
         if (triggered) {
-          trigger.State = Trigger.TriggerState.JustTriggered;
+          trigger.State = Trigger.TriggerState.JustEntered;
           trigger.TimeRemaining = (float)1f;
         } else {
-          trigger.State = Trigger.TriggerState.UnTriggered;
+          trigger.State = Trigger.TriggerState.Exited;
         }
         break;
       }

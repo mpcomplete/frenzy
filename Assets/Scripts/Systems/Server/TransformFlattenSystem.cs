@@ -13,7 +13,9 @@ using Unity.NetCode;
 [UpdateInGroup(typeof(ServerSimulationSystemGroup))]
 public class TransformFlattenSystem : ComponentSystem {
   protected override void OnUpdate() {
-    Entities.ForEach((Entity e, ref Parent parent, ref Translation translation, ref Rotation rotation, ref LocalToWorld transform) => {
+    Entities
+    .WithAll<GhostComponent>()
+    .ForEach((Entity e, ref Parent parent, ref Translation translation, ref Rotation rotation, ref LocalToWorld transform) => {
       parent.Value = Entity.Null;
       translation.Value = transform.Position;
       rotation.Value = transform.Rotation;

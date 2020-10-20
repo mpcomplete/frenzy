@@ -15,7 +15,7 @@ public class TriggerUnlockSpawnerSystem : ComponentSystem {
   protected override void OnUpdate() {
     Entities
     .ForEach((Entity e, ref Trigger trigger, ref TriggerUnlockSpawner unlock) => {
-      if (trigger.State != Trigger.TriggerState.JustCompleted)
+      if (trigger.State != Trigger.TriggerState.JustTriggered)
         return;
       EntityManager.SetEnabled(unlock.Spawner, true);
       UnityEngine.Debug.Log($"Unlocking {unlock.Spawner};{EntityManager.GetName(unlock.Spawner)} = {EntityManager.GetEnabled(unlock.Spawner)}");
