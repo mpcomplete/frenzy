@@ -18,7 +18,6 @@ public class TriggerUnlockSpawnerSystem : ComponentSystem {
       if (trigger.State != Trigger.TriggerState.JustTriggered)
         return;
       EntityManager.SetEnabled(unlock.Spawner, true);
-      UnityEngine.Debug.Log($"Unlocking {unlock.Spawner};{EntityManager.GetName(unlock.Spawner)} = {EntityManager.GetEnabled(unlock.Spawner)}");
     });
   }
 }

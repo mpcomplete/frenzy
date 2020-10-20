@@ -5,7 +5,6 @@ using static Unity.NetCode.Editor.GhostAuthoringComponentEditor;
 
 public class GhostOverrides : IGhostDefaultOverridesModifier {
   public void Modify(Dictionary<string, GhostAuthoringComponentEditor.GhostComponent> overrides) {
-    UnityEngine.Debug.Log($"Changing: {overrides["Unity.Transforms.Translation"].attribute}");
     overrides["Unity.Transforms.NonUniformScale"] = new GhostAuthoringComponentEditor.GhostComponent {
       name = "Unity.Transforms.NonUniformScale",
       attribute = new GhostComponentAttribute { PrefabType = GhostPrefabType.All, OwnerPredictedSendType = GhostSendType.All, SendDataForChildEntity = false },
@@ -20,7 +19,6 @@ public class GhostOverrides : IGhostDefaultOverridesModifier {
   }
 
   public void ModifyAlwaysIncludedAssembly(HashSet<string> alwaysIncludedAssemblies) {
-    //UnityEngine.Debug.Log($"Changing: {alwaysIncludedAssemblies.Contains("Unity.Transforms.NonUniformScale")}");
     alwaysIncludedAssemblies.Add("Unity.Transforms.NonUniformScale");
   }
 

@@ -1729,6 +1729,10 @@ PrefabInstance:
       propertyPath: Value
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7478291448966201767, guid: 27819a7d35a2ed847a63cb7fb95199fc, type: 3}
+      propertyPath: SpawnCooldown
+      value: 0.12
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 27819a7d35a2ed847a63cb7fb95199fc, type: 3}
 --- !u!4 &1186775511 stripped
