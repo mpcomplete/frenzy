@@ -124,7 +124,7 @@ Transform:
   m_GameObject: {fileID: 4234652190168365724}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.01, y: 1.01, z: 1.01}
   m_Children:
   - {fileID: 4234652191691400209}
   - {fileID: 4234652189945613495}
@@ -147,7 +147,7 @@ MonoBehaviour:
   SpawnCooldown: 0.1
   NextSpawnTime: 0
   SpawnLocation: {fileID: 4731445812316312976}
-  MinionPrefab: {fileID: 5635783175123075587, guid: 2eb9f0f2d30c7674aa4b55e17c5d4fad, type: 3}
+  MinionPrefab: {fileID: 2484522229482473256, guid: 1b92d51253d5a944e9bbca447d4207e0, type: 3}
 --- !u!114 &6438998303357158676
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -178,7 +178,7 @@ MonoBehaviour:
   SupportedGhostModes: 3
   OptimizationMode: 0
   Importance: 1
-  prefabId: 
+  prefabId: 27819a7d35a2ed847a63cb7fb95199fc
   Name: Base
 --- !u!1 &4234652191691400208
 GameObject:
