@@ -92,6 +92,7 @@ GameObject:
   - component: {fileID: 3709619962462076810}
   - component: {fileID: 8905152483414702028}
   - component: {fileID: 1873357431425571541}
+  - component: {fileID: 6708508168383643356}
   m_Layer: 0
   m_Name: Trigger Plate
   m_TagString: Untagged
@@ -288,3 +289,22 @@ MonoBehaviour:
   State: 3
   TimeRemaining: 0
   Cost: 0
+--- !u!114 &6708508168383643356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9000360961593310437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c79d771cedb4794bf100ce60df5f764, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ForcePrefabConversion: 0
+  DefaultGhostMode: 0
+  SupportedGhostModes: 3
+  OptimizationMode: 0
+  Importance: 1
+  prefabId: 
+  Name: Trigger
